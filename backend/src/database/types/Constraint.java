@@ -4,9 +4,9 @@ package database.types;
  * Represents a constraint in a database table
  */
 public enum Constraint {
-    PRIMARY_KEY,
     UNIQUE,
     NOT_NULL,
+    DEFAULT,
     AUTO_INCREMENT;
 
     public String toString() {

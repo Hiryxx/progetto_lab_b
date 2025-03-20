@@ -1,24 +1,21 @@
 package database.models;
 
-import database.connection.DbConnection;
-import database.connection.DbConnectionPool;
 import database.types.Constraint;
+import database.types.keys.ForeignKey;
+import database.types.query.QueryBuilder;
 
 import java.lang.reflect.Field;
-import java.sql.Connection;
 import java.sql.SQLException;
 
-
-public class Entity {
+/**
+ * Represents an entity in the database
+ */
+public abstract class Entity {
 
     /**
      * Creates a new entity in the database
      */
     public void create() throws SQLException, IllegalAccessException {
-
-
-        // TODO Extract the class name and attributes to a method
-
         // Gets the class name
         String className = this.getClass().getSimpleName();
 
@@ -31,16 +28,34 @@ public class Entity {
 
         int index = 0;
 
+        StringBuilder primaryKeys = new StringBuilder();
+        StringBuilder foreignKeys = new StringBuilder();
+
         // TODO fields here would be in another class that holds stuff like primary key, unique, not null, etc
         for (Field field : attributesField) {
             System.out.println(field.getName());
             field.setAccessible(true);
-            if (field.getType() == database.types.Field.class) {
-                // gets the sql type constraints of each field
-                // fixme is "this" ok?
+            Class<?> fieldType = field.getType();
+
+            // check if field type is field or one of it's son
+
+            if (database.types.Field.class.isAssignableFrom(fieldType)) {
+                // todo is this ok?
                 database.types.Field sqlField = (database.types.Field) field.get(this);
                 String sqlType = sqlField.getSqlType();
-                System.out.println("SQL Type: " + sqlType);
+
+                if (fieldType == database.types.keys.PrimaryKey.class) {
+                    primaryKeys.append(field.getName()).append(",");
+                } else if (fieldType == database.types.keys.ForeignKey.class) {
+                    // todo
+                    ForeignKey foreignKey = (ForeignKey) field.get(this);
+
+                    foreignKey.referencedPrimaryKey();
+                    // foreignKeys.append(field.getName()).append(", ");
+                }
+                // gets the sql type constraints of each field
+
+                //System.out.println("SQL Type: " + sqlType);
 
                 // gets the constraints of each field
                 Constraint[] constraints = sqlField.getConstraints();
@@ -56,17 +71,24 @@ public class Entity {
                 index++;
             }
 
+
             field.setAccessible(false);
         }
-        System.out.println("Final string " + "CREATE TABLE IF NOT EXISTS " + className + " (" + attributes + ");");
+        // removes the last comma in a bad way
+        // todo maybe change this?
+        if (primaryKeys.toString().endsWith(",")){
+            primaryKeys = new StringBuilder(primaryKeys.substring(0, primaryKeys.length() - 1));
+        }
+        System.out.println("Final string " + "CREATE TABLE IF NOT EXISTS " + className + " (" + attributes + " PRIMARY KEY(" + primaryKeys  +  "));");
 
         // Creates the table in the database
         // Ignores the output
-       // DbConnection.executeQuery("CREATE TABLE IF NOT EXISTS " + className + " (" + attributes + ");");
+        // DbConnection.executeQuery("CREATE TABLE IF NOT EXISTS " + className + " (" + attributes + ");");
     }
 
 
-    // TODO IF auto increment, it does not have to be in the insert
+    // TODO IF auto increment, it does not have to be in the inserted
+
     /**
      * Updates an entity in the database
      */
@@ -83,6 +105,10 @@ public class Entity {
      * Deletes an entity from the database
      */
     public void delete() {
+    }
+
+    public static QueryBuilder selectBy() {
+        return new QueryBuilder();
     }
 
 

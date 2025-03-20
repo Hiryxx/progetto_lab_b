@@ -8,6 +8,8 @@ public class Main {
 
         user.create();
 
+        //User.selectBy().build().execute()
+
         //
     }
 }
