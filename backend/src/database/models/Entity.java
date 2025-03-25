@@ -2,15 +2,22 @@ package database.models;
 
 import database.types.Constraint;
 import database.types.keys.ForeignKey;
+import database.types.keys.PrimaryKey;
 import database.types.query.QueryBuilder;
 
 import java.lang.reflect.Field;
 import java.sql.SQLException;
+import java.util.UUID;
 
 /**
  * Represents an entity in the database
  */
 public abstract class Entity {
+
+
+    // Random uuid of 36 characters
+    private static PrimaryKey<String> uuid = new PrimaryKey<>("id", UUID.randomUUID().toString(), "CHAR(36)", new Constraint[]{Constraint.AUTO_INCREMENT});
+
 
     /**
      * Creates a new entity in the database
@@ -109,6 +116,10 @@ public abstract class Entity {
 
     public static QueryBuilder selectBy() {
         return new QueryBuilder();
+    }
+
+    public static PrimaryKey<String> getPrimaryKey() {
+        return uuid;
     }
 
 
