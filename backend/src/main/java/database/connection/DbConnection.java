@@ -8,8 +8,12 @@ import java.sql.SQLException;
 // TODO Rename class
 public class DbConnection {
 
-
-    public static void executeQuery(String query)throws SQLException{
+    /***
+     * Executes a query that doesn't return a result set
+     * @param query query to be executed
+     * @throws SQLException General SQL exception
+     */
+    public static void executeUpdate(String query) throws SQLException {
         Connection conn = null;
         try {
             // Gets a connection from the pool
@@ -27,7 +31,13 @@ public class DbConnection {
         }
     }
 
-    public static ResultSet executeQueryWithResult(String query) throws SQLException {
+    /***
+     * Executes a query that returns a result set
+     * @param query query to be executed
+     * @return Result of the query
+     * @throws SQLException General SQL exception
+     */
+    public static ResultSet executeQuery(String query) throws SQLException {
         Connection conn = null;
         ResultSet result;
         try {

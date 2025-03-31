@@ -86,7 +86,7 @@ public abstract class Entity {
 
         // Creates the table in the database
         // Ignores the output
-        DbConnection.executeQuery(createQuery);
+        DbConnection.executeUpdate(createQuery);
     }
 
 
