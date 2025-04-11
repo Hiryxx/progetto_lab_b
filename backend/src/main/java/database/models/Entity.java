@@ -20,10 +20,11 @@ public abstract class Entity {
     private static PrimaryKey<String> uuid = new PrimaryKey<>("uuid", UUID.randomUUID().toString(), "CHAR(36)", new Constraint[]{Constraint.AUTO_INCREMENT});
 
 
+    // TODO  this method should be removed from here and put in a specifi class that has an init method with this args: Class<? extends Entity> class...
     /**
      * Creates a new entity in the database
      */
-    public void create() throws SQLException, IllegalAccessException {
+    public static void init() throws SQLException, IllegalAccessException {
         // Gets the class name
         String className = this.getClass().getSimpleName().toLowerCase() + "s";
 
@@ -80,12 +81,11 @@ public abstract class Entity {
 
             field.setAccessible(false);
         }
-        // todo put this ina a variable
+        // todo put this in a variable
         String createQuery = "CREATE TABLE IF NOT EXISTS " + className + " (uuid CHAR(36) PRIMARY KEY, " + attributes + ");";
         System.out.println("Final query " + createQuery);
 
         // Creates the table in the database
-        // Ignores the output
         DbConnection.executeUpdate(createQuery);
     }
 
@@ -93,9 +93,46 @@ public abstract class Entity {
     // TODO IF auto increment, it does not have to be in the inserted
 
     /**
-     * Updates an entity in the database
+     * Inserts an entity into the database
      */
-    public void insert() {
+    public void create() throws IllegalAccessException, SQLException {
+        String className = this.getClass().getSimpleName().toLowerCase() + "s";
+
+        // fills the query and executes it
+
+        Field[] attributesField = getClass().getDeclaredFields();
+
+        StringBuilder attributes = new StringBuilder();
+        StringBuilder values = new StringBuilder();
+
+        int index = 0;
+
+        for (Field field : attributesField) {
+            field.setAccessible(true);
+            Class<?> fieldType = field.getType();
+
+            // check if field type is field or one of it's son
+            if (database.types.Field.class.isAssignableFrom(fieldType)) {
+                database.types.Field sqlField = (database.types.Field) field.get(this);
+                String sqlType = sqlField.getSqlType();
+                attributes.append(field.getName());
+                values.append(sqlField.getValue());
+
+                // does not add a comma to the last attribute (can also be done with removing the last comma)
+                if (index < attributesField.length - 1)
+                    values.append(", ");
+                index++;
+            }
+            field.setAccessible(false);
+        }
+
+        String query =  "INSERT INTO " + className + " (uuid, " + attributes + ") VALUES ('" + uuid.getValue() + "'," + values + ");";
+
+        System.out.println("Insertion query " + query);
+
+        // Inserts the entity into the database
+        DbConnection.executeUpdate(query);
+
     }
 
     /**

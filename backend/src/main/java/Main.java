@@ -8,7 +8,7 @@ public class Main {
     public static void main(String[] args) throws SQLException, IllegalAccessException {
         User user = new User("John Doe", "john@gmail.com", "password");
 
-        user.create();
+        User.init();
 
 
         //User.selectBy().build().execute()

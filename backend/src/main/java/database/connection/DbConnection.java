@@ -5,7 +5,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-// TODO Rename class
+// TODO Rename class. DBSession? DBConnectionManager? DBService?
 public class DbConnection {
 
     /***

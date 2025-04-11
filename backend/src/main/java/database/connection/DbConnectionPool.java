@@ -15,6 +15,7 @@ public class DbConnectionPool {
 
         String currentDir = System.getProperty("user.dir");
 
+        // todo make an example .env file so it is a fallback
         Dotenv dotenv = Dotenv.configure()
                 .directory(currentDir + "/backend/")
                 .filename(".env")
