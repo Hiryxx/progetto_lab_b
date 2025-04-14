@@ -1,4 +1,5 @@
 import database.models.User;
+import utils.DbUtil;
 
 import java.sql.SQLException;
 import java.util.UUID;
@@ -7,8 +8,10 @@ import java.util.UUID;
 public class Main {
     public static void main(String[] args) throws SQLException, IllegalAccessException {
         User user = new User("John Doe", "john@gmail.com", "password");
+        // Need to pass an instance unless we have static attributes
+        DbUtil.init(user);
 
-        User.init();
+        user.create();
 
 
         //User.selectBy().build().execute()
