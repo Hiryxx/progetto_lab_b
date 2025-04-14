@@ -2,7 +2,6 @@ import database.models.User;
 import utils.DbUtil;
 
 import java.sql.SQLException;
-import java.util.UUID;
 
 
 public class Main {

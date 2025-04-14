@@ -46,9 +46,10 @@ public class DbUtil {
                 String sqlType = sqlField.getSqlType();
 
                 if (fieldType == database.types.keys.ForeignKey.class) {
-                    // todo
-                    ForeignKey foreignKey = (ForeignKey) field.get(entity);
+                    // TODO Try to implement foreign key, and then refactor this
 
+                    //todo i need to know the class and the attributes that are connected with the fk
+                    ForeignKey foreignKey = (ForeignKey) field.get(entity);
                     foreignKey.referencedPrimaryKey();
                     // foreignKeys.append(field.getName()).append(", ");
                 }
