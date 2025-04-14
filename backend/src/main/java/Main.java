@@ -13,7 +13,9 @@ public class Main {
         user.create();
 
 
-        //User.selectBy().build().execute()
+        User.selectBy("name")
+                .where("name = 'John Doe'")
+                .execute();
 
         //
     }

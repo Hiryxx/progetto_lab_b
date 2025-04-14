@@ -16,11 +16,6 @@ import java.util.UUID;
  */
 public abstract class Entity {
 
-    // TODO FOR THE FUTURE: if i dont like this uuid i can use polymorphism to get all the primary keys and foreign keys...
-    // TODO i am afraid and almost sure that since this is a static field it will be the same for all entities
-    // Random uuid of 36 characters
-    private static PrimaryKey<String> uuid = new PrimaryKey<>("uuid", UUID.randomUUID().toString(), "CHAR(36)", new Constraint[]{Constraint.AUTO_INCREMENT});
-
     /**
      * Inserts an entity into the database
      */
@@ -43,12 +38,23 @@ public abstract class Entity {
     public void delete() {
     }
 
-    public static QueryBuilder selectBy() {
-        return new QueryBuilder();
+    public static QueryBuilder selectBy(String queryParameter) {
+        return new QueryBuilder(queryParameter, getTableName());
+    }
+    /***
+     * This method should be overridden in subclasses to return the primary keys of the entity.
+     * It is used to get the primary keys of the entity.
+     */
+    public static PrimaryKey<?>[] getPrimaryKeys() {
+        throw new UnsupportedOperationException("This method should be overridden in subclasses");
     }
 
-    public static PrimaryKey<String> getPrimaryKey() {
-        return uuid;
+    public static String getTableName() {
+        throw new UnsupportedOperationException("This method should be overridden in subclasses");
+    }
+
+    public String tableName() {
+        throw new UnsupportedOperationException("This method should be overridden in subclasses");
     }
 
 

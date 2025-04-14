@@ -13,15 +13,20 @@ import database.types.Field;
  */
 
 public class ForeignKey<T, ReferencedEntity extends Entity> extends Field<T> {
+    PrimaryKey<?> refrerencedPrimaryKey;
 
-    public ForeignKey(String name, T value, String sqlType, Constraint[] constraints) {
+    public ForeignKey(String name, T value, String sqlType, Constraint[] constraints, PrimaryKey<?> refrerencedPrimaryKey) {
         super(name, value, sqlType, constraints);
+        this.refrerencedPrimaryKey = refrerencedPrimaryKey;
     }
 
-    // todo do i need a value of that class or this is ok?
-    public PrimaryKey<String> referencedPrimaryKey() {
-        return ReferencedEntity.getPrimaryKey();
+    // maybe I just need the name of the field
+    public PrimaryKey<?> referencedPrimaryKey() {
+        return refrerencedPrimaryKey;
     }
 
-    // todo maybe i dont even need this because i just need to know what is the class of the referenced entity because i am assuming that the pk is always id
+    public String getReferencedEntityClassName() {
+        return ReferencedEntity.getTableName();
+    }
+
 }

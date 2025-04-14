@@ -4,6 +4,7 @@ import database.connection.DbConnection;
 import database.models.Entity;
 import database.types.Constraint;
 import database.types.keys.ForeignKey;
+import database.types.keys.PrimaryKey;
 
 import java.lang.reflect.Field;
 import java.sql.SQLException;
@@ -16,9 +17,9 @@ public class DbUtil {
         DbConnection.executeUpdate(createQuery);
     }
 
-    private static String createQuery(Entity entity) throws  IllegalAccessException {
+    private static String createQuery(Entity entity) throws IllegalAccessException {
         // Gets the class name
-        String className = entity.getClass().getSimpleName().toLowerCase() + "s";
+        String className = entity.tableName();
 
         // Gets the attributes of the class
         Field[] attributesField = entity.getClass().getDeclaredFields();
@@ -30,9 +31,12 @@ public class DbUtil {
         int index = 0;
 
         //StringBuilder primaryKeys = new StringBuilder();
+        StringBuilder primaryKeys = new StringBuilder();
         StringBuilder foreignKeys = new StringBuilder();
 
-        // TODO fields here would be in another class that holds stuff like primary key, unique, not null, etc
+        primaryKeys.append("PRIMARY KEY (");
+
+        // TODO For now it is ok. I need to check if foreign key works and then do unique key
         for (Field field : attributesField) {
             System.out.println(field.getName());
             field.setAccessible(true);
@@ -41,17 +45,20 @@ public class DbUtil {
             // check if field type is field or one of it's son
 
             if (database.types.Field.class.isAssignableFrom(fieldType)) {
-                // todo is this ok?
                 database.types.Field sqlField = (database.types.Field) field.get(entity);
                 String sqlType = sqlField.getSqlType();
 
                 if (fieldType == database.types.keys.ForeignKey.class) {
-                    // TODO Try to implement foreign key, and then refactor this
-
-                    //todo i need to know the class and the attributes that are connected with the fk
-                    ForeignKey foreignKey = (ForeignKey) field.get(entity);
-                    foreignKey.referencedPrimaryKey();
-                    // foreignKeys.append(field.getName()).append(", ");
+                    ForeignKey<?, ?> foreignKey = (ForeignKey<?, ?>) field.get(entity);
+                    PrimaryKey<?> pk = foreignKey.referencedPrimaryKey();
+                    foreignKeys.append("FOREIGN KEY(").append(foreignKey.getName()).append(") REFERENCES ").append(foreignKey.getReferencedEntityClassName()).append("(");
+                    foreignKeys.append(pk.getName()).append(") ");
+                    foreignKeys.append("ON DELETE CASCADE").append(" ").append("ON UPDATE CASCADE");
+                } else if (fieldType == database.types.keys.PrimaryKey.class) {
+                    PrimaryKey<?> pk = (PrimaryKey<?>) field.get(entity);
+                    primaryKeys.append(pk.getName()).append(", ");
+                } else if (fieldType == database.types.keys.UniqueKey.class) {
+                    // TODO add unique key
                 }
                 // gets the sql type constraints of each field
 
@@ -73,11 +80,16 @@ public class DbUtil {
 
             field.setAccessible(false);
         }
+        // removes the last comma from the primary keys
+        if (primaryKeys.length() > 0) {
+            primaryKeys.delete(primaryKeys.length() - 2, primaryKeys.length());
+        }
+        primaryKeys.append(")");
         // Creates the table in the database
-        return "CREATE TABLE IF NOT EXISTS " + className + " (uuid CHAR(36) PRIMARY KEY, " + attributes + ");";
+        return "CREATE TABLE IF NOT EXISTS " + className + " ("  + attributes + ") " + primaryKeys + " " + foreignKeys + ";";
     }
 
-    public static String insertQuery(Entity entity)throws  IllegalAccessException{
+    public static String insertQuery(Entity entity) throws IllegalAccessException {
         String className = entity.getClass().getSimpleName().toLowerCase() + "s";
 
         // fills the query and executes it
@@ -107,7 +119,7 @@ public class DbUtil {
             }
             field.setAccessible(false);
         }
-        // TODO AM i sure that i am getting the uuid correctly?
-        return "INSERT INTO " + className + " (uuid, " + attributes + ") VALUES ('" + Entity.getPrimaryKey() + "'," + values + ");";
+        // TODO Check that is valid
+        return "INSERT INTO " + className + " (" + attributes + ") VALUES (" + values + ");";
     }
 }
