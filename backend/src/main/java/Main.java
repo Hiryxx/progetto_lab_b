@@ -23,6 +23,14 @@ public class Main {
         for (var row : res) {
             System.out.println(row);
         }
+      /*
+        Query q = User.selectBy("*")
+                .where("name='John Doe'")
+                .orderBy("name")
+                .build();
+
+        System.out.println(q.getInnerQuery());
+         */
         //
     }
 }
