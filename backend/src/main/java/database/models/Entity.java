@@ -1,10 +1,8 @@
 package database.models;
 
 import database.connection.DbConnection;
-import database.types.Constraint;
-import database.types.keys.ForeignKey;
 import database.types.keys.PrimaryKey;
-import database.types.query.QueryBuilder;
+import database.types.query.SelectBuilder;
 import utils.DbUtil;
 
 import java.lang.reflect.Field;
@@ -38,8 +36,8 @@ public abstract class Entity {
     public void delete() {
     }
 
-    public static QueryBuilder selectBy(String queryParameter) {
-        return new QueryBuilder(queryParameter, getTableName());
+    public static SelectBuilder selectBy(String queryParameter) {
+        return new SelectBuilder(queryParameter, getTableName());
     }
     /***
      * This method should be overridden in subclasses to return the primary keys of the entity.

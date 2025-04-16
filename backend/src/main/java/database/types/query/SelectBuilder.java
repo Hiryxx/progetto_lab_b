@@ -1,24 +1,23 @@
 package database.types.query;
 
-// todo change names
-public class QueryBuilder {
+public class SelectBuilder {
     private String query = "";
     private String queryParameters;
     private String fromTable;
     private String whereClause = "";
 
-    public QueryBuilder(String queryParameters, String fromTable) {
+    public SelectBuilder(String queryParameters, String fromTable) {
         this.queryParameters = queryParameters;
         this.fromTable = fromTable;
     }
 
-    public Query execute() {
+    public Query build() {
         String query = "SELECT " + queryParameters + " FROM " + fromTable + whereClause;
         // check if ok with pattern
-        return new Query(query).execute();
+        return new Query(query);
     }
 
-    public QueryBuilder where(String clause) {
+    public SelectBuilder where(String clause) {
         whereClause = " WHERE " + clause;
         return this;
     }

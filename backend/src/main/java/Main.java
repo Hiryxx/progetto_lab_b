@@ -1,4 +1,5 @@
 import database.models.User;
+import database.types.query.Query;
 import utils.DbUtil;
 
 import java.sql.SQLException;
@@ -13,10 +14,16 @@ public class Main {
         user.create();
 
 
-        User.selectBy("name")
+        var res = User.selectBy("name")
                 .where("name = 'John Doe'")
+                .build()
                 .execute();
 
+        for (Query it = res; it.hasNext(); ) {
+            var r = it.next();
+
+
+        }
         //
     }
 }
