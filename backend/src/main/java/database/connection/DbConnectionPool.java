@@ -33,7 +33,7 @@ public class DbConnectionPool {
 
         String url = "jdbc:postgresql://" + host + ":" + port + "/" + dbName;
 
-        System.out.println(url);
+        // System.out.println(url);
 
         //System.out.println("Connecting to database: " + host + ":" + port + "/" + dbName);
         try {

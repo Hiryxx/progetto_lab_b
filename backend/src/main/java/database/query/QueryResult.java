@@ -19,6 +19,11 @@ public class QueryResult implements Iterable<ResultSet>, AutoCloseable {
         this.resultSet = resultSet;
     }
 
+    /**
+     * Returns the underlying ResultSet.
+     *
+     * @return the ResultSet
+     */
     @Override
     public Iterator<ResultSet> iterator() {
         if (closed) {
@@ -72,6 +77,11 @@ public class QueryResult implements Iterable<ResultSet>, AutoCloseable {
             }
         };
     }
+
+    /***
+     * Closes the connection, statement, and result set.
+     * @throws Exception
+     */
 
     @Override
     public void close() throws Exception {

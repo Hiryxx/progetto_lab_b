@@ -6,7 +6,6 @@ import java.sql.SQLException;
 
 public class Query {
     private String query;
-    private QueryResult queryResult;
 
     public Query(String query) {
         this.query = query;

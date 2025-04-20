@@ -19,7 +19,6 @@ public class DbUtil {
     }
 
     public static String initTable(Class<? extends Entity> entityClass) throws SQLException {
-        // Get table name from annotation or default to class name
         Table tableAnnotation = entityClass.getAnnotation(Table.class);
         String tableName = tableAnnotation != null && !tableAnnotation.name().isEmpty()
                 ? tableAnnotation.name()
@@ -29,7 +28,6 @@ public class DbUtil {
         StringBuilder primaryKeys = new StringBuilder();
         StringBuilder foreignKeys = new StringBuilder();
 
-        // Process fields with annotations
         for (Field field : entityClass.getDeclaredFields()) {
             Column column = field.getAnnotation(Column.class);
             if (column == null) continue; // Skip non-column fields
@@ -106,7 +104,6 @@ public class DbUtil {
     public static String insertQuery(Entity entity) throws IllegalAccessException {
         Class<?> entityClass = entity.getClass();
 
-        // Get table name from annotation or default to class name
         Table tableAnnotation = entityClass.getAnnotation(Table.class);
         String tableName = tableAnnotation != null && !tableAnnotation.name().isEmpty()
                 ? tableAnnotation.name()
@@ -126,7 +123,6 @@ public class DbUtil {
             Object value = field.get(entity);
             if (value == null) continue; // Skip null values for optional fields
 
-            // Get column name from annotation or default to field name
             String columnName = !column.name().isEmpty() ? column.name() : field.getName();
 
             // Add column to the list
@@ -144,7 +140,6 @@ public class DbUtil {
             field.setAccessible(false);
         }
 
-        // Build the query
         String query = "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + placeholders + ")";
 
         // todo here i will need to replace the placeholders with the actual values with statements
@@ -174,7 +169,6 @@ public class DbUtil {
         List<String> values = new ArrayList<>();
         List<String> keyValues = new ArrayList<>();
 
-        // Process annotated fields
         Field[] fields = entityClass.getDeclaredFields();
         for (Field field : fields) {
             Column column = field.getAnnotation(Column.class);
