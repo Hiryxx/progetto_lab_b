@@ -1,125 +1,309 @@
 package utils;
 
+import database.annotations.Column;
+import database.annotations.Id;
+import database.annotations.Table;
+import database.annotations.Unique;
 import database.connection.DbConnection;
 import database.models.Entity;
-import database.types.Constraint;
-import database.types.keys.ForeignKey;
-import database.types.keys.PrimaryKey;
 
 import java.lang.reflect.Field;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DbUtil {
 
-    public static void init(Entity fieldClass) throws SQLException, IllegalAccessException {
-        String createQuery = DbUtil.createQuery(fieldClass);
+    public static String getTableName(Class<?> entityClass) {
+        Table tableAnnotation = entityClass.getAnnotation(Table.class);
+        return tableAnnotation != null && !tableAnnotation.name().isEmpty()
+                ? tableAnnotation.name()
+                : entityClass.getSimpleName() + "s";
+    }
+
+    public static String initTable(Class<? extends Entity> entityClass) throws SQLException {
+        // Get table name from annotation or default to class name
+        Table tableAnnotation = entityClass.getAnnotation(Table.class);
+        String tableName = tableAnnotation != null && !tableAnnotation.name().isEmpty()
+                ? tableAnnotation.name()
+                : entityClass.getSimpleName() + "s";
+
+        StringBuilder query = new StringBuilder("CREATE TABLE IF NOT EXISTS " + tableName + " (");
+        StringBuilder primaryKeys = new StringBuilder();
+
+        // Process fields with annotations
+        for (Field field : entityClass.getDeclaredFields()) {
+            Column column = field.getAnnotation(Column.class);
+            if (column == null) continue; // Skip non-column fields
+
+            String columnName = !column.name().isEmpty() ? column.name() : field.getName();
+            query.append(columnName).append(" ").append(column.type());
+
+            if (!column.nullable()) {
+                query.append(" NOT NULL");
+            }
+
+            if (field.isAnnotationPresent(Id.class)) {
+                if (primaryKeys.length() > 0) primaryKeys.append(", ");
+                primaryKeys.append(columnName);
+            }
+
+            if (field.isAnnotationPresent(Unique.class)) {
+                query.append(" UNIQUE");
+            }
+
+            query.append(", ");
+        }
+
+        // Add primary key constraint
+        if (primaryKeys.length() > 0) {
+            query.append("PRIMARY KEY (").append(primaryKeys).append(")");
+        } else {
+            // Remove trailing comma
+            query.setLength(query.length() - 2);
+        }
+
+        query.append(")");
+
+        // Execute the query
+        return query.toString();
+    }
+
+
+    /**
+     * Generates an INSERT query for an entity
+     * @param entity The entity to insert
+     * @return SQL INSERT query
+     * @throws IllegalAccessException If field access fails
+     */
+    public static String insertQuery(Entity entity) throws IllegalAccessException {
+        Class<?> entityClass = entity.getClass();
+
+        // Get table name from annotation or default to class name
+        Table tableAnnotation = entityClass.getAnnotation(Table.class);
+        String tableName = tableAnnotation != null && !tableAnnotation.name().isEmpty()
+                ? tableAnnotation.name()
+                : entityClass.getSimpleName() + "s";
+
+        StringBuilder columns = new StringBuilder();
+        StringBuilder placeholders = new StringBuilder();
+        List<String> values = new ArrayList<>();
+
+        // Process annotated fields
+        Field[] fields = entityClass.getDeclaredFields();
+        for (Field field : fields) {
+            Column column = field.getAnnotation(Column.class);
+            if (column == null) continue; // Skip non-column fields
+
+            field.setAccessible(true);
+            Object value = field.get(entity);
+            if (value == null) continue; // Skip null values for optional fields
+
+            // Get column name from annotation or default to field name
+            String columnName = !column.name().isEmpty() ? column.name() : field.getName();
+
+            // Add column to the list
+            if (columns.length() > 0) {
+                columns.append(", ");
+                placeholders.append(", ");
+            }
+            columns.append(columnName);
+
+            // Format value based on type
+            String formattedValue = formatValue(value);
+            values.add(formattedValue);
+            placeholders.append("?");
+
+            field.setAccessible(false);
+        }
+
+        // Build the query
+        String query = "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + placeholders + ")";
+
+        // todo here i will need to replace the placeholders with the actual values with statements
+        for (String value : values) {
+            query = query.replaceFirst("\\?", value);
+        }
+
+        return query;
+    }
+
+    /**
+     * Generates an UPDATE query for an entity
+     * @param entity The entity to update
+     * @return SQL UPDATE query
+     * @throws IllegalAccessException If field access fails
+     */
+    public static String updateQuery(Entity entity) throws IllegalAccessException {
+        Class<?> entityClass = entity.getClass();
+
+        Table tableAnnotation = entityClass.getAnnotation(Table.class);
+        String tableName = tableAnnotation != null && !tableAnnotation.name().isEmpty()
+                ? tableAnnotation.name()
+                : entityClass.getSimpleName() + "s";
+
+        StringBuilder setClause = new StringBuilder();
+        StringBuilder whereClause = new StringBuilder();
+        List<String> values = new ArrayList<>();
+        List<String> keyValues = new ArrayList<>();
+
+        // Process annotated fields
+        Field[] fields = entityClass.getDeclaredFields();
+        for (Field field : fields) {
+            Column column = field.getAnnotation(Column.class);
+            if (column == null) continue; // Skip non-column fields
+
+            field.setAccessible(true);
+            Object value = field.get(entity);
+            if (value == null) continue; // Skip null values
+
+            String columnName = !column.name().isEmpty() ? column.name() : field.getName();
+
+            boolean isPrimaryKey = field.isAnnotationPresent(Id.class);
+
+            if (isPrimaryKey) {
+                if (whereClause.length() > 0) {
+                    whereClause.append(" AND ");
+                }
+                whereClause.append(columnName).append(" = ?");
+                keyValues.add(formatValue(value));
+            } else {
+                if (setClause.length() > 0) {
+                    setClause.append(", ");
+                }
+                setClause.append(columnName).append(" = ?");
+                values.add(formatValue(value));
+            }
+
+            field.setAccessible(false);
+        }
+
+        if (whereClause.length() == 0) {
+            throw new IllegalArgumentException("Cannot update entity without primary key");
+        }
+
+        String query = "UPDATE " + tableName + " SET " + setClause + " WHERE " + whereClause;
+
+        for (String value : values) {
+            query = query.replaceFirst("\\?", value);
+        }
+
+        for (String value : keyValues) {
+            query = query.replaceFirst("\\?", value);
+        }
+
+        return query;
+    }
+
+    /**
+     * Generates a DELETE query for an entity
+     * @param entity The entity to delete
+     * @return SQL DELETE query
+     * @throws IllegalAccessException If field access fails
+     */
+    public static String deleteQuery(Entity entity) throws IllegalAccessException {
+        Class<?> entityClass = entity.getClass();
+
+        Table tableAnnotation = entityClass.getAnnotation(Table.class);
+        String tableName = tableAnnotation != null && !tableAnnotation.name().isEmpty()
+                ? tableAnnotation.name()
+                : entityClass.getSimpleName() + "s";
+
+        StringBuilder whereClause = new StringBuilder();
+        List<String> keyValues = new ArrayList<>();
+
+        Field[] fields = entityClass.getDeclaredFields();
+        for (Field field : fields) {
+            if (field.isAnnotationPresent(Id.class)) {
+                field.setAccessible(true);
+                Object value = field.get(entity);
+
+                Column column = field.getAnnotation(Column.class);
+                String columnName = (column != null && !column.name().isEmpty())
+                        ? column.name()
+                        : field.getName();
+
+                if (whereClause.length() > 0) {
+                    whereClause.append(" AND ");
+                }
+                whereClause.append(columnName).append(" = ?");
+                keyValues.add(formatValue(value));
+
+                field.setAccessible(false);
+            }
+        }
+
+        if (whereClause.length() == 0) {
+            throw new IllegalArgumentException("Cannot delete entity without primary key");
+        }
+
+        String query = "DELETE FROM " + tableName + " WHERE " + whereClause;
+
+        for (String value : keyValues) {
+            query = query.replaceFirst("\\?", value);
+        }
+
+        return query;
+    }
+
+    /**
+     * Helper method to format values for SQL based on their Java type
+     * @param value The value to format
+     * @return Formatted value for SQL
+     */
+    private static String formatValue(Object value) {
+        return switch (value) {
+            case null -> "NULL";
+            case String s -> "'" + s.replace("'", "''") + "'";
+            case java.util.Date date -> "'" + new java.sql.Timestamp(date.getTime()) + "'";
+            case Boolean b -> b ? "1" : "0";
+            default -> value.toString();
+        };
+    }
+
+    /**
+     * Initializes the database table for the given entity class
+     * @param entityClass The entity class to initialize
+     * @throws SQLException If database operation fails
+     * @throws IllegalAccessException If field access fails
+     */
+
+    public static void init(Class<? extends Entity> entityClass) throws SQLException, IllegalAccessException {
+        String createQuery = DbUtil.initTable(entityClass);
         System.out.println("Final query " + createQuery);
         DbConnection.executeUpdate(createQuery);
     }
 
-    private static String createQuery(Entity entity) throws IllegalAccessException {
-        // Gets the class name
-        String className = entity.tableName();
-
-        // Gets the attributes of the class
-        Field[] attributesField = entity.getClass().getDeclaredFields();
-
-        StringBuilder attributes = new StringBuilder();
-
-        System.out.println("Creating table for " + className);
-
-        int index = 0;
-
-        //StringBuilder primaryKeys = new StringBuilder();
-        StringBuilder primaryKeys = new StringBuilder();
-        StringBuilder foreignKeys = new StringBuilder();
-
-        primaryKeys.append("PRIMARY KEY (");
-
-        // TODO For now it is ok. I need to check if foreign key works and then do unique key
-        for (Field field : attributesField) {
-            System.out.println(field.getName());
-            field.setAccessible(true);
-            Class<?> fieldType = field.getType();
-
-            // check if field type is field or one of it's son
-
-            if (database.types.Field.class.isAssignableFrom(fieldType)) {
-                database.types.Field sqlField = (database.types.Field) field.get(entity);
-                String sqlType = sqlField.getSqlType();
-
-                if (fieldType == database.types.keys.ForeignKey.class) {
-                    ForeignKey<?, ?> foreignKey = (ForeignKey<?, ?>) field.get(entity);
-                    PrimaryKey<?> pk = foreignKey.referencedPrimaryKey();
-                    foreignKeys.append("FOREIGN KEY(").append(foreignKey.getName()).append(") REFERENCES ").append(foreignKey.getReferencedEntityClassName()).append("(");
-                    foreignKeys.append(pk.getName()).append(") ");
-                    foreignKeys.append("ON DELETE CASCADE").append(" ").append("ON UPDATE CASCADE");
-                } else if (fieldType == database.types.keys.PrimaryKey.class) {
-                    PrimaryKey<?> pk = (PrimaryKey<?>) field.get(entity);
-                    primaryKeys.append(pk.getName()).append(", ");
-                } else if (fieldType == database.types.keys.UniqueKey.class) {
-                    // TODO add unique key
-                }
-                // gets the sql type constraints of each field
-
-                //System.out.println("SQL Type: " + sqlType);
-
-                // gets the constraints of each field
-                Constraint[] constraints = sqlField.getConstraints();
-
-                attributes.append(field.getName()).append(" ").append(sqlType);
-                for (Constraint constraint : constraints) {
-                    attributes.append(" ").append(constraint.toString());
-                }
-
-                // does not add a comma to the last attribute (can also be done with removing the last comma)
-                if (index < attributesField.length - 1)
-                    attributes.append(", ");
-                index++;
-            }
-
-            field.setAccessible(false);
-        }
-        // removes the last comma from the primary keys
-        if (primaryKeys.length() > 0) {
-            primaryKeys.delete(primaryKeys.length() - 2, primaryKeys.length());
-        }
-        primaryKeys.append(")");
-        // Creates the table in the database
-        return "CREATE TABLE IF NOT EXISTS " + className + " ("  + attributes + ") " + primaryKeys + " " + foreignKeys + ";";
+    /**
+     * Executes an entity's INSERT query
+     * @param entity The entity to insert
+     * @throws IllegalAccessException If field access fails
+     * @throws SQLException If database operation fails
+     */
+    public static void insert(Entity entity) throws IllegalAccessException, SQLException {
+        String query = insertQuery(entity);
+        DbConnection.executeUpdate(query);
     }
 
-    public static String insertQuery(Entity entity) throws IllegalAccessException {
-        String className = entity.getClass().getSimpleName().toLowerCase() + "s";
+    /**
+     * Executes an entity's UPDATE query
+     * @param entity The entity to update
+     * @throws IllegalAccessException If field access fails
+     * @throws SQLException If database operation fails
+     */
+    public static void update(Entity entity) throws IllegalAccessException, SQLException {
+        String query = updateQuery(entity);
+        DbConnection.executeUpdate(query);
+    }
 
-        // fills the query and executes it
-
-        Field[] attributesField = entity.getClass().getDeclaredFields();
-
-        StringBuilder attributes = new StringBuilder();
-        StringBuilder values = new StringBuilder();
-
-        int index = 0;
-
-        for (Field field : attributesField) {
-            field.setAccessible(true);
-            Class<?> fieldType = field.getType();
-
-            // check if field type is field or one of it's son
-            if (database.types.Field.class.isAssignableFrom(fieldType)) {
-                database.types.Field sqlField = (database.types.Field) field.get(entity);
-                String sqlType = sqlField.getSqlType();
-                attributes.append(field.getName());
-                values.append(sqlField.getValue());
-
-                // does not add a comma to the last attribute (can also be done with removing the last comma)
-                if (index < attributesField.length - 1)
-                    values.append(", ");
-                index++;
-            }
-            field.setAccessible(false);
-        }
-        // TODO Check that is valid
-        return "INSERT INTO " + className + " (" + attributes + ") VALUES (" + values + ");";
+    /**
+     * Executes an entity's DELETE query
+     * @param entity The entity to delete
+     * @throws IllegalAccessException If field access fails
+     * @throws SQLException If database operation fails
+     */
+    public static void delete(Entity entity) throws IllegalAccessException, SQLException {
+        String query = deleteQuery(entity);
+        DbConnection.executeUpdate(query);
     }
 }

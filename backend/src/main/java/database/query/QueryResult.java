@@ -1,4 +1,4 @@
-package database.types.query;
+package database.query;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

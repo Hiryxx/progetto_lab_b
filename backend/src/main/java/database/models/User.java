@@ -1,36 +1,38 @@
 package database.models;
 
-import database.types.Constraint;
-import database.types.Field;
-import database.types.keys.ForeignKey;
-import database.types.keys.PrimaryKey;
-import database.types.keys.UniqueKey;
+import database.annotations.Column;
+import database.annotations.Id;
+import database.annotations.Table;
+import database.annotations.Unique;
+import utils.DbUtil;
 
+@Table(name = "Users")
 public class User extends Entity {
-    private static PrimaryKey<String> cf = new PrimaryKey<>("cf", null,"CHAR(36)", new Constraint[]{Constraint.AUTO_INCREMENT});
-    private Field<String> name;
-    private Field<String> email;
-    private Field<String> password;
-    //private ForeignKey<String, User> role;
+    @Id
+    @Column(type = "CHAR(36)")
+    private String cf;
 
+    @Column(type = "VARCHAR(255)", nullable = false)
+    private String name;
 
-    public User(String name, String email, String password) {
-        this.name = new Field<>("name", name, "VARCHAR(255)", new Constraint[]{Constraint.NOT_NULL});
-        this.email = new UniqueKey<>("email", email, "VARCHAR(255)", new Constraint[]{Constraint.NOT_NULL});
-        this.password = new Field<>("password", password, "VARCHAR(255)", new Constraint[]{Constraint.NOT_NULL});
-        var prova = new ForeignKey<>("role", null, "CHAR(36)", new Constraint[]{Constraint.NOT_NULL}, User.cf);
-    }
+    @Column(type = "VARCHAR(255)", nullable = false)
+    @Unique
+    private String email;
 
+    @Column(type = "VARCHAR(255)", nullable = false)
+    private String password;
 
-    public static PrimaryKey<?>[] getPrimaryKeys() {
-        return new PrimaryKey[]{cf};
+    public User(String cf, String name, String email, String password) {
+        this.cf = cf;
+        this.name = name;
+        this.email = email;
+        this.password = password;
+
     }
 
     public static String getTableName() {
-        return "Users";
+        return DbUtil.getTableName(User.class);
     }
 
-    public String tableName() {
-        return "Users";
-    }
+
 }

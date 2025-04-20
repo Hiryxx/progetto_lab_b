@@ -1,10 +1,8 @@
-package database.types.query;
+package database.query;
 
 import database.connection.DbConnection;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Iterator;
 
 public class Query {
     private String query;

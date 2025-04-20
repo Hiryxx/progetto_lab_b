@@ -1,13 +1,10 @@
 package database.models;
 
 import database.connection.DbConnection;
-import database.types.keys.PrimaryKey;
-import database.types.query.SelectBuilder;
+import database.query.SelectBuilder;
 import utils.DbUtil;
 
-import java.lang.reflect.Field;
 import java.sql.SQLException;
-import java.util.UUID;
 
 /**
  * Represents an entity in the database
@@ -39,21 +36,12 @@ public abstract class Entity {
     public static SelectBuilder selectBy(String queryParameter) {
         return new SelectBuilder(queryParameter, getTableName());
     }
-    /***
-     * This method should be overridden in subclasses to return the primary keys of the entity.
-     * It is used to get the primary keys of the entity.
+
+    /**
+     * Returns the table name of the entity
      */
-    public static PrimaryKey<?>[] getPrimaryKeys() {
-        throw new UnsupportedOperationException("This method should be overridden in subclasses");
-    }
 
     public static String getTableName() {
         throw new UnsupportedOperationException("This method should be overridden in subclasses");
     }
-
-    public String tableName() {
-        throw new UnsupportedOperationException("This method should be overridden in subclasses");
-    }
-
-
 }

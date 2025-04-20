@@ -1,7 +1,6 @@
-package database.types.query;
+package database.query;
 
 public class SelectBuilder {
-    private String query = "";
     private String queryParameters;
     private String fromTable;
     private String whereClause = "";
