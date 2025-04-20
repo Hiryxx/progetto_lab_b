@@ -1,4 +1,5 @@
 import database.models.User;
+import database.query.QueryResult;
 import utils.DbUtil;
 
 import java.sql.SQLException;
@@ -6,13 +7,16 @@ import java.sql.SQLException;
 
 public class Main {
     public static void main(String[] args) throws SQLException, IllegalAccessException {
-       //User user = new User();
-        // Need to pass an instance unless we have static attributes
+          /*
         DbUtil.init(User.class);
 
-        //user.create();
+        User user = new User ("a", "b", "c", "d");
 
-  /*
+        user.create();
+
+
+
+
         QueryResult res = User.selectBy("name")
                 .where("name='John Doe'")
                 .build()
@@ -29,6 +33,12 @@ public class Main {
 
         System.out.println(q.getInnerQuery());
          */
-        //
+
+        // todo fix name
+        var res = User.selectBy("name")
+                .where("name='John Doe'")
+                .build();
+
+        System.out.println(res.getInnerQuery());
     }
 }

@@ -270,7 +270,6 @@ public class DbUtil {
 
     public static void init(Class<? extends Entity> entityClass) throws SQLException, IllegalAccessException {
         String createQuery = DbUtil.initTable(entityClass);
-        System.out.println("Final query " + createQuery);
         DbConnection.executeUpdate(createQuery);
     }
 
