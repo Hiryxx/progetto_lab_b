@@ -19,8 +19,7 @@ public class Query {
      * @throws SQLException if there is an error executing the query
      */
     public QueryResult execute() throws SQLException {
-        var result = DbConnection.executeQuery(query);
-        return new QueryResult(result);
+        return DbConnection.executeQuery(query);
     }
 
     /**

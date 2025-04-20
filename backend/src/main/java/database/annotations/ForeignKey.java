@@ -10,4 +10,6 @@ import java.lang.annotation.Target;
 public @interface ForeignKey {
     Class<?> references();
     String column() default "id";
+    String onDelete() default "CASCADE";
+    String onUpdate() default "CASCADE";
 }

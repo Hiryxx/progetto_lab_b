@@ -1,9 +1,6 @@
 package utils;
 
-import database.annotations.Column;
-import database.annotations.Id;
-import database.annotations.Table;
-import database.annotations.Unique;
+import database.annotations.*;
 import database.connection.DbConnection;
 import database.models.Entity;
 
@@ -30,6 +27,7 @@ public class DbUtil {
 
         StringBuilder query = new StringBuilder("CREATE TABLE IF NOT EXISTS " + tableName + " (");
         StringBuilder primaryKeys = new StringBuilder();
+        StringBuilder foreignKeys = new StringBuilder();
 
         // Process fields with annotations
         for (Field field : entityClass.getDeclaredFields()) {
@@ -52,20 +50,49 @@ public class DbUtil {
                 query.append(" UNIQUE");
             }
 
+            // Handle foreign key
+            ForeignKey fk = field.getAnnotation(ForeignKey.class);
+            if (fk != null) {
+                Class<?> referencedClass = fk.references();
+                // Get table name of referenced class
+                Table refTableAnnotation = referencedClass.getAnnotation(Table.class);
+                String referencedTable = refTableAnnotation != null && !refTableAnnotation.name().isEmpty()
+                        ? refTableAnnotation.name()
+                        : referencedClass.getSimpleName() + "s";
+
+                String referencedColumn = fk.column();
+
+                if (foreignKeys.length() > 0) foreignKeys.append(", ");
+
+                foreignKeys.append("FOREIGN KEY (").append(columnName).append(") ")
+                        .append("REFERENCES ").append(referencedTable).append("(").append(referencedColumn).append(") ")
+                        .append("ON DELETE ").append(fk.onDelete()).append(" ")
+                        .append("ON UPDATE ").append(fk.onUpdate());
+            }
+
             query.append(", ");
         }
 
-        // Add primary key constraint
+        boolean hasConstraints = false;
+
+        // Add primary key constraint if any
         if (primaryKeys.length() > 0) {
-            query.append("PRIMARY KEY (").append(primaryKeys).append(")");
-        } else {
-            // Remove trailing comma
             query.setLength(query.length() - 2);
+            query.append(", PRIMARY KEY (").append(primaryKeys).append(")");
+            hasConstraints = true;
+        } else {
+            query.setLength(query.length() - 2);
+        }
+
+        if (foreignKeys.length() > 0) {
+            if (hasConstraints) {
+                query.append(", ");
+            }
+            query.append(foreignKeys);
         }
 
         query.append(")");
 
-        // Execute the query
         return query.toString();
     }
 

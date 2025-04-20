@@ -1,9 +1,12 @@
 package database.connection;
 
+import database.query.QueryResult;
+
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 // TODO Rename class. DBSession? DBConnectionManager? DBService?
 public class DbConnection {
@@ -37,23 +40,31 @@ public class DbConnection {
      * @return Result of the query
      * @throws SQLException General SQL exception
      */
-    public static ResultSet executeQuery(String query) throws SQLException {
+    public static QueryResult executeQuery(String query) throws SQLException {
         Connection conn = null;
-        ResultSet result;
+        Statement stmt = null;
+        ResultSet rs = null;
+
         try {
-            // Gets a connection from the pool
             conn = DbConnectionPool.getConnection();
-
-            // Creates the table in the database
-            var stmt = conn.createStatement();
-            result = stmt.executeQuery(query);
-
-        } finally {
-            if (conn != null) {
-                conn.close(); // Returns to pool, doesn't actually close
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery(query);
+            return new QueryResult(conn, stmt, rs);
+        } catch (SQLException e) {
+            // Clean up resources on error
+            if (rs != null) try {
+                rs.close();
+            } catch (SQLException ignored) {
             }
-
+            if (stmt != null) try {
+                stmt.close();
+            } catch (SQLException ignored) {
+            }
+            if (conn != null) try {
+                conn.close();
+            } catch (SQLException ignored) {
+            }
+            throw e;
         }
-        return result;
     }
 }

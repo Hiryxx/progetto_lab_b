@@ -4,6 +4,7 @@ import database.annotations.Column;
 import database.annotations.Id;
 import database.annotations.Table;
 import database.annotations.Unique;
+import database.query.SelectBuilder;
 import utils.DbUtil;
 
 @Table(name = "Users")
@@ -30,8 +31,8 @@ public class User extends Entity {
 
     }
 
-    public static String getTableName() {
-        return DbUtil.getTableName(User.class);
+    public static SelectBuilder selectBy(String queryParameter) {
+        return Entity.selectBy(queryParameter, User.class);
     }
 
 

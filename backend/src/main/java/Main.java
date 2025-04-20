@@ -1,44 +1,62 @@
 import database.models.User;
+import database.query.Query;
 import database.query.QueryResult;
 import utils.DbUtil;
 
 import java.sql.SQLException;
+import java.util.Scanner;
 
 
 public class Main {
     public static void main(String[] args) throws SQLException, IllegalAccessException {
-          /*
-        DbUtil.init(User.class);
+        Scanner in = new Scanner(System.in);
 
-        User user = new User ("a", "b", "c", "d");
+        int res;
+        do {
+            System.out.println("1. Create user table");
+            System.out.println("2. Fill user table");
+            System.out.println("3. Print user table");
+            System.out.println("0. Exit");
+            res = in.nextInt();
 
-        user.create();
+            switch (res) {
+                case 1 -> {
+                    DbUtil.init(User.class);
+                    System.out.println("User table created");
+                }
+                case 2 -> {
+                    System.out.println("Insert user cf");
+                    String cf = in.next();
+                    System.out.println("Insert user name");
+                    String name = in.next();
+                    System.out.println("Insert user email");
+                    String email = in.next();
+                    System.out.println("Insert user password");
+                    String password = in.next();
 
+                    User user = new User(cf, name, email, password);
+                    user.create();
+                }
+                case 3 -> {
+                    Query query = User.selectBy("*").build();
 
+                    System.out.println("Executing query: " + query.getInnerQuery());
+                    try (QueryResult result = query.execute()) {
+                        for (var r : result) {
+                            String cf = r.getString("cf");
+                            String name = r.getString("name");
+                            String email = r.getString("email");
+                            String password = r.getString("password");
 
+                            System.out.println("USER: " + cf + " " + name + " " + email + " " + password);
+                        }
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
 
-        QueryResult res = User.selectBy("name")
-                .where("name='John Doe'")
-                .build()
-                .execute();
+                }
+            }
 
-        for (var row : res) {
-            System.out.println(row);
-        }
-
-        Query q = User.selectBy("*")
-                .where("name='John Doe'")
-                .orderBy("name")
-                .build();
-
-        System.out.println(q.getInnerQuery());
-         */
-
-        // todo fix name
-        var res = User.selectBy("name")
-                .where("name='John Doe'")
-                .build();
-
-        System.out.println(res.getInnerQuery());
+        } while (res != 0);
     }
 }

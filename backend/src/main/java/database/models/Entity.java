@@ -42,16 +42,8 @@ public abstract class Entity {
         DbConnection.executeUpdate(deleteQuery);
     }
 
-    //todo fix here
-    public static SelectBuilder selectBy(String queryParameter) {
-        return new SelectBuilder(queryParameter, getTableName());
+    public static <T extends Entity> SelectBuilder selectBy(String queryParameter, Class<T> entityClass) {
+        return new SelectBuilder(queryParameter, DbUtil.getTableName(entityClass));
     }
 
-    /**
-     * Returns the table name of the entity
-     */
-
-    public static String getTableName() {
-        throw new UnsupportedOperationException("This method should be overridden in subclasses");
-    }
 }
