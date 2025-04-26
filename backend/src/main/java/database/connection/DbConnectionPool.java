@@ -44,9 +44,15 @@ public class DbConnectionPool {
             dataSource.setPassword(dbPassword);
 
             // Pool configuration
-            dataSource.setMinPoolSize(3);
-            dataSource.setMaxPoolSize(20);
-            dataSource.setMaxIdleTime(300); // 5 minutes
+            dataSource.setMinPoolSize(5);
+            dataSource.setInitialPoolSize(5);
+            dataSource.setMaxPoolSize(30);
+            dataSource.setAcquireIncrement(5);
+            dataSource.setMaxIdleTime(300);
+            dataSource.setMaxConnectionAge(900);
+            dataSource.setCheckoutTimeout(5000);
+            dataSource.setIdleConnectionTestPeriod(60);
+            dataSource.setTestConnectionOnCheckin(true);
         } catch (Exception e) {
             throw new RuntimeException("Error initializing data source", e);
         }

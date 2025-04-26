@@ -13,7 +13,7 @@ import java.sql.SQLException;
 public class Server {
     private ServerSocket serverSocket;
     private final Router router;
-    private boolean running = true;
+    private volatile boolean running = true;
 
     public Server() {
         router = new Router();

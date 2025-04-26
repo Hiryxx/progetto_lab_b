@@ -1,14 +1,15 @@
 package server.router;
 import database.models.Entity;
-import utils.JSONParser;
-
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 public class Router {
-    private Map<String, CommandHandler<?>> commands = new HashMap<>();
+    private Map<String, CommandHandler<?>> commands = new ConcurrentHashMap<>();
 
+    /***
+        Register an endpoint with its function
+     */
     public <T extends Entity> void register(String command, Consumer<T> action, Class<T> entityType) {
         commands.put(command, new CommandHandler<>(action, entityType));
     }
