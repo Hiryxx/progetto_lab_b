@@ -30,7 +30,6 @@ public class BookCard extends JPanel {
     }
 
     public void render() {
-        System.out.println("Rendering BookCard: " + title);
         JPanel card = new JPanel();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         card.setBorder(BorderFactory.createCompoundBorder(
