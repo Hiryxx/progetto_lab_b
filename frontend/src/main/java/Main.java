@@ -1,5 +1,13 @@
+import classes.MainFrame;
+
+import javax.swing.SwingUtilities;
+
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello, World!");
+        SwingUtilities.invokeLater(() -> {
+            MainFrame app = new MainFrame();
+            app.setLocationRelativeTo(null); // Center the window
+            app.setVisible(true);
+        });
     }
 }
