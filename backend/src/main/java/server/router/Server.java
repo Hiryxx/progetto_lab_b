@@ -1,5 +1,6 @@
 package server.router;
 
+import database.models.Book;
 import database.models.User;
 
 import java.io.BufferedReader;
@@ -20,13 +21,23 @@ public class Server {
     }
 
     public void setup() {
-        router.register("createUser", (User user) -> {
+        router.register("CREATE_USER", (User user) -> {
             try {
                 user.create();
             } catch (IllegalAccessException | SQLException e) {
                 throw new RuntimeException(e);
             }
         }, User.class);
+
+        router.register("CREATE_BOOK", (Book book) -> {
+            try {
+                book.create();
+            } catch (IllegalAccessException | SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }, Book.class);
+
+
     }
 
     public void start() throws IOException {
@@ -82,6 +93,10 @@ public class Server {
                 System.err.println("Error closing client socket: " + e.getMessage());
             }
         }
+    }
+
+    public Router getRouter() {
+        return router;
     }
 
     public void stop() {

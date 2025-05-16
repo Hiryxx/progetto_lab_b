@@ -1,14 +1,48 @@
 import database.models.User;
 import database.query.Query;
 import database.query.QueryResult;
+import server.router.Server;
 import utils.DbUtil;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Scanner;
 
 
 public class Main {
-    public static void main(String[] args) throws SQLException, IllegalAccessException {
+    public static void main(String[] args) throws Exception {
+        tryServer();
+    }
+
+    private static void tryServer() throws Exception {
+        Server server = new Server();
+        server.setup();
+        // create a json object to pass as a string
+            /*
+              @Id
+        @Column(type = "CHAR(36)")
+        private String cf;
+
+        @Column(type = "VARCHAR(255)", nullable = false)
+        private String name;
+
+        @Column(type = "VARCHAR(255)", nullable = false)
+        @Unique
+        private String email;
+
+        @Column(type = "VARCHAR(255)", nullable = false)
+        private String password;
+
+             */
+
+        DbUtil.init(User.class);
+        String json = "{\"cf\":\"12345678901234567890123456789012\",\"name\":\"John Doe\",\"email\":\"franco.rossi@gmail.com\",\"password\":\"password\"}";
+        server.getRouter().execute("CREATE_USER", json);
+
+
+    }
+
+    private static void tryDb() throws SQLException, IllegalAccessException {
         Scanner in = new Scanner(System.in);
 
         int res;

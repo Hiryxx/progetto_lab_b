@@ -2,7 +2,6 @@ package database.connection;
 
 import database.query.QueryResult;
 
-import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
