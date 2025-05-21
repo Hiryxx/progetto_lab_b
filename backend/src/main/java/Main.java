@@ -15,17 +15,16 @@ public class Main {
     }
 
     private static void tryServer() throws Exception {
-        Server server = new Server();
-        server.setup();
+        try (Server server = new Server()) {
+            server.setup();
+            DbUtil.init(User.class);
+            String json = "{\"cf\":\"12345678901234567890123456789013\",\"name\":\"John Doe\",\"email\":\"franco.raossi@gmail.com\",\"password\":\"password\"}";
+            Optional<String> jsonOpt = Optional.of(json);
+            server.getRouter().execute("CREATE_USER", jsonOpt);
 
-        DbUtil.init(User.class);
-        String json = "{\"cf\":\"12345678901234567890123456789013\",\"name\":\"John Doe\",\"email\":\"franco.raossi@gmail.com\",\"password\":\"password\"}";
-        Optional<String> jsonOpt = Optional.of(json);
-        server.getRouter().execute("CREATE_USER", jsonOpt);
-
-        Optional<String> nothing = Optional.empty();
-        server.getRouter().execute("PING", nothing);
-
+            Optional<String> nothing = Optional.empty();
+            server.getRouter().execute("PING", nothing);
+        }
     }
 
     private static void tryDb() throws SQLException, IllegalAccessException {

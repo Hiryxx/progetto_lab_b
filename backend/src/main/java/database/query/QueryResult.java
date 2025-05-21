@@ -32,7 +32,7 @@ public class QueryResult implements Iterable<ResultSet>, AutoCloseable {
             throw new IllegalStateException("QueryResult is closed");
         }
 
-        return new Iterator<ResultSet>() {
+        return new Iterator<>() {
             private boolean hasNextChecked = false;
             private boolean hasNextValue = false;
 
@@ -82,7 +82,7 @@ public class QueryResult implements Iterable<ResultSet>, AutoCloseable {
 
     /***
      * Closes the connection, statement, and result set.
-     * @throws Exception
+     * @throws Exception if an error occurs while closing
      */
     @Override
     public void close() throws Exception {

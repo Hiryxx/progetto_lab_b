@@ -1,4 +1,4 @@
-package server.router;
+package server.router.executors;
 
 import database.models.Entity;
 import utils.JSONParser;
