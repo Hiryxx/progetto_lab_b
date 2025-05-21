@@ -10,8 +10,10 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.stream.Stream;
 
-public class Server {
+public class Server  implements AutoCloseable {
     private ServerSocket serverSocket;
     private final Router router;
     private volatile boolean running = true;
@@ -20,6 +22,9 @@ public class Server {
         router = new Router();
     }
 
+    /**
+     * Registers the commands and their corresponding actions.
+     */
     public void setup() {
         router.register("CREATE_USER", (User user) -> {
             try {
@@ -44,6 +49,9 @@ public class Server {
 
     }
 
+    /**
+     * Starts the server and listens for incoming connections.
+     */
     public void start() throws IOException {
         serverSocket = new ServerSocket(9000);
         System.out.println("Server started on port 9000");
@@ -62,6 +70,11 @@ public class Server {
         }
     }
 
+    /**
+     * Handles the client connection.
+     *
+     * @param clientSocket The socket for the client connection.
+     */
     private void handleClient(Socket clientSocket) {
         try (
                 PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
@@ -81,6 +94,7 @@ public class Server {
 
                     // Execute the command
                     router.execute(parts[0], parts[1].describeConstable());
+                    // todo send result back to client
                     out.println("Success: Command executed");
                 } catch (Exception e) {
                     System.err.println("Error processing command: " + e.getMessage());
@@ -103,7 +117,11 @@ public class Server {
         return router;
     }
 
-    public void stop() {
+    /**
+     * Stops the server and closes the server socket.
+     */
+    @Override
+    public void close() throws Exception {
         running = false;
         try {
             if (serverSocket != null && !serverSocket.isClosed()) {
@@ -114,4 +132,18 @@ public class Server {
             System.err.println("Error stopping server: " + e.getMessage());
         }
     }
+
+    private void trySendStream(Socket socket) {
+        ArrayList<String> a = new ArrayList<>();
+        a.add("Hello");
+        a.add("World");
+        Stream<String> targetStream = a.stream();
+
+        try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
+            targetStream.forEach(out::println);
+        } catch (IOException e) {
+            System.err.println("Error sending stream: " + e.getMessage());
+        }
+    }
+
 }

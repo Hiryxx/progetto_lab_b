@@ -4,7 +4,6 @@ import database.query.QueryResult;
 import server.router.Server;
 import utils.DbUtil;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Optional;
 import java.util.Scanner;

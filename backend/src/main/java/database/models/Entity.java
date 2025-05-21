@@ -42,6 +42,14 @@ public abstract class Entity {
         DbConnection.executeUpdate(deleteQuery);
     }
 
+    /**
+     * Selects an entity from the database
+     *
+     * @param queryParameter the query parameter to select by
+     * @param entityClass    the class of the entity to select
+     * @param <T>           the type of the entity
+     * @return a SelectBuilder object to build the select query
+     */
     public static <T extends Entity> SelectBuilder selectBy(String queryParameter, Class<T> entityClass) {
         return new SelectBuilder(queryParameter, DbUtil.getTableName(entityClass));
     }

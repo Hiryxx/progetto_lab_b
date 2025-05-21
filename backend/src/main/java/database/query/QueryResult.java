@@ -6,6 +6,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class QueryResult implements Iterable<ResultSet>, AutoCloseable {
     private final Connection connection;
@@ -82,10 +84,10 @@ public class QueryResult implements Iterable<ResultSet>, AutoCloseable {
      * Closes the connection, statement, and result set.
      * @throws Exception
      */
-
     @Override
     public void close() throws Exception {
         if (!closed) {
+            System.out.println("Closing QueryResult");
             try {
                 if (resultSet != null) resultSet.close();
             } finally {
@@ -97,5 +99,14 @@ public class QueryResult implements Iterable<ResultSet>, AutoCloseable {
                 }
             }
         }
+    }
+
+    /**
+     * Returns a stream of ResultSet objects.
+     *
+     * @return a stream of ResultSet objects
+     */
+    public Stream<ResultSet> stream() {
+        return StreamSupport.stream(spliterator(), false);
     }
 }
