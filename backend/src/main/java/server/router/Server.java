@@ -37,6 +37,10 @@ public class Server {
             }
         }, Book.class);
 
+        router.register("PING", () -> {
+            System.out.println("Ping received");
+        });
+
 
     }
 

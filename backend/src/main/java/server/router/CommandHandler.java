@@ -11,7 +11,7 @@ import java.util.function.Consumer;
  *
  * @param <T> The type of entity this handler will work with.
  */
-public class CommandHandler<T extends Entity> {
+public class CommandHandler<T extends Entity> implements Executable {
     private final Consumer<T> action;
     private final Class<T> entityType;
 

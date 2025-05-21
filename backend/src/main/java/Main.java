@@ -17,28 +17,13 @@ public class Main {
     private static void tryServer() throws Exception {
         Server server = new Server();
         server.setup();
-        // create a json object to pass as a string
-            /*
-              @Id
-        @Column(type = "CHAR(36)")
-        private String cf;
-
-        @Column(type = "VARCHAR(255)", nullable = false)
-        private String name;
-
-        @Column(type = "VARCHAR(255)", nullable = false)
-        @Unique
-        private String email;
-
-        @Column(type = "VARCHAR(255)", nullable = false)
-        private String password;
-
-             */
 
         DbUtil.init(User.class);
-        String json = "{\"cf\":\"12345678901234567890123456789012\",\"name\":\"John Doe\",\"email\":\"franco.rossi@gmail.com\",\"password\":\"password\"}";
+        String json = "{\"cf\":\"12345678901234567890123456789013\",\"name\":\"John Doe\",\"email\":\"franco.raossi@gmail.com\",\"password\":\"password\"}";
         server.getRouter().execute("CREATE_USER", json);
 
+
+        server.getRouter().execute("PING", "");
 
     }
 
