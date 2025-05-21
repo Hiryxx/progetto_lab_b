@@ -1,6 +1,6 @@
 package server.router;
 
-import java.util.function.Consumer;
+import java.util.Optional;
 
 /**
  * NoInputCommandHandler is a class that handles commands that don't require any input parameters.
@@ -14,11 +14,12 @@ public class NoInputCommandHandler implements Executable {
     }
 
     /**
-     * Executes the action without needing any input parameters.
+     * Executes the action with no input parameters.
      *
      * @throws Exception If the action throws an exception.
      */
-    public void execute(String args) throws Exception {
+    public void execute(Optional<String> args) throws Exception {
+        assert args.isEmpty();
         action.run();
     }
 }

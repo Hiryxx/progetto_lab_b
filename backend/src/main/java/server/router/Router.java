@@ -1,6 +1,7 @@
 package server.router;
 import database.models.Entity;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
@@ -18,7 +19,7 @@ public class Router {
         commands.put(command, new NoInputCommandHandler(action));
     }
 
-    public void execute(String command, String args) throws Exception {
+    public void execute(String command, Optional<String> args) throws Exception {
         Executable executable = commands.get(command);
         if (executable == null) {
             throw new RouterNotFoundException("Command not found: " + command);

@@ -80,7 +80,7 @@ public class Server {
                     }
 
                     // Execute the command
-                    router.execute(parts[0], parts[1]);
+                    router.execute(parts[0], parts[1].describeConstable());
                     out.println("Success: Command executed");
                 } catch (Exception e) {
                     System.err.println("Error processing command: " + e.getMessage());

@@ -3,6 +3,7 @@ package server.router;
 import database.models.Entity;
 import utils.JSONParser;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -26,8 +27,12 @@ public class CommandHandler<T extends Entity> implements Executable {
      * @param args The JSON string representing the entity.
      * @throws Exception If parsing fails or if the action throws an exception.
      */
-    public void execute(String args) throws Exception {
-        T entity = (T) JSONParser.parse(args, entityType);
+    public void execute(Optional<String> args) throws Exception {
+        if (args.isEmpty()) {
+            throw new IllegalArgumentException("No arguments provided");
+        }
+
+        T entity = (T) JSONParser.parse(args.get(), entityType);
         action.accept(entity);
     }
 }

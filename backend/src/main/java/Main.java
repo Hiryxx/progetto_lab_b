@@ -6,6 +6,7 @@ import utils.DbUtil;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Optional;
 import java.util.Scanner;
 
 
@@ -20,10 +21,11 @@ public class Main {
 
         DbUtil.init(User.class);
         String json = "{\"cf\":\"12345678901234567890123456789013\",\"name\":\"John Doe\",\"email\":\"franco.raossi@gmail.com\",\"password\":\"password\"}";
-        server.getRouter().execute("CREATE_USER", json);
+        Optional<String> jsonOpt = Optional.of(json);
+        server.getRouter().execute("CREATE_USER", jsonOpt);
 
-
-        server.getRouter().execute("PING", "");
+        Optional<String> nothing = Optional.empty();
+        server.getRouter().execute("PING", nothing);
 
     }
 

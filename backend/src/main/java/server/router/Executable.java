@@ -1,5 +1,7 @@
 package server.router;
 
+import java.util.Optional;
+
 public interface Executable {
     // TODO COULD RETURN SOMETHING IN THE FUTURE
     /**
@@ -8,5 +10,5 @@ public interface Executable {
      * @param args The arguments for the command.
      * @throws Exception If an error occurs during execution.
      */
-    public void execute(String args) throws Exception;
+    void execute(Optional<String> args) throws Exception;
 }
