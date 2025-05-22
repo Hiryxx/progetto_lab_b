@@ -51,7 +51,8 @@ public class Server  implements AutoCloseable {
         }, Book.class);
 
         router.register("GET_USERS", () -> {
-            try (QueryResult query = User.selectBy("*").build().execute()){
+            try {
+                QueryResult query = User.selectBy("*").build().execute();
                 return new MultiResponse(query.stream());
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -92,18 +93,16 @@ public class Server  implements AutoCloseable {
      * @param connection The socket connection for a single client.
      */
     private void handleClient(SocketConnection connection) {
-        try (
-                PrintWriter out = new PrintWriter(connection.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))
-        ) {
+        try {
             String inputLine;
+            BufferedReader in = connection.getIn();
             while ((inputLine = in.readLine()) != null) {
                 System.out.println("Received from " + connection.getInetAddress() + ": " + inputLine);
 
                 try {
                     String[] parts = inputLine.split(";", 2);
                     if (parts.length < 1) {
-                        out.println("Error: Invalid command format.");
+                        connection.getOut().println("Error: Invalid command format.");
                         continue;
                     }
 
@@ -113,14 +112,14 @@ public class Server  implements AutoCloseable {
                     // Execute the command
                     Sendable result = router.execute(command, args);
                     System.out.println("SENDING DATA");
-                    connection.send(out, result);
+                    connection.send(result);
                 } catch (Exception e) {
                     System.err.println("Error processing command: " + e.getMessage());
-                    out.println("Error: " + e.getMessage());
+                    connection.getOut().println("Error: " + e.getMessage());
                     // TODO SEND STOP MESSAGE?
                 }
                 System.out.println("SENDING STOP MESSAGE");
-                connection.send(out, new SingleResponse("STOP"));
+                connection.send(new SingleResponse("STOP"));
             }
         } catch (IOException e) {
             System.err.println("Client connection error: " + e.getMessage());

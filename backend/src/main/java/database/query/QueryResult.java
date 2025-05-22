@@ -103,6 +103,7 @@ public class QueryResult implements Iterable<ResultSet>, AutoCloseable {
 
     /**
      * Returns a stream of ResultSet objects.
+     * The iterator consumes the ResultSet and closes the connection pool when done.
      *
      * @return a stream of ResultSet objects
      */

@@ -23,7 +23,7 @@ public class SocketConnection implements AutoCloseable {
 
     public void send(String message) {
         out.println(message);
-        out.flush();
+        //out.flush();
     }
 
     public String receive() throws IOException {
@@ -35,6 +35,7 @@ public class SocketConnection implements AutoCloseable {
     // try method for now
     public void receiveUntilStop() throws IOException {
         String line;
+        System.out.println("Receiving messages...");
         while ((line = in.readLine()) != null) {
             System.out.println("Received: " + line);
             if (line.equalsIgnoreCase("STOP")) {

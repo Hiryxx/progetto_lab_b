@@ -1,27 +1,26 @@
 package server.router.connection;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import server.router.connection.response.MultiResponse;
 import server.router.connection.response.Sendable;
 import server.router.connection.response.SingleResponse;
 import utils.JSONUtil;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 public class SocketConnection {
     Socket socket;
+    PrintWriter out;
+    BufferedReader in;
 
-    public SocketConnection(Socket socket) {
+    public SocketConnection(Socket socket) throws IOException {
         this.socket = socket;
+        this.out = new PrintWriter(socket.getOutputStream(), true);
+        this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
 
     public Socket socket() {
@@ -35,21 +34,17 @@ public class SocketConnection {
      * @param response
      * @throws IOException
      */
-    public void send(PrintWriter out, Sendable response) throws IOException {
+    public void send(Sendable response) throws IOException {
         switch (response){
             case SingleResponse singleResponse -> {
-                out.write(singleResponse.object());
+                out.println(singleResponse.object());
                 out.flush();
             }
             case MultiResponse multiResponse -> {
                 var stream = multiResponse.stream();
                 stream.forEach(item -> {
                     try {
-                        if (item instanceof ResultSet resultSet) {
-                            out.println(JSONUtil.resultSetToJson(resultSet));
-                        } else {
-                            out.println((Object) null);
-                        }
+                        out.println(JSONUtil.resultSetToJson(item));
                         out.flush();
                     } catch (SQLException e) {
                         System.err.println("Error converting ResultSet to JSON: " + e.getMessage());
@@ -69,11 +64,11 @@ public class SocketConnection {
         socket.close();
     }
 
-    public InputStream getInputStream() throws IOException {
-        return socket.getInputStream();
+    public BufferedReader getIn() {
+        return in;
     }
 
-    public OutputStream getOutputStream() throws IOException {
-        return socket.getOutputStream();
+    public PrintWriter getOut() {
+        return out;
     }
 }
