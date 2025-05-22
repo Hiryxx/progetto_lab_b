@@ -9,6 +9,11 @@ import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+/**
+ * QueryResult is a class that represents the result of a database query.
+ * It implements Iterable<ResultSet> and AutoCloseable, allowing it to be used in a try-with-resources statement.
+ * The class manages the connection, statement, and result set, ensuring they are closed properly.
+ */
 public class QueryResult implements Iterable<ResultSet>, AutoCloseable {
     private final Connection connection;
     private final Statement statement;

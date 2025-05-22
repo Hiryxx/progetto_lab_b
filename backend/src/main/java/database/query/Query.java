@@ -4,6 +4,10 @@ import database.connection.DbConnection;
 
 import java.sql.SQLException;
 
+/**
+ * Represents a database query.
+ * This class is responsible for executing the query and returning the result.
+ */
 public class Query {
     private String query;
 

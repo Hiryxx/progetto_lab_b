@@ -12,6 +12,10 @@ import java.net.Socket;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * SocketConnection is a class that represents a connection to a client socket.
+ * It provides methods to send and receive data over the socket.
+ */
 public class SocketConnection {
     Socket socket;
     PrintWriter out;
@@ -23,7 +27,7 @@ public class SocketConnection {
         this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
 
-    public Socket socket() {
+    public Socket getSocket() {
         return socket;
     }
 
@@ -31,8 +35,8 @@ public class SocketConnection {
 
     /***
      * Sends a response to the client.
-     * @param response
-     * @throws IOException
+     * @param response the response to send
+     * @throws IOException if an I/O error occurs
      */
     public void send(Sendable response) throws IOException {
         switch (response){

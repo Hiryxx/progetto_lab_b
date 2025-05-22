@@ -1,5 +1,9 @@
 package database.query;
 
+/**
+ * SelectBuilder is a class that helps to build SQL SELECT queries.
+ * It allows to add multiple clauses to the query.
+ */
 public class SelectBuilder {
     private String queryParameters;
     private String fromTable;

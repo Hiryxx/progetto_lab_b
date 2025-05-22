@@ -13,6 +13,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * The Router class is responsible for routing commands to their corresponding actions.
+ * It allows registering commands with different types of input and executing them.
+ */
 public class Router {
     private Map<String, Executable> commands = new ConcurrentHashMap<>();
 

@@ -7,6 +7,11 @@ import java.sql.SQLException;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
+/**
+ * DbConnectionPool is a singleton class that manages a connection pool to a PostgresSQL database.
+ * It uses the C3P0 library for connection pooling.
+ * The database connection parameters are loaded from a .env file.
+ */
 public class DbConnectionPool {
     private static ComboPooledDataSource dataSource;
 

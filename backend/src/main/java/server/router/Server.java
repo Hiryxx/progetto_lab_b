@@ -19,6 +19,10 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+/**
+ * The Server class handles incoming client connections and processes commands.
+ * It uses a Router to route commands to their corresponding actions.
+ */
 public class Server  implements AutoCloseable {
     private ServerSocket serverSocket;
     private final Router router;
@@ -62,8 +66,6 @@ public class Server  implements AutoCloseable {
         router.register("PING", () -> new SingleResponse("PONG"));
 
         router.register("TRY", SingleResponse::new);
-
-
     }
 
     /**
@@ -75,7 +77,9 @@ public class Server  implements AutoCloseable {
 
         while (running) {
             try {
-                SocketConnection clientSocket = new SocketConnection(serverSocket.accept());
+                Socket socket = serverSocket.accept();
+                socket.setSoTimeout(30000);
+                SocketConnection clientSocket = new SocketConnection(socket);
                 System.out.println("New client connected: " + clientSocket.getInetAddress());
 
                 Thread.startVirtualThread(() -> handleClient(clientSocket));
@@ -116,13 +120,17 @@ public class Server  implements AutoCloseable {
                 } catch (Exception e) {
                     System.err.println("Error processing command: " + e.getMessage());
                     connection.getOut().println("Error: " + e.getMessage());
-                    // TODO SEND STOP MESSAGE?
+                    e.printStackTrace();
                 }
                 System.out.println("SENDING STOP MESSAGE");
                 connection.send(new SingleResponse("STOP"));
             }
         } catch (IOException e) {
-            System.err.println("Client connection error: " + e.getMessage());
+            if (connection.getSocket().isClosed()) {
+                System.out.println("Connection closed by client: " + connection.getInetAddress());
+            } else {
+                System.err.println("Client connection error (" + connection.getInetAddress() + "): " + e.getMessage());
+            }
         } finally {
             try {
                 connection.close();
@@ -133,6 +141,11 @@ public class Server  implements AutoCloseable {
         }
     }
 
+    /**
+     * Returns the router instance.
+     *
+     * @return The router instance.
+     */
     public Router getRouter() {
         return router;
     }
@@ -141,7 +154,7 @@ public class Server  implements AutoCloseable {
      * Stops the server and closes the server socket.
      */
     @Override
-    public void close() throws Exception {
+    public void close() {
         running = false;
         try {
             if (serverSocket != null && !serverSocket.isClosed()) {
@@ -152,18 +165,4 @@ public class Server  implements AutoCloseable {
             System.err.println("Error stopping server: " + e.getMessage());
         }
     }
-
-    private void trySendStream(Socket socket) {
-        ArrayList<String> a = new ArrayList<>();
-        a.add("Hello");
-        a.add("World");
-        Stream<String> targetStream = a.stream();
-
-        try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
-            targetStream.forEach(out::println);
-        } catch (IOException e) {
-            System.err.println("Error sending stream: " + e.getMessage());
-        }
-    }
-
 }
