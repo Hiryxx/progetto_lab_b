@@ -1,14 +1,15 @@
 package server.router.executors;
 
+import server.router.connection.response.Sendable;
+
 import java.util.Optional;
 
 public interface Executable {
-    // TODO COULD RETURN SOMETHING IN THE FUTURE
     /**
      * Executes the command with the given arguments.
      *
      * @param args The arguments for the command.
      * @throws Exception If an error occurs during execution.
      */
-    void execute(Optional<String> args) throws Exception;
+    Sendable execute(Optional<String> args) throws Exception;
 }

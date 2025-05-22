@@ -1,15 +1,18 @@
 package server.router.executors;
 
+import server.router.connection.response.Sendable;
+
 import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * NoInputCommandHandler is a class that handles commands that don't require any input parameters.
  * It uses a Runnable to define the action to be performed.
  */
 public class NoInputCommandHandler implements Executable {
-    private final Runnable action;
+    private final Supplier<Sendable> action;
 
-    public NoInputCommandHandler(Runnable action) {
+    public NoInputCommandHandler(Supplier<Sendable> action) {
         this.action = action;
     }
 
@@ -18,8 +21,8 @@ public class NoInputCommandHandler implements Executable {
      *
      * @throws Exception If the action throws an exception.
      */
-    public void execute(Optional<String> args) throws Exception {
+    public Sendable execute(Optional<String> args) throws Exception {
         assert args.isEmpty();
-        action.run();
+        return action.get();
     }
 }

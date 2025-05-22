@@ -2,6 +2,10 @@ package server.router;
 
 import database.models.Book;
 import database.models.User;
+import server.router.connection.SocketConnection;
+import server.router.connection.response.MultiResponse;
+import server.router.connection.response.Sendable;
+import server.router.connection.response.SingleResponse;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -29,6 +33,7 @@ public class Server  implements AutoCloseable {
         router.register("CREATE_USER", (User user) -> {
             try {
                 user.create();
+                return new SingleResponse("User created successfully");
             } catch (IllegalAccessException | SQLException e) {
                 throw new RuntimeException(e);
             }
@@ -37,14 +42,13 @@ public class Server  implements AutoCloseable {
         router.register("CREATE_BOOK", (Book book) -> {
             try {
                 book.create();
+                return new SingleResponse("Book created successfully");
             } catch (IllegalAccessException | SQLException e) {
                 throw new RuntimeException(e);
             }
         }, Book.class);
 
-        router.register("PING", () -> {
-            System.out.println("Ping received");
-        });
+        router.register("PING", () -> new SingleResponse("PONG"));
 
 
     }
@@ -58,7 +62,7 @@ public class Server  implements AutoCloseable {
 
         while (running) {
             try {
-                Socket clientSocket = serverSocket.accept();
+                SocketConnection clientSocket = new SocketConnection(serverSocket.accept());
                 System.out.println("New client connected: " + clientSocket.getInetAddress());
 
                 Thread.startVirtualThread(() -> handleClient(clientSocket));
@@ -73,16 +77,16 @@ public class Server  implements AutoCloseable {
     /**
      * Handles the client connection.
      *
-     * @param clientSocket The socket for the client connection.
+     * @param connection The socket connection for a single client.
      */
-    private void handleClient(Socket clientSocket) {
+    private void handleClient(SocketConnection connection) {
         try (
-                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))
+                PrintWriter out = new PrintWriter(connection.getOutputStream(), true);
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))
         ) {
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
-                System.out.println("Received from " + clientSocket.getInetAddress() + ": " + inputLine);
+                System.out.println("Received from " + connection.getInetAddress() + ": " + inputLine);
 
                 try {
                     // Parses command and args
@@ -93,9 +97,8 @@ public class Server  implements AutoCloseable {
                     }
 
                     // Execute the command
-                    router.execute(parts[0], parts[1].describeConstable());
-                    // todo send result back to client
-                    out.println("Success: Command executed");
+                    Sendable result = router.execute(parts[0], parts[1].describeConstable());
+                    connection.send(out, result);
                 } catch (Exception e) {
                     System.err.println("Error processing command: " + e.getMessage());
                     out.println("Error: " + e.getMessage());
@@ -105,8 +108,8 @@ public class Server  implements AutoCloseable {
             System.err.println("Client connection error: " + e.getMessage());
         } finally {
             try {
-                clientSocket.close();
-                System.out.println("Client disconnected: " + clientSocket.getInetAddress());
+                connection.close();
+                System.out.println("Client disconnected: " + connection.getInetAddress());
             } catch (IOException e) {
                 System.err.println("Error closing client socket: " + e.getMessage());
             }
