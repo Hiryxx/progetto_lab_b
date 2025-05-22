@@ -53,7 +53,7 @@ public class Server  implements AutoCloseable {
         router.register("GET_USERS", () -> {
             try {
                 QueryResult query = User.selectBy("*").build().execute();
-                return new MultiResponse(query.stream());
+                return new MultiResponse(query);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

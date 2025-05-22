@@ -1,16 +1,15 @@
 package server.router.connection.response;
 
-import java.sql.ResultSet;
-import java.util.stream.Stream;
+import database.query.QueryResult;
 
 public non-sealed class MultiResponse implements Sendable {
-    private final Stream<ResultSet> stream;
+    private final QueryResult queryResult;
 
-    public MultiResponse(Stream<ResultSet> stream) {
-        this.stream = stream;
+    public MultiResponse(QueryResult queryResult) {
+        this.queryResult = queryResult;
     }
 
-    public Stream<ResultSet> stream() {
-        return stream;
+    public QueryResult queryResult() {
+        return queryResult;
     }
 }
