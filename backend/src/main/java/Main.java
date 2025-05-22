@@ -1,9 +1,11 @@
 import database.models.User;
 import database.query.Query;
 import database.query.QueryResult;
+import server.router.Router;
 import server.router.Server;
 import utils.DbUtil;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Optional;
 import java.util.Scanner;
@@ -11,7 +13,16 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        tryServer();
+        startServer();
+    }
+
+    private static void startServer() {
+        try (Server server = new Server()) {
+            server.setup();
+            server.start(9000);
+        } catch (Exception e) {
+            System.err.println("Error in server: " + e.getMessage());
+        }
     }
 
     private static void tryServer() throws Exception {
@@ -19,11 +30,13 @@ public class Main {
             server.setup();
             DbUtil.init(User.class);
             String json = "{\"cf\":\"12345678901234567890123456789013\",\"name\":\"John Doe\",\"email\":\"franco.raossi@gmail.com\",\"password\":\"password\"}";
+            Router router = server.getRouter();
             Optional<String> jsonOpt = Optional.of(json);
-            server.getRouter().execute("CREATE_USER", jsonOpt);
+            router.execute("CREATE_USER", jsonOpt);
 
             Optional<String> nothing = Optional.empty();
-            server.getRouter().execute("PING", nothing);
+            router.execute("PING", nothing);
+
         }
     }
 

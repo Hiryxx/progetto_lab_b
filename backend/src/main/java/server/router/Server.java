@@ -2,6 +2,7 @@ package server.router;
 
 import database.models.Book;
 import database.models.User;
+import database.query.QueryResult;
 import server.router.connection.SocketConnection;
 import server.router.connection.response.MultiResponse;
 import server.router.connection.response.Sendable;
@@ -15,6 +16,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class Server  implements AutoCloseable {
@@ -48,7 +50,17 @@ public class Server  implements AutoCloseable {
             }
         }, Book.class);
 
+        router.register("GET_USERS", () -> {
+            try (QueryResult query = User.selectBy("*").build().execute()){
+                return new MultiResponse(query.stream());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+
         router.register("PING", () -> new SingleResponse("PONG"));
+
+        router.register("TRY", SingleResponse::new);
 
 
     }
@@ -56,9 +68,9 @@ public class Server  implements AutoCloseable {
     /**
      * Starts the server and listens for incoming connections.
      */
-    public void start() throws IOException {
-        serverSocket = new ServerSocket(9000);
-        System.out.println("Server started on port 9000");
+    public void start(int port) throws IOException {
+        serverSocket = new ServerSocket(port);
+        System.out.println("Server started on port " + port);
 
         while (running) {
             try {
@@ -89,20 +101,26 @@ public class Server  implements AutoCloseable {
                 System.out.println("Received from " + connection.getInetAddress() + ": " + inputLine);
 
                 try {
-                    // Parses command and args
                     String[] parts = inputLine.split(";", 2);
-                    if (parts.length < 2) {
-                        out.println("Error: Invalid command format. Use 'command;jsonData'");
+                    if (parts.length < 1) {
+                        out.println("Error: Invalid command format.");
                         continue;
                     }
 
+                    String command = parts[0].toUpperCase();
+                    Optional<String> args = parts.length > 1 ? Optional.of(parts[1]) : Optional.empty();
+
                     // Execute the command
-                    Sendable result = router.execute(parts[0], parts[1].describeConstable());
+                    Sendable result = router.execute(command, args);
+                    System.out.println("SENDING DATA");
                     connection.send(out, result);
                 } catch (Exception e) {
                     System.err.println("Error processing command: " + e.getMessage());
                     out.println("Error: " + e.getMessage());
+                    // TODO SEND STOP MESSAGE?
                 }
+                System.out.println("SENDING STOP MESSAGE");
+                connection.send(out, new SingleResponse("STOP"));
             }
         } catch (IOException e) {
             System.err.println("Client connection error: " + e.getMessage());
