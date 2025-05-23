@@ -1,5 +1,6 @@
 package classes;
 
+import connection.SocketConnection;
 import pages.HomePage;
 
 import javax.swing.*;
@@ -9,8 +10,10 @@ public class MainFrame extends JFrame {
 
     private JPanel contentPanel;
     private CardLayout cardLayout;
+    private SocketConnection socketConnection;
 
-    public MainFrame() {
+    public MainFrame(SocketConnection socketConnection) {
+        this.socketConnection = socketConnection;
         // Set up the frame
         setTitle("Book Recommender");
         setSize(1200, 900);

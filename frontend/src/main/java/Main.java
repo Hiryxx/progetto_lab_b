@@ -14,8 +14,8 @@ public class Main {
             System.out.println("Error connecting to server: " + e.getMessage());
             return;
         }
-
-        try(SocketConnection socket = new SocketConnection(clientSocket)) {
+        SocketConnection socket = new SocketConnection(clientSocket);
+        try {
             socket.send("PING");
             //String response = socket.receive();
             socket.receiveUntilStop(); // todo fix this
@@ -33,13 +33,12 @@ public class Main {
             System.out.println("Error: " + e.getMessage());
         }
 
-        /*
+
         SwingUtilities.invokeLater(() -> {
-            MainFrame app = new MainFrame();
+            MainFrame app = new MainFrame(socket);
             app.setLocationRelativeTo(null); // Center the window
             app.setVisible(true);
-        });
 
-         */
+        });
     }
 }
