@@ -31,8 +31,6 @@ public class SocketConnection {
         return socket;
     }
 
-    //todo fix bad print writer usage
-
     /***
      * Sends a response to the client.
      * @param response the response to send
@@ -57,6 +55,11 @@ public class SocketConnection {
             }
         }
 
+    }
+
+    public void sendStopMessage() throws IOException {
+        out.println("STOP");
+        out.flush();
     }
 
 

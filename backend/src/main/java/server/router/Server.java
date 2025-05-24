@@ -93,7 +93,6 @@ public class Server  implements AutoCloseable {
         while (running) {
             try {
                 Socket socket = serverSocket.accept();
-                socket.setSoTimeout(30000);
                 SocketConnection clientSocket = new SocketConnection(socket);
                 System.out.println("New client connected: " + clientSocket.getInetAddress());
 
@@ -121,14 +120,14 @@ public class Server  implements AutoCloseable {
                 try {
                     String[] parts = inputLine.split(";", 2);
                     if (parts.length < 1) {
-                        connection.getOut().println("Error: Invalid command format.");
+                        connection.getOut().println("Error: Invalid command format. You need to provide a command.");
                         continue;
                     }
 
                     String command = parts[0].toUpperCase();
+                    // Check if it has a json argument
                     Optional<String> args = parts.length > 1 ? Optional.of(parts[1]) : Optional.empty();
 
-                    // Execute the command
                     Sendable result = commandRegister.execute(command, args);
                     System.out.println("SENDING DATA");
                     connection.send(result);
@@ -138,7 +137,7 @@ public class Server  implements AutoCloseable {
                     e.printStackTrace();
                 }
                 System.out.println("SENDING STOP MESSAGE");
-                connection.send(new SingleResponse("STOP"));
+                connection.sendStopMessage();
             }
         } catch (IOException e) {
             if (connection.getSocket().isClosed()) {
@@ -157,9 +156,8 @@ public class Server  implements AutoCloseable {
     }
 
     /**
-     * Returns the router instance.
+     * Returns the CommandRegister instance.
      *
-     * @return The router instance.
      */
     public CommandRegister getRouter() {
         return commandRegister;
