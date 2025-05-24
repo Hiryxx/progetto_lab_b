@@ -1,12 +1,15 @@
 package database.query;
 
+import database.models.Entity;
+import utils.DbUtil;
+
 /**
  * SelectBuilder is a class that helps to build SQL SELECT queries.
  * It allows to add multiple clauses to the query.
  */
 public class SelectBuilder {
-    private String queryParameters;
-    private String fromTable;
+    private final String queryParameters;
+    private final String fromTable;
     private String whereClause = "";
     private String orderByClause = "";
     private String groupByClause = "";
@@ -17,6 +20,11 @@ public class SelectBuilder {
     public SelectBuilder(String queryParameters, String fromTable) {
         this.queryParameters = queryParameters;
         this.fromTable = fromTable;
+    }
+
+    public SelectBuilder(String queryParameters, Class<? extends Entity> fromTable) {
+        this.queryParameters = queryParameters;
+        this.fromTable = DbUtil.getTableName(fromTable);
     }
 
     /**

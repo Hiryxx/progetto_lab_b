@@ -17,8 +17,8 @@ import java.util.function.Supplier;
  * The Router class is responsible for routing commands to their corresponding actions.
  * It allows registering commands with different types of input and executing them.
  */
-public class Router {
-    private Map<String, Executable> commands = new ConcurrentHashMap<>();
+public class CommandRegister {
+    private final Map<String, Executable> commands = new ConcurrentHashMap<>();
 
     /***
      Register an endpoint with its function

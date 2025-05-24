@@ -50,8 +50,8 @@ public abstract class Entity {
      * @param <T>           the type of the entity
      * @return a SelectBuilder object to build the select query
      */
-    public static <T extends Entity> SelectBuilder selectBy(String queryParameter, Class<T> entityClass) {
-        return new SelectBuilder(queryParameter, DbUtil.getTableName(entityClass));
+    public static <T extends Entity> SelectBuilder selectBy(String queryParameter, Class<T> entityClass){
+        throw new UnsupportedOperationException("This method must be implemented in the subclass.");
     }
 
 }

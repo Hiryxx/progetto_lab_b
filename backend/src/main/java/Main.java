@@ -1,11 +1,10 @@
 import database.models.User;
 import database.query.Query;
 import database.query.QueryResult;
-import server.router.Router;
+import server.router.CommandRegister;
 import server.router.Server;
 import utils.DbUtil;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Optional;
 import java.util.Scanner;
@@ -30,12 +29,12 @@ public class Main {
             server.setup();
             DbUtil.init(User.class);
             String json = "{\"cf\":\"12345678901234567890123456789013\",\"name\":\"John Doe\",\"email\":\"franco.raossi@gmail.com\",\"password\":\"password\"}";
-            Router router = server.getRouter();
+            CommandRegister commandRegister = server.getRouter();
             Optional<String> jsonOpt = Optional.of(json);
-            router.execute("CREATE_USER", jsonOpt);
+            commandRegister.execute("CREATE_USER", jsonOpt);
 
             Optional<String> nothing = Optional.empty();
-            router.execute("PING", nothing);
+            commandRegister.execute("PING", nothing);
 
         }
     }

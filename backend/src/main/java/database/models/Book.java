@@ -39,6 +39,6 @@ public class Book extends Entity{
     }
 
     public static SelectBuilder selectBy(String queryParameter) {
-        return Entity.selectBy(queryParameter, Book.class);
+        return new SelectBuilder(queryParameter, Book.class);
     }
 }

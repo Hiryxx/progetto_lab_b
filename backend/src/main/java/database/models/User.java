@@ -7,6 +7,7 @@ import database.annotations.Id;
 import database.annotations.Table;
 import database.annotations.Unique;
 import database.query.SelectBuilder;
+import utils.DbUtil;
 
 @Table(name = "Users")
 public class User extends Entity {
@@ -36,11 +37,7 @@ public class User extends Entity {
         this.password = password;
     }
 
-
-
     public static SelectBuilder selectBy(String queryParameter) {
-        return Entity.selectBy(queryParameter, User.class);
+        return new SelectBuilder(queryParameter, User.class);
     }
-
-
 }

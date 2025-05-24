@@ -7,17 +7,14 @@ import server.router.connection.SocketConnection;
 import server.router.connection.response.MultiResponse;
 import server.router.connection.response.Sendable;
 import server.router.connection.response.SingleResponse;
+import utils.DbUtil;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 /**
  * The Server class handles incoming client connections and processes commands.
@@ -25,18 +22,20 @@ import java.util.stream.Stream;
  */
 public class Server  implements AutoCloseable {
     private ServerSocket serverSocket;
-    private final Router router;
+    private final CommandRegister commandRegister;
     private volatile boolean running = true;
 
     public Server() {
-        router = new Router();
+        commandRegister = new CommandRegister();
     }
 
     /**
      * Registers the commands and their corresponding actions.
      */
     public void setup() {
-        router.register("CREATE_USER", (User user) -> {
+        setupDb();
+        createInitialEntities();
+        commandRegister.register("CREATE_USER", (User user) -> {
             try {
                 user.create();
                 return new SingleResponse("User created successfully");
@@ -45,7 +44,7 @@ public class Server  implements AutoCloseable {
             }
         }, User.class);
 
-        router.register("CREATE_BOOK", (Book book) -> {
+        commandRegister.register("CREATE_BOOK", (Book book) -> {
             try {
                 book.create();
                 return new SingleResponse("Book created successfully");
@@ -54,7 +53,7 @@ public class Server  implements AutoCloseable {
             }
         }, Book.class);
 
-        router.register("GET_USERS", () -> {
+        commandRegister.register("GET_USERS", () -> {
             try {
                 QueryResult query = User.selectBy("*").build().execute();
                 return new MultiResponse(query);
@@ -63,9 +62,25 @@ public class Server  implements AutoCloseable {
             }
         });
 
-        router.register("PING", () -> new SingleResponse("PONG"));
+        commandRegister.register("PING", () -> new SingleResponse("PONG"));
 
-        router.register("TRY", SingleResponse::new);
+        commandRegister.register("TRY", SingleResponse::new);
+    }
+
+    private void createInitialEntities() {
+        // todo
+    }
+
+    /**
+     * Initializes the database connection and sets up the necessary tables.
+     */
+    private void setupDb() {
+        try {
+            DbUtil.init(User.class);
+            DbUtil.init(Book.class);
+        } catch (SQLException | IllegalAccessException e) {
+            System.err.println("Error initializing database: " + e.getMessage());
+        }
     }
 
     /**
@@ -114,7 +129,7 @@ public class Server  implements AutoCloseable {
                     Optional<String> args = parts.length > 1 ? Optional.of(parts[1]) : Optional.empty();
 
                     // Execute the command
-                    Sendable result = router.execute(command, args);
+                    Sendable result = commandRegister.execute(command, args);
                     System.out.println("SENDING DATA");
                     connection.send(result);
                 } catch (Exception e) {
@@ -146,8 +161,8 @@ public class Server  implements AutoCloseable {
      *
      * @return The router instance.
      */
-    public Router getRouter() {
-        return router;
+    public CommandRegister getRouter() {
+        return commandRegister;
     }
 
     /**
