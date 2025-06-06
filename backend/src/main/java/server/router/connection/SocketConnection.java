@@ -43,7 +43,7 @@ public class SocketConnection {
                 out.flush();
             }
             case MultiResponse multiResponse -> {
-                var stream = multiResponse.queryResult().stream();
+                var stream = multiResponse.getQueryResult().stream();
                 stream.forEach(item -> {
                     try {
                         out.println(JSONUtil.resultSetToJson(item));

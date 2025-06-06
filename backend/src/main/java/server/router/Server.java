@@ -35,6 +35,31 @@ public class Server  implements AutoCloseable {
     public void setup() {
         setupDb();
         createInitialEntities();
+        registerCommands();
+    }
+
+
+    /**
+     * Initializes the database connection and sets up the necessary tables.
+     */
+    private void setupDb() {
+        try {
+            DbUtil.init(User.class);
+            DbUtil.init(Book.class);
+        } catch (SQLException | IllegalAccessException e) {
+            // this has to block the server execution
+            throw new RuntimeException("Error initializing database: " + e.getMessage());
+        }
+    }
+
+    private void createInitialEntities() {
+        // todo
+    }
+
+    /**
+     * Register the server commands
+     */
+    private void registerCommands(){
         commandRegister.register("CREATE_USER", (User user) -> {
             try {
                 user.create();
@@ -67,24 +92,9 @@ public class Server  implements AutoCloseable {
         commandRegister.register("TRY", SingleResponse::new);
     }
 
-    private void createInitialEntities() {
-        // todo
-    }
-
-    /**
-     * Initializes the database connection and sets up the necessary tables.
-     */
-    private void setupDb() {
-        try {
-            DbUtil.init(User.class);
-            DbUtil.init(Book.class);
-        } catch (SQLException | IllegalAccessException e) {
-            System.err.println("Error initializing database: " + e.getMessage());
-        }
-    }
-
     /**
      * Starts the server and listens for incoming connections.
+     * @param port The port number where the server is located
      */
     public void start(int port) throws IOException {
         serverSocket = new ServerSocket(port);
@@ -120,6 +130,7 @@ public class Server  implements AutoCloseable {
                 try {
                     String[] parts = inputLine.split(";", 2);
                     if (parts.length < 1) {
+                        // TODO specific method for sending error message
                         connection.getOut().println("Error: Invalid command format. You need to provide a command.");
                         continue;
                     }
@@ -157,7 +168,6 @@ public class Server  implements AutoCloseable {
 
     /**
      * Returns the CommandRegister instance.
-     *
      */
     public CommandRegister getRouter() {
         return commandRegister;

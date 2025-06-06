@@ -7,9 +7,9 @@ import server.router.executors.Executable;
 import server.router.executors.NoInputCommandHandler;
 import server.router.executors.StringCommandHandler;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -18,7 +18,7 @@ import java.util.function.Supplier;
  * It allows registering commands with different types of input and executing them.
  */
 public class CommandRegister {
-    private final Map<String, Executable> commands = new ConcurrentHashMap<>();
+    private final Map<String, Executable> commands = new HashMap<>();
 
     /***
      Register an endpoint with its function
@@ -51,7 +51,7 @@ public class CommandRegister {
     /***
      Execute a command with the given arguments
      * @param command The command to execute
-     * @param args The arguments to pass to the command
+     * @param args The arguments to pass to the command (optional)
      */
     public Sendable execute(String command, Optional<String> args) throws Exception {
         Executable executable = commands.get(command);

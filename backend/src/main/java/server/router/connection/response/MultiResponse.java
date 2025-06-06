@@ -13,7 +13,11 @@ public non-sealed class MultiResponse implements Sendable {
         this.queryResult = queryResult;
     }
 
-    public QueryResult queryResult() {
+    /**
+     * Gets the query result that was returned by the command function and needs to be sent into the socket
+     * @return the query result
+     */
+    public QueryResult getQueryResult() {
         return queryResult;
     }
 }
