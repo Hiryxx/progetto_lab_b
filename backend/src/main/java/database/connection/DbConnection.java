@@ -1,30 +1,29 @@
 package database.connection;
 
+import database.query.PrepareQuery;
 import database.query.QueryResult;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 // TODO Rename class. DBSession? DBConnectionManager? DBService?
 public class DbConnection {
 
     /***
      * Executes a query that doesn't return a result set
-     * @param query query to be executed
+     * @param prepareQuery query to be executed
      * @throws SQLException General SQL exception
      */
-    public static void executeUpdate(String query) throws SQLException {
+    public static void executeUpdate(PrepareQuery prepareQuery) throws SQLException {
         Connection conn = null;
         try {
             // Gets a connection from the pool
             conn = DbConnectionPool.getConnection();
 
             // Creates the table in the database
-            var stmt = conn.createStatement();
-            stmt.executeUpdate(query);
+            prepareQuery.prepareStmt(conn);
+            var stmt = prepareQuery.getStatement();
 
+            stmt.executeUpdate();
         } finally {
             if (conn != null) {
                 conn.close(); // Returns to pool, doesn't actually close
@@ -35,19 +34,21 @@ public class DbConnection {
 
     /***
      * Executes a query that returns a result set
-     * @param query query to be executed
+     * @param prepareQuery query to be executed
      * @return Result of the query
      * @throws SQLException General SQL exception
      */
-    public static QueryResult executeQuery(String query) throws SQLException {
+    public static QueryResult executeQuery(PrepareQuery prepareQuery) throws SQLException {
         Connection conn = null;
-        Statement stmt = null;
+        PreparedStatement stmt = null;
         ResultSet rs = null;
 
         try {
             conn = DbConnectionPool.getConnection();
-            stmt = conn.createStatement();
-            rs = stmt.executeQuery(query);
+            prepareQuery.prepareStmt(conn);
+            stmt = prepareQuery.getStatement();
+
+            rs = stmt.executeQuery();
             return new QueryResult(conn, stmt, rs);
         } catch (SQLException e) {
             // Clean up resources on error

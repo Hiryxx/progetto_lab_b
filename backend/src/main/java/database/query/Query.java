@@ -9,21 +9,12 @@ import java.sql.SQLException;
  * This class is responsible for executing the query and returning the result.
  */
 public class Query {
-    private String query;
+    private final String query;
 
     public Query(String query) {
         this.query = query;
     }
 
-    /**
-     * Executes the query and returns the result
-     *
-     * @return the result of the query
-     * @throws SQLException if there is an error executing the query
-     */
-    public QueryResult execute() throws SQLException {
-        return DbConnection.executeQuery(query);
-    }
 
     /**
      * Returns the query string

@@ -1,6 +1,7 @@
 package database.models;
 
 import database.connection.DbConnection;
+import database.query.PrepareQuery;
 import database.query.SelectBuilder;
 import utils.DbUtil;
 
@@ -10,12 +11,27 @@ import java.sql.SQLException;
  * Represents an entity in the database
  */
 public abstract class Entity {
+    // todo i need to understand how i want to see Query and PrepareQuery classes
+    // todo for example i want also the select builder to make sense. should i make a prepare method for the builder?
+    //todo do i want the query to be before or after the prepare? i think before, so i can see the query before it is prepared
+    //todo i could make a prepare method that returns a PrepareQuery object, so i can see the query before it is prepared
+
+    // ----- after modifications -----
+
+    // todo i added the prepare method. now i would have to execute the query but do i need to execute it in that class? or in some others?
+    // todo i could use the helper class DbConnection to execute the query
+
+
+    // --- after modifications ---
+
+
+    // todo i dont know if i like that the util gets the prepare statement and executes it
 
     /**
      * Inserts an entity into the database
      */
     public void create() throws IllegalAccessException, SQLException {
-        String insertQuery = DbUtil.insertQuery(this);
+        PrepareQuery insertQuery = DbUtil.insertQuery(this);
         System.out.println("Insert query: " + insertQuery);
 
         // Inserts the entity into the database
@@ -26,7 +42,7 @@ public abstract class Entity {
      * Updates an entity in the database
      */
     public void update() throws IllegalAccessException, SQLException {
-        String updateQuery = DbUtil.updateQuery(this);
+        PrepareQuery updateQuery = DbUtil.updateQuery(this);
         System.out.println("Update query: " + updateQuery);
         // Updates the entity in the database
         DbConnection.executeUpdate(updateQuery);
@@ -36,7 +52,7 @@ public abstract class Entity {
      * Deletes an entity from the database
      */
     public void delete() throws IllegalAccessException, SQLException {
-        String deleteQuery = DbUtil.deleteQuery(this);
+        PrepareQuery deleteQuery = DbUtil.deleteQuery(this);
         System.out.println("Delete query: " + deleteQuery);
         // Deletes the entity from the database
         DbConnection.executeUpdate(deleteQuery);

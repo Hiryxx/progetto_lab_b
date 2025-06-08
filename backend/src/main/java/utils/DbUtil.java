@@ -3,6 +3,8 @@ package utils;
 import database.annotations.*;
 import database.connection.DbConnection;
 import database.models.Entity;
+import database.query.PrepareQuery;
+import database.query.Query;
 
 import java.lang.reflect.Field;
 import java.sql.SQLException;
@@ -18,7 +20,7 @@ public class DbUtil {
                 : entityClass.getSimpleName() + "s";
     }
 
-    public static String initTable(Class<? extends Entity> entityClass) throws SQLException {
+    public static PrepareQuery initTable(Class<? extends Entity> entityClass) throws SQLException {
         Table tableAnnotation = entityClass.getAnnotation(Table.class);
         String tableName = tableAnnotation != null && !tableAnnotation.name().isEmpty()
                 ? tableAnnotation.name()
@@ -91,17 +93,18 @@ public class DbUtil {
 
         query.append(")");
 
-        return query.toString();
+        return new PrepareQuery(query.toString());
     }
 
 
     /**
      * Generates an INSERT query for an entity
+     *
      * @param entity The entity to insert
      * @return SQL INSERT query
      * @throws IllegalAccessException If field access fails
      */
-    public static String insertQuery(Entity entity) throws IllegalAccessException {
+    public static PrepareQuery insertQuery(Entity entity) throws IllegalAccessException {
         Class<?> entityClass = entity.getClass();
 
         Table tableAnnotation = entityClass.getAnnotation(Table.class);
@@ -111,7 +114,7 @@ public class DbUtil {
 
         StringBuilder columns = new StringBuilder();
         StringBuilder placeholders = new StringBuilder();
-        List<String> values = new ArrayList<>();
+        List<Object> values = new ArrayList<>();
 
         // Process annotated fields
         Field[] fields = entityClass.getDeclaredFields();
@@ -142,21 +145,18 @@ public class DbUtil {
 
         String query = "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + placeholders + ")";
 
-        // todo here i will need to replace the placeholders with the actual values with statements
-        for (String value : values) {
-            query = query.replaceFirst("\\?", value);
-        }
 
-        return query;
+        return new PrepareQuery(new Query(query), values);
     }
 
     /**
      * Generates an UPDATE query for an entity
+     *
      * @param entity The entity to update
-     * @return SQL UPDATE query
+     * @return PrepareQuery for UPDATE operation
      * @throws IllegalAccessException If field access fails
      */
-    public static String updateQuery(Entity entity) throws IllegalAccessException {
+    public static PrepareQuery updateQuery(Entity entity) throws IllegalAccessException {
         Class<?> entityClass = entity.getClass();
 
         Table tableAnnotation = entityClass.getAnnotation(Table.class);
@@ -166,8 +166,7 @@ public class DbUtil {
 
         StringBuilder setClause = new StringBuilder();
         StringBuilder whereClause = new StringBuilder();
-        List<String> values = new ArrayList<>();
-        List<String> keyValues = new ArrayList<>();
+        List<Object> values = new ArrayList<>();
 
         Field[] fields = entityClass.getDeclaredFields();
         for (Field field : fields) {
@@ -179,7 +178,6 @@ public class DbUtil {
             if (value == null) continue; // Skip null values
 
             String columnName = !column.name().isEmpty() ? column.name() : field.getName();
-
             boolean isPrimaryKey = field.isAnnotationPresent(Id.class);
 
             if (isPrimaryKey) {
@@ -187,13 +185,13 @@ public class DbUtil {
                     whereClause.append(" AND ");
                 }
                 whereClause.append(columnName).append(" = ?");
-                keyValues.add(formatValue(value));
+                values.add(value);
             } else {
                 if (setClause.length() > 0) {
                     setClause.append(", ");
                 }
                 setClause.append(columnName).append(" = ?");
-                values.add(formatValue(value));
+                values.add(value);
             }
 
             field.setAccessible(false);
@@ -204,25 +202,17 @@ public class DbUtil {
         }
 
         String query = "UPDATE " + tableName + " SET " + setClause + " WHERE " + whereClause;
-
-        for (String value : values) {
-            query = query.replaceFirst("\\?", value);
-        }
-
-        for (String value : keyValues) {
-            query = query.replaceFirst("\\?", value);
-        }
-
-        return query;
+        return new PrepareQuery(new Query(query), values);
     }
 
     /**
      * Generates a DELETE query for an entity
+     *
      * @param entity The entity to delete
-     * @return SQL DELETE query
+     * @return PrepareQuery for DELETE operation
      * @throws IllegalAccessException If field access fails
      */
-    public static String deleteQuery(Entity entity) throws IllegalAccessException {
+    public static PrepareQuery deleteQuery(Entity entity) throws IllegalAccessException {
         Class<?> entityClass = entity.getClass();
 
         Table tableAnnotation = entityClass.getAnnotation(Table.class);
@@ -231,7 +221,7 @@ public class DbUtil {
                 : entityClass.getSimpleName() + "s";
 
         StringBuilder whereClause = new StringBuilder();
-        List<String> keyValues = new ArrayList<>();
+        List<Object> values = new ArrayList<>();
 
         Field[] fields = entityClass.getDeclaredFields();
         for (Field field : fields) {
@@ -248,7 +238,7 @@ public class DbUtil {
                     whereClause.append(" AND ");
                 }
                 whereClause.append(columnName).append(" = ?");
-                keyValues.add(formatValue(value));
+                values.add(value);
 
                 field.setAccessible(false);
             }
@@ -259,16 +249,11 @@ public class DbUtil {
         }
 
         String query = "DELETE FROM " + tableName + " WHERE " + whereClause;
-
-        for (String value : keyValues) {
-            query = query.replaceFirst("\\?", value);
-        }
-
-        return query;
+        return new PrepareQuery(new Query(query), values);
     }
-
     /**
      * Helper method to format values for SQL based on their Java type
+     *
      * @param value The value to format
      * @return Formatted value for SQL
      */
@@ -284,46 +269,49 @@ public class DbUtil {
 
     /**
      * Initializes the database table for the given entity class
+     *
      * @param entityClass The entity class to initialize
-     * @throws SQLException If database operation fails
+     * @throws SQLException           If database operation fails
      * @throws IllegalAccessException If field access fails
      */
-
     public static void init(Class<? extends Entity> entityClass) throws SQLException, IllegalAccessException {
-        String createQuery = DbUtil.initTable(entityClass);
+        PrepareQuery createQuery = DbUtil.initTable(entityClass);
         DbConnection.executeUpdate(createQuery);
     }
 
     /**
      * Executes an entity's INSERT query
+     *
      * @param entity The entity to insert
      * @throws IllegalAccessException If field access fails
-     * @throws SQLException If database operation fails
+     * @throws SQLException           If database operation fails
      */
     public static void insert(Entity entity) throws IllegalAccessException, SQLException {
-        String query = insertQuery(entity);
+        PrepareQuery query = insertQuery(entity);
         DbConnection.executeUpdate(query);
     }
 
     /**
      * Executes an entity's UPDATE query
+     *
      * @param entity The entity to update
      * @throws IllegalAccessException If field access fails
-     * @throws SQLException If database operation fails
+     * @throws SQLException           If database operation fails
      */
     public static void update(Entity entity) throws IllegalAccessException, SQLException {
-        String query = updateQuery(entity);
+        PrepareQuery query = updateQuery(entity);
         DbConnection.executeUpdate(query);
     }
 
     /**
      * Executes an entity's DELETE query
+     *
      * @param entity The entity to delete
      * @throws IllegalAccessException If field access fails
-     * @throws SQLException If database operation fails
+     * @throws SQLException           If database operation fails
      */
     public static void delete(Entity entity) throws IllegalAccessException, SQLException {
-        String query = deleteQuery(entity);
+        PrepareQuery query = deleteQuery(entity);
         DbConnection.executeUpdate(query);
     }
 }

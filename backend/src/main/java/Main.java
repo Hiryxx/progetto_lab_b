@@ -1,4 +1,5 @@
 import database.models.User;
+import database.query.PrepareQuery;
 import database.query.Query;
 import database.query.QueryResult;
 import server.router.CommandRegister;
@@ -69,10 +70,10 @@ public class Main {
                     user.create();
                 }
                 case 3 -> {
-                    Query query = User.selectBy("*").build();
+                    PrepareQuery query = User.selectBy("*").prepare();
 
-                    System.out.println("Executing query: " + query.getInnerQuery());
-                    try (QueryResult result = query.execute()) {
+                    System.out.println("Executing query: " + query);
+                    try (QueryResult result = query.executeResult()) {
                         for (var r : result) {
                             String cf = r.getString("cf");
                             String name = r.getString("name");
