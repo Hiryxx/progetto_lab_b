@@ -2,6 +2,7 @@ package server.router;
 
 import database.models.Book;
 import database.models.User;
+import database.query.PrepareQuery;
 import database.query.QueryResult;
 import server.router.connection.SocketConnection;
 import server.router.connection.response.MultiResponse;
@@ -80,8 +81,9 @@ public class Server  implements AutoCloseable {
 
         commandRegister.register("GET_USERS", () -> {
             try {
-                QueryResult query = User.selectBy("*").build().execute();
-                return new MultiResponse(query);
+                PrepareQuery query = User.selectBy("*").prepare();
+                QueryResult result = query.executeResult();
+                return new MultiResponse(result);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

@@ -93,7 +93,7 @@ public class DbUtil {
 
         query.append(")");
 
-        return new PrepareQuery(query.toString());
+        return new PrepareQuery(new Query(query.toString()));
     }
 
 

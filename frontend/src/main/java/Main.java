@@ -8,6 +8,7 @@ public class Main {
     static int PORT = 9000;
     public static void main(String[] args) {
         Socket clientSocket = new Socket();
+
         try {
             clientSocket.connect(new java.net.InetSocketAddress("localhost", PORT));
         } catch (Exception e) {
