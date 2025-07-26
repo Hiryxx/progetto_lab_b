@@ -14,20 +14,22 @@ public class PrepareQuery {
     private List<Object> values = null;
     private PreparedStatement stmt;
 
-    public PrepareQuery(Query query, List<Object> values){
+    public PrepareQuery(Query query, List<Object> values) {
         this.query = query;
         this.values = values;
     }
 
-    public PrepareQuery(Query query){
+    public PrepareQuery(Query query) {
         this.query = query;
     }
 
     public void prepareStmt(Connection conn) throws SQLException {
         stmt = conn.prepareStatement(this.query.getInnerQuery());
-        for(int i = 1 ; i <= values.size(); i++){
-            Object value = values.get(i);
-            stmt.setObject(i, value, getJDBCType(value));
+        if (values != null) {
+            for (int i = 1; i <= values.size(); i++) {
+                Object value = values.get(i);
+                stmt.setObject(i, value, getJDBCType(value));
+            }
         }
     }
 
@@ -51,11 +53,11 @@ public class PrepareQuery {
     }
 
 
-    public PreparedStatement getStatement(){
+    public PreparedStatement getStatement() {
         return stmt;
     }
 
-    private JDBCType getJDBCType(Object data){
+    private JDBCType getJDBCType(Object data) {
         return switch (data.getClass().getSimpleName()) {
             case "String" -> JDBCType.VARCHAR;
             case "Integer", "int" -> JDBCType.INTEGER;
