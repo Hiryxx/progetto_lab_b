@@ -22,6 +22,7 @@ public class User extends Entity {
     @Column(type = "VARCHAR(255)", nullable = false)
     private String password;
 
+
     public User(
             String cf,
             String name,
