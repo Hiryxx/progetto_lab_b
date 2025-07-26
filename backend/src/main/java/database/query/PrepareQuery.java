@@ -26,9 +26,9 @@ public class PrepareQuery {
     public void prepareStmt(Connection conn) throws SQLException {
         stmt = conn.prepareStatement(this.query.getInnerQuery());
         if (values != null) {
-            for (int i = 1; i <= values.size(); i++) {
+            for (int i = 0; i < values.size(); i++) {
                 Object value = values.get(i);
-                stmt.setObject(i, value, getJDBCType(value));
+                stmt.setObject(i + 1, value);
             }
         }
     }
