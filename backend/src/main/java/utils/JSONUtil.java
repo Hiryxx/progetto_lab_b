@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
-import database.models.Entity;
+import database.models.base.Entity;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;

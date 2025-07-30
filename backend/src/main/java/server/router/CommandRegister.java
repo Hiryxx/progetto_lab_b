@@ -1,11 +1,11 @@
 package server.router;
 
-import database.models.Entity;
-import server.router.connection.response.Sendable;
-import server.router.executors.CommandHandler;
-import server.router.executors.Executable;
-import server.router.executors.NoInputCommandHandler;
-import server.router.executors.StringCommandHandler;
+import database.models.base.Entity;
+import server.connection.response.Sendable;
+import server.executors.CommandHandler;
+import server.executors.Executable;
+import server.executors.NoInputCommandHandler;
+import server.executors.StringCommandHandler;
 
 import java.util.HashMap;
 import java.util.Map;

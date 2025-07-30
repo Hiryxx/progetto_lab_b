@@ -1,9 +1,10 @@
 package database.models;
 
-import database.annotations.Column;
-import database.annotations.Id;
-import database.annotations.Table;
-import database.annotations.Unique;
+import database.models.base.annotations.Column;
+import database.models.base.annotations.Id;
+import database.models.base.annotations.Table;
+import database.models.base.annotations.Unique;
+import database.models.base.Entity;
 import database.query.SelectBuilder;
 
 @Table(name = "Users")

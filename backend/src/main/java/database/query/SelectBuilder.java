@@ -1,10 +1,9 @@
 package database.query;
 
-import database.models.Entity;
+import database.models.base.Entity;
 import utils.DbUtil;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
  * SelectBuilder is a class that helps to build SQL SELECT queries.

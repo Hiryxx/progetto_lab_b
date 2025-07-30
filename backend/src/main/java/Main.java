@@ -1,9 +1,8 @@
 import database.models.User;
 import database.query.PrepareQuery;
-import database.query.Query;
 import database.query.QueryResult;
 import server.router.CommandRegister;
-import server.router.Server;
+import server.Server;
 import utils.DbUtil;
 
 import java.sql.SQLException;

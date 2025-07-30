@@ -1,8 +1,8 @@
 package utils;
 
-import database.annotations.*;
 import database.connection.DbConnection;
-import database.models.Entity;
+import database.models.base.Entity;
+import database.models.base.annotations.*;
 import database.query.PrepareQuery;
 import database.query.Query;
 
@@ -35,14 +35,32 @@ public class DbUtil {
             if (column == null) continue; // Skip non-column fields
 
             String columnName = !column.name().isEmpty() ? column.name() : field.getName();
-            query.append(columnName).append(" ").append(column.type());
+            String columnType = column.type();
+
+            if (field.isAnnotationPresent(Id.class)) {
+                Id idAnnotation = field.getAnnotation(Id.class);
+                if (idAnnotation.autoIncrement()) {
+                    String upperCaseType = columnType.toUpperCase();
+                    columnType = switch (upperCaseType) {
+                        case "INTEGER", "INT" -> "SERIAL";
+                        case "BIGINT" -> "BIGSERIAL";
+                        case "SMALLINT" -> "SMALLSERIAL";
+                        case "SERIAL" -> "SERIAL";
+                        default -> throw new IllegalArgumentException(
+                                "Auto-increment is only supported for INTEGER, BIGINT, or SMALLINT types in PostgreSQL. Found: " + columnType
+                        );
+                    };
+                }
+            }
+
+            query.append(columnName).append(" ").append(columnType);
 
             if (!column.nullable()) {
                 query.append(" NOT NULL");
             }
 
             if (field.isAnnotationPresent(Id.class)) {
-                if (primaryKeys.length() > 0) primaryKeys.append(", ");
+                if (!primaryKeys.isEmpty()) primaryKeys.append(", ");
                 primaryKeys.append(columnName);
             }
 
@@ -75,7 +93,6 @@ public class DbUtil {
 
         boolean hasConstraints = false;
 
-        // Add primary key constraint if any
         if (primaryKeys.length() > 0) {
             query.setLength(query.length() - 2);
             query.append(", PRIMARY KEY (").append(primaryKeys).append(")");
@@ -95,7 +112,6 @@ public class DbUtil {
 
         return new PrepareQuery(new Query(query.toString()));
     }
-
 
     /**
      * Generates an INSERT query for an entity
@@ -276,6 +292,7 @@ public class DbUtil {
      */
     public static void init(Class<? extends Entity> entityClass) throws SQLException, IllegalAccessException {
         PrepareQuery createQuery = DbUtil.initTable(entityClass);
+        System.out.println("INFO - Creating table with query: " + createQuery);
         DbConnection.executeUpdate(createQuery);
     }
 

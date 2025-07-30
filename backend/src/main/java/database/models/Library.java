@@ -1,9 +1,10 @@
 package database.models;
 
-import database.annotations.Column;
-import database.annotations.ForeignKey;
-import database.annotations.Id;
-import database.annotations.Table;
+import database.models.base.annotations.Column;
+import database.models.base.annotations.ForeignKey;
+import database.models.base.annotations.Id;
+import database.models.base.annotations.Table;
+import database.models.base.Entity;
 import database.query.SelectBuilder;
 
 @Table(name = "Libraries")
