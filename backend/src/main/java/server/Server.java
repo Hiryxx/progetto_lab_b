@@ -1,7 +1,6 @@
 package server;
 
-import database.models.book.Book;
-import database.models.book.BookRating;
+import database.models.book.*;
 import database.models.Library;
 import database.models.User;
 import database.query.PrepareQuery;
@@ -13,11 +12,12 @@ import server.connection.response.SingleResponse;
 import server.router.CommandRegister;
 import utils.DbUtil;
 
-import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -52,15 +52,55 @@ public class Server  implements AutoCloseable {
             DbUtil.init(Book.class);
             DbUtil.init(Library.class);
             DbUtil.init(BookRating.class);
+            DbUtil.init(BookSuggestion.class);
+            DbUtil.init(BookAuthor.class);
+            DbUtil.init(BookCategory.class);
+
+
 
         } catch (SQLException | IllegalAccessException e) {
             // this has to block the server execution
             throw new RuntimeException("Error initializing database: " + e.getMessage());
         }
     }
-
+    /**
+     * Creates initial entities in the database by executing SQL scripts.
+     * The scripts are defined in a manifest file located in the resources directory.
+     * If any of the scripts fail to execute, an exception is thrown and the server is stopped.
+     */
     private void createInitialEntities() {
-        // todo
+        ClassLoader classLoader = getClass().getClassLoader();
+        List<String> scriptFiles = new ArrayList<>();
+
+        try (InputStream manifestStream = classLoader.getResourceAsStream("sql_inserts/manifest.txt")) {
+            assert manifestStream != null;
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(manifestStream))) {
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (!line.trim().isEmpty()) {
+                        scriptFiles.add(line.trim());
+                    }
+                }
+            }
+        } catch (IOException | NullPointerException e) {
+            throw new RuntimeException("Could not read SQL manifest file.", e);
+        }
+
+        for (String scriptFileName : scriptFiles) {
+            System.out.println("Executing SQL script: " + scriptFileName);
+            String resourcePath = "sql_inserts/" + scriptFileName;
+            try (InputStream scriptStream = classLoader.getResourceAsStream(resourcePath)) {
+                if (scriptStream == null) {
+                    throw new RuntimeException("Could not find script file in resources: " + resourcePath);
+                }
+                DbUtil.executeSqlFromStream(scriptStream);
+                System.out.println("Executed SQL file: " + scriptFileName);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        System.out.println("All SQL files executed successfully.");
     }
 
     /**

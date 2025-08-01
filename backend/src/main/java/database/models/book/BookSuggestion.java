@@ -1,4 +1,6 @@
 package database.models.book;
 
-public class BookSuggestion {
+import database.models.base.Entity;
+
+public class BookSuggestion extends Entity {
 }

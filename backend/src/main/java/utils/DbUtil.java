@@ -6,7 +6,11 @@ import database.models.base.annotations.*;
 import database.query.PrepareQuery;
 import database.query.Query;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -330,5 +334,34 @@ public class DbUtil {
     public static void delete(Entity entity) throws IllegalAccessException, SQLException {
         PrepareQuery query = deleteQuery(entity);
         DbConnection.executeUpdate(query);
+    }
+    /**
+        * Executes SQL commands from an InputStream.
+        *
+        * @param inputStream The InputStream containing SQL commands
+        * @throws IllegalArgumentException If the InputStream is null
+        * @throws RuntimeException If an error occurs while reading the InputStream or executing the SQL commands
+        * @throws SQLException If an SQL error occurs during execution
+     */
+    public static void executeSqlFromStream(InputStream inputStream) {
+        if (inputStream == null) {
+            throw new IllegalArgumentException("InputStream cannot be null.");
+        }
+        try {
+            String content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            String[] queries = content.split(";\\s*\\r?\\n|;\\s*$");
+
+            for (String query : queries) {
+                String trimmedQuery = query.trim();
+                if (!trimmedQuery.isEmpty()) {
+                    DbConnection.executeUpdate(new PrepareQuery(new Query(trimmedQuery)));
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading SQL from InputStream", e);
+        }
+        catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

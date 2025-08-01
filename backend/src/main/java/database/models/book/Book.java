@@ -19,27 +19,17 @@ public class Book extends Entity {
     @Column(type = "VARCHAR(255)", nullable = false)
     private String title;
 
-    // this is wrong since the book can have more than one user
-    @ForeignKey(references = Author.class)
-    @Column(type = "SERIAL", nullable = false)
-    private int author_id;
-
     @Column(type = "INT", nullable = false)
     private int year;
 
     @Column(type = "VARCHAR(255)")
     private String description;
 
-    @ForeignKey(references = Category.class)
-    @Column(type = "SERIAL", nullable = false)
-    private int category_id;
 
-    public Book(String title, int authorId, int year, String description, int categoryId) {
+    public Book(String title, int year, String description) {
         this.title = title;
-        this.author_id = authorId;
         this.year = year;
         this.description = description;
-        this.category_id = categoryId;
     }
 
     public static SelectBuilder selectBy(String queryParameter) {
