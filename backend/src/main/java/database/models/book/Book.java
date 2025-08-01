@@ -1,7 +1,10 @@
 package database.models.book;
 
 
+import database.models.Author;
+import database.models.Category;
 import database.models.base.annotations.Column;
+import database.models.base.annotations.ForeignKey;
 import database.models.base.annotations.Id;
 import database.models.base.annotations.Table;
 import database.models.base.Entity;
@@ -16,13 +19,9 @@ public class Book extends Entity {
     @Column(type = "VARCHAR(255)", nullable = false)
     private String title;
 
-    // todo relationship with author table
+    @ForeignKey(references = Author.class)
     @Column(type = "VARCHAR(255)", nullable = false)
-    private String author;
-
-    // todo relationship with publisher table
-    @Column(type = "VARCHAR(255)", nullable = false)
-    private String publisher;
+    private String author_id;
 
     @Column(type = "INT", nullable = false)
     private int year;
@@ -30,17 +29,16 @@ public class Book extends Entity {
     @Column(type = "VARCHAR(255)")
     private String description;
 
-    // todo relationship with genre table
+    @ForeignKey(references = Category.class, column = "id")
     @Column(type = "VARCHAR(255)", nullable = false)
-    private String category;
+    private String category_id;
 
-    public Book(int id, String title, String author, String publisher, int year, String genre) {
-        this.id = id;
+    public Book(String title, String authorId, int year, String description, String categoryId) {
         this.title = title;
-        this.author = author;
-        this.publisher = publisher;
+        this.author_id = authorId;
         this.year = year;
-        this.genre = genre;
+        this.description = description;
+        this.category_id = categoryId;
     }
 
     public static SelectBuilder selectBy(String queryParameter) {

@@ -8,6 +8,8 @@ if __name__ == "__main__":
     # Load the dataset
     df = pd.read_csv('BooksDatasetClean.csv')
 
+    df = df.drop(["Publisher", "Publish Date (Month)", "Price Starting With ($)"], axis=1)
+
     # remove rows where 'Category' is null and where 'Publish Date (Year)' is null
     df = df.dropna(subset=['Category', 'Publish Date (Year)'])
 
@@ -17,8 +19,6 @@ if __name__ == "__main__":
     # change some columns name
     columns_to_rename = {
     'Publish Date (Year)' : 'Year',
-    'Publish Date (Month)' : 'Month',
-    'Price Starting With ($)': 'Price',
     }
     df = df.rename(columns=columns_to_rename)
 
