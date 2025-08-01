@@ -19,9 +19,10 @@ public class Book extends Entity {
     @Column(type = "VARCHAR(255)", nullable = false)
     private String title;
 
+    // this is wrong since the book can have more than one user
     @ForeignKey(references = Author.class)
-    @Column(type = "VARCHAR(255)", nullable = false)
-    private String author_id;
+    @Column(type = "SERIAL", nullable = false)
+    private int author_id;
 
     @Column(type = "INT", nullable = false)
     private int year;
@@ -29,11 +30,11 @@ public class Book extends Entity {
     @Column(type = "VARCHAR(255)")
     private String description;
 
-    @ForeignKey(references = Category.class, column = "id")
-    @Column(type = "VARCHAR(255)", nullable = false)
-    private String category_id;
+    @ForeignKey(references = Category.class)
+    @Column(type = "SERIAL", nullable = false)
+    private int category_id;
 
-    public Book(String title, String authorId, int year, String description, String categoryId) {
+    public Book(String title, int authorId, int year, String description, int categoryId) {
         this.title = title;
         this.author_id = authorId;
         this.year = year;
