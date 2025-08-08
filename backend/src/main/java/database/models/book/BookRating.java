@@ -10,19 +10,19 @@ import database.models.base.Entity;
 @Table(name = "BookRatings")
 public class BookRating extends Entity {
     @Id(autoIncrement = true)
-    @Column(name = "rating_id", type = "INT")
-    private String ratingId;
+    @Column( type = "SERIAL")
+    private int ratingId;
 
-    @ForeignKey(references = Book.class, column = "isbn")
-    @Column(name = "book_isbn", type = "CHAR(36)", nullable = false)
-    private String bookIsbn;
+    @ForeignKey(references = Book.class)
+    @Column( type = "SERIAL", nullable = false)
+    private int bookId;
 
     @ForeignKey(references = User.class, column = "cf")
-    @Column(name = "user_cf", type = "CHAR(36)", nullable = false)
+    @Column(type = "CHAR(36)", nullable = false)
     private String userCf;
 
-    public BookRating(String bookIsbn, String userCf) {
-        this.bookIsbn = bookIsbn;
+    public BookRating(int bookId, String userCf) {
+        this.bookId = bookId;
         this.userCf = userCf;
     }
 

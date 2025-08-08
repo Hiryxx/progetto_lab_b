@@ -13,16 +13,16 @@ import database.query.SelectBuilder;
 @Table(name = "Books")
 public class Book extends Entity {
     @Id(autoIncrement = true)
-    @Column(type = "INTEGER")
+    @Column(type = "SERIAL")
     private int id;
 
-    @Column(type = "VARCHAR(255)", nullable = false)
+    @Column(type = "VARCHAR(300)", nullable = false)
     private String title;
 
     @Column(type = "INT", nullable = false)
     private int year;
 
-    @Column(type = "VARCHAR(255)")
+    @Column(type = "TEXT")
     private String description;
 
 

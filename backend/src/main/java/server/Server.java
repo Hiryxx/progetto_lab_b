@@ -1,9 +1,12 @@
 package server;
 
+import database.models.Author;
+import database.models.Category;
 import database.models.book.*;
 import database.models.Library;
 import database.models.User;
 import database.query.PrepareQuery;
+import database.query.Query;
 import database.query.QueryResult;
 import server.connection.SocketConnection;
 import server.connection.response.MultiResponse;
@@ -53,10 +56,12 @@ public class Server  implements AutoCloseable {
             DbUtil.init(Library.class);
             DbUtil.init(BookRating.class);
             DbUtil.init(BookSuggestion.class);
+
+            DbUtil.init(Author.class);
             DbUtil.init(BookAuthor.class);
+
+            DbUtil.init(Category.class);
             DbUtil.init(BookCategory.class);
-
-
 
         } catch (SQLException | IllegalAccessException e) {
             // this has to block the server execution
@@ -69,10 +74,9 @@ public class Server  implements AutoCloseable {
      * If any of the scripts fail to execute, an exception is thrown and the server is stopped.
      */
     private void createInitialEntities() {
-        ClassLoader classLoader = getClass().getClassLoader();
         List<String> scriptFiles = new ArrayList<>();
 
-        try (InputStream manifestStream = classLoader.getResourceAsStream("sql_inserts/manifest.txt")) {
+        try (InputStream manifestStream = Server.class.getResourceAsStream("/manifest.txt")) {
             assert manifestStream != null;
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(manifestStream))) {
 
@@ -89,14 +93,25 @@ public class Server  implements AutoCloseable {
 
         for (String scriptFileName : scriptFiles) {
             System.out.println("Executing SQL script: " + scriptFileName);
-            String resourcePath = "sql_inserts/" + scriptFileName;
-            try (InputStream scriptStream = classLoader.getResourceAsStream(resourcePath)) {
+            String resourcePath = "/sql_inserts/" + scriptFileName;
+            try (InputStream scriptStream = Server.class.getResourceAsStream(resourcePath)) {
                 if (scriptStream == null) {
                     throw new RuntimeException("Could not find script file in resources: " + resourcePath);
                 }
+                String tableName = scriptFileName.replace(".sql", "");
+                String checkQuery = "SELECT 1 FROM " + tableName + " LIMIT 1;";
+
+                PrepareQuery prepareCheck = new PrepareQuery(new Query(checkQuery));
+                QueryResult result = prepareCheck.executeResult();
+
+                if (result.iterator().hasNext()) {
+                    System.out.println("Table " + tableName + " already exists, skipping creation.");
+                    result.close();
+                    continue;
+                }
                 DbUtil.executeSqlFromStream(scriptStream);
                 System.out.println("Executed SQL file: " + scriptFileName);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }

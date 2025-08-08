@@ -122,10 +122,10 @@ def generate_sql_files(df):
     with open(os.path.join(output_dir, 'books.sql'), 'w', encoding='utf-8') as f:
         write_batched_sql(f, 'Books', ['id', 'title', 'description', 'year'], book_values)
 
-    with open(os.path.join(output_dir, 'book_authors.sql'), 'w', encoding='utf-8') as f:
+    with open(os.path.join(output_dir, 'bookauthors.sql'), 'w', encoding='utf-8') as f:
         write_batched_sql(f, 'BookAuthors', ['bookId', 'authorId'], book_author_values)
 
-    with open(os.path.join(output_dir, 'book_categories.sql'), 'w', encoding='utf-8') as f:
+    with open(os.path.join(output_dir, 'bookcategories.sql'), 'w', encoding='utf-8') as f:
         write_batched_sql(f, 'BookCategories', ['bookId', 'categoryId'], book_category_values)
 
     print("Successfully generated all SQL files.")

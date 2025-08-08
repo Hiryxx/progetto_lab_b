@@ -1,5 +1,5 @@
 authors.sql
 categories.sql
 books.sql
-book_authors.sql
-book_categories.sql
+bookauthors.sql
+bookcategories.sql

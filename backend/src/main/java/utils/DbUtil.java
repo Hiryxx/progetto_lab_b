@@ -33,11 +33,13 @@ public class DbUtil {
         StringBuilder query = new StringBuilder("CREATE TABLE IF NOT EXISTS " + tableName + " (");
         StringBuilder primaryKeys = new StringBuilder();
         StringBuilder foreignKeys = new StringBuilder();
+        List<String> columnDefinitions = new ArrayList<>();
 
         for (Field field : entityClass.getDeclaredFields()) {
             Column column = field.getAnnotation(Column.class);
             if (column == null) continue; // Skip non-column fields
 
+            StringBuilder columnDef = new StringBuilder();
             String columnName = !column.name().isEmpty() ? column.name() : field.getName();
             String columnType = column.type();
 
@@ -57,10 +59,10 @@ public class DbUtil {
                 }
             }
 
-            query.append(columnName).append(" ").append(columnType);
+            columnDef.append(columnName).append(" ").append(columnType);
 
             if (!column.nullable()) {
-                query.append(" NOT NULL");
+                columnDef.append(" NOT NULL");
             }
 
             if (field.isAnnotationPresent(Id.class)) {
@@ -69,7 +71,7 @@ public class DbUtil {
             }
 
             if (field.isAnnotationPresent(Unique.class)) {
-                query.append(" UNIQUE");
+                columnDef.append(" UNIQUE");
             }
 
             // Handle foreign key
@@ -84,7 +86,7 @@ public class DbUtil {
 
                 String referencedColumn = fk.column();
 
-                if (foreignKeys.length() > 0) foreignKeys.append(", ");
+                if (!foreignKeys.isEmpty()) foreignKeys.append(", ");
 
                 foreignKeys.append("FOREIGN KEY (").append(columnName).append(") ")
                         .append("REFERENCES ").append(referencedTable).append("(").append(referencedColumn).append(") ")
@@ -92,31 +94,23 @@ public class DbUtil {
                         .append("ON UPDATE ").append(fk.onUpdate());
             }
 
-            query.append(", ");
+            columnDefinitions.add(columnDef.toString());
         }
 
-        boolean hasConstraints = false;
+        query.append(String.join(", ", columnDefinitions));
 
-        if (primaryKeys.length() > 0) {
-            query.setLength(query.length() - 2);
+        if (!primaryKeys.isEmpty()) {
             query.append(", PRIMARY KEY (").append(primaryKeys).append(")");
-            hasConstraints = true;
-        } else {
-            query.setLength(query.length() - 2);
         }
 
-        if (foreignKeys.length() > 0) {
-            if (hasConstraints) {
-                query.append(", ");
-            }
-            query.append(foreignKeys);
+        if (!foreignKeys.isEmpty()) {
+            query.append(", ").append(foreignKeys);
         }
 
         query.append(")");
 
         return new PrepareQuery(new Query(query.toString()));
     }
-
     /**
      * Generates an INSERT query for an entity
      *
