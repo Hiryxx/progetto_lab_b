@@ -9,6 +9,7 @@ import database.query.PrepareQuery;
 import database.query.Query;
 import database.query.QueryResult;
 import server.connection.SocketConnection;
+import server.connection.response.ErrorResponse;
 import server.connection.response.MultiResponse;
 import server.connection.response.Sendable;
 import server.connection.response.SingleResponse;
@@ -27,7 +28,7 @@ import java.util.Optional;
  * The Server class handles incoming client connections and processes commands.
  * It uses a Router to route commands to their corresponding actions.
  */
-public class Server  implements AutoCloseable {
+public class Server implements AutoCloseable {
     private ServerSocket serverSocket;
     private final CommandRegister commandRegister;
     private volatile boolean running = true;
@@ -68,6 +69,7 @@ public class Server  implements AutoCloseable {
             throw new RuntimeException("Error initializing database: " + e.getMessage());
         }
     }
+
     /**
      * Creates initial entities in the database by executing SQL scripts.
      * The scripts are defined in a manifest file located in the resources directory.
@@ -121,34 +123,33 @@ public class Server  implements AutoCloseable {
     /**
      * Register the server commands
      */
-    private void registerCommands(){
-        commandRegister.register("CREATE_USER", (User user) -> {
+    private void registerCommands() {
+        commandRegister.register("REGISTER", (User user) -> {
             try {
                 user.create();
                 return new SingleResponse("User created successfully");
             } catch (IllegalAccessException | SQLException e) {
-                throw new RuntimeException(e);
+                return new ErrorResponse("Error creating user: " + e.getMessage());
             }
         }, User.class);
 
-        commandRegister.register("CREATE_BOOK", (Book book) -> {
-            try {
-                book.create();
-                return new SingleResponse("Book created successfully");
-            } catch (IllegalAccessException | SQLException e) {
-                throw new RuntimeException(e);
-            }
-        }, Book.class);
+        commandRegister.register("LOGIN", (User user) -> {
+            // TODO hash password
+            PrepareQuery pq = User.selectBy("*")
+                    .where("cf = ? AND password = ?")
+                    .prepare(List.of(user.getCf(), user.getPassword()));
 
-        commandRegister.register("GET_USERS", () -> {
-            try {
-                PrepareQuery query = User.selectBy("*").prepare();
-                QueryResult result = query.executeResult();
-                return new MultiResponse(result);
+            try (QueryResult result = pq.executeResult()) {
+                if (!result.iterator().hasNext()) {
+                    return new SingleResponse("Invalid credentials");
+                }
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                return new ErrorResponse("Error executing login query: " + e.getMessage());
             }
-        });
+            return new SingleResponse("User created successfully");
+
+        }, User.class);
+
 
         commandRegister.register("PING", () -> new SingleResponse("PONG"));
 
@@ -157,6 +158,7 @@ public class Server  implements AutoCloseable {
 
     /**
      * Starts the server and listens for incoming connections.
+     *
      * @param port The port number where the server is located
      */
     public void start(int port) throws IOException {

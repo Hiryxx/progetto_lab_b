@@ -1,6 +1,7 @@
 package server.connection;
 
 
+import server.connection.response.ErrorResponse;
 import server.connection.response.MultiResponse;
 import server.connection.response.Sendable;
 import server.connection.response.SingleResponse;
@@ -51,6 +52,10 @@ public class SocketConnection {
                         System.err.println("Error converting ResultSet to JSON: " + e.getMessage());
                     }
                 });
+            }
+            case ErrorResponse errorResponse -> {
+                out.println("ERROR: " + errorResponse.getErrorMessage());
+                out.flush();
             }
         }
 

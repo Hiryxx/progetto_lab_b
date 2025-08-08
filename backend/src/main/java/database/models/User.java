@@ -7,6 +7,8 @@ import database.models.base.annotations.Unique;
 import database.models.base.Entity;
 import database.query.SelectBuilder;
 
+import java.util.List;
+
 @Table(name = "Users")
 public class User extends Entity {
     @Id
@@ -37,5 +39,13 @@ public class User extends Entity {
 
     public static SelectBuilder selectBy(String queryParameter) {
         return new SelectBuilder(queryParameter, User.class);
+    }
+
+    public String getCf() {
+        return cf;
+    }
+
+    public String getPassword() {
+        return password;
     }
 }
