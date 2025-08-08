@@ -7,14 +7,15 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.RoundRectangle2D;
 
-public class LoginPage extends Page {
+public class RegisterPage extends Page {
+    private JTextField nameField;
     private JTextField emailField;
     private JPasswordField passwordField;
-    private JCheckBox rememberMeCheck;
+    private JPasswordField confirmPasswordField;
+    private JCheckBox termsCheck;
 
-    // Modern color palette (same as HomePage)
+    // Modern color palette (same as LoginPage)
     private Color primaryColor = new Color(99, 102, 241);      // Modern indigo
     private Color primaryHover = new Color(79, 70, 229);       // Darker indigo
     private Color accentColor = new Color(248, 113, 113);      // Modern coral
@@ -30,7 +31,7 @@ public class LoginPage extends Page {
     private Color gradientStart = new Color(139, 92, 246);     // Purple
     private Color gradientEnd = new Color(59, 130, 246);       // Blue
 
-    public LoginPage(MainFrame mainFrame) {
+    public RegisterPage(MainFrame mainFrame) {
         super(mainFrame);
         this.render();
     }
@@ -49,7 +50,7 @@ public class LoginPage extends Page {
 
         this.add(backgroundPanel, BorderLayout.CENTER);
 
-        // Modern bottom navigation (same as HomePage)
+        // Modern bottom navigation (same as LoginPage)
         JPanel bottomPanel = createModernBottomNavigationPanel();
         this.add(bottomPanel, BorderLayout.SOUTH);
     }
@@ -87,18 +88,18 @@ public class LoginPage extends Page {
 
         GridBagConstraints gbc = new GridBagConstraints();
 
-        // Login card
-        JPanel loginCard = createLoginCard();
+        // Register card
+        JPanel registerCard = createRegisterCard();
 
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.insets = new Insets(50, 50, 50, 50);
 
-        contentPanel.add(loginCard, gbc);
+        contentPanel.add(registerCard, gbc);
         return contentPanel;
     }
 
-    private JPanel createLoginCard() {
+    private JPanel createRegisterCard() {
         JPanel card = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -128,24 +129,24 @@ public class LoginPage extends Page {
 
         card.setLayout(new BorderLayout(0, 0));
         card.setBorder(BorderFactory.createEmptyBorder(50, 50, 50, 50));
-        card.setPreferredSize(new Dimension(450, 600));
+        card.setPreferredSize(new Dimension(450, 700));
 
         // Header
-        JPanel headerPanel = createLoginHeader();
+        JPanel headerPanel = createRegisterHeader();
         card.add(headerPanel, BorderLayout.NORTH);
 
         // Form
-        JPanel formPanel = createLoginForm();
+        JPanel formPanel = createRegisterForm();
         card.add(formPanel, BorderLayout.CENTER);
 
         // Footer
-        JPanel footerPanel = createLoginFooter();
+        JPanel footerPanel = createRegisterFooter();
         card.add(footerPanel, BorderLayout.SOUTH);
 
         return card;
     }
 
-    private JPanel createLoginHeader() {
+    private JPanel createRegisterHeader() {
         JPanel header = new JPanel();
         header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
         header.setOpaque(false);
@@ -160,13 +161,13 @@ public class LoginPage extends Page {
         logoPanel.add(logoLabel);
 
         // Welcome text
-        JLabel welcomeLabel = new JLabel("Welcome Back!");
+        JLabel welcomeLabel = new JLabel("Join BookHub!");
         welcomeLabel.setFont(new Font("SF Pro Display", Font.BOLD, 32));
         welcomeLabel.setForeground(textPrimary);
         welcomeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         welcomeLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
 
-        JLabel subtitleLabel = new JLabel("Sign in to your BookHub account");
+        JLabel subtitleLabel = new JLabel("Create your BookHub account");
         subtitleLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 16));
         subtitleLabel.setForeground(textSecondary);
         subtitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -179,13 +180,19 @@ public class LoginPage extends Page {
         return header;
     }
 
-    private JPanel createLoginForm() {
+    private JPanel createRegisterForm() {
         JPanel form = new JPanel();
         form.setLayout(new BoxLayout(form, BoxLayout.Y_AXIS));
         form.setOpaque(false);
 
+        // Name field
+        JPanel namePanel = createFormField("Full Name", "user");
+        nameField = (JTextField) findTextComponent(namePanel);
+        form.add(namePanel);
+        form.add(Box.createRigidArea(new Dimension(0, 20)));
+
         // Email field
-        JPanel emailPanel = createFormField("Email", "email");
+        JPanel emailPanel = createFormField("Email Address", "email");
         emailField = (JTextField) findTextComponent(emailPanel);
         form.add(emailPanel);
         form.add(Box.createRigidArea(new Dimension(0, 20)));
@@ -194,18 +201,24 @@ public class LoginPage extends Page {
         JPanel passwordPanel = createPasswordField("Password");
         passwordField = (JPasswordField) findTextComponent(passwordPanel);
         form.add(passwordPanel);
+        form.add(Box.createRigidArea(new Dimension(0, 20)));
+
+        // Confirm password field
+        JPanel confirmPasswordPanel = createPasswordField("Confirm Password");
+        confirmPasswordField = (JPasswordField) findTextComponent(confirmPasswordPanel);
+        form.add(confirmPasswordPanel);
         form.add(Box.createRigidArea(new Dimension(0, 15)));
 
-        // Remember me and forgot password
-        JPanel optionsPanel = createOptionsPanel();
-        form.add(optionsPanel);
+        // Terms and conditions
+        JPanel termsPanel = createTermsPanel();
+        form.add(termsPanel);
         form.add(Box.createRigidArea(new Dimension(0, 30)));
 
-        // Login button
-        JButton loginButton = createModernButton("Sign In", primaryColor, Color.WHITE, true);
-        loginButton.addActionListener(e -> handleLogin());
-        loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        form.add(loginButton);
+        // Register button
+        JButton registerButton = createModernButton("Create Account", primaryColor, Color.WHITE, true);
+        registerButton.addActionListener(e -> handleRegister());
+        registerButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        form.add(registerButton);
         form.add(Box.createRigidArea(new Dimension(0, 20)));
 
         // Or divider
@@ -341,54 +354,73 @@ public class LoginPage extends Page {
         return fieldPanel;
     }
 
-    private JPanel createOptionsPanel() {
-        JPanel options = new JPanel(new BorderLayout());
-        options.setOpaque(false);
+    private JPanel createTermsPanel() {
+        JPanel terms = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        terms.setOpaque(false);
 
-        // Remember me checkbox
-        JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        leftPanel.setOpaque(false);
+        termsCheck = new JCheckBox();
+        termsCheck.setOpaque(false);
+        termsCheck.setFocusPainted(false);
 
-        rememberMeCheck = new JCheckBox("Remember me");
-        rememberMeCheck.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
-        rememberMeCheck.setForeground(textSecondary);
-        rememberMeCheck.setOpaque(false);
-        rememberMeCheck.setFocusPainted(false);
+        JLabel termsText = new JLabel("I agree to the ");
+        termsText.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
+        termsText.setForeground(textSecondary);
 
-        leftPanel.add(rememberMeCheck);
+        JLabel termsLink = new JLabel("Terms of Service");
+        termsLink.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
+        termsLink.setForeground(primaryColor);
+        termsLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Forgot password link
-        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-        rightPanel.setOpaque(false);
-
-        JLabel forgotLabel = new JLabel("Forgot password?");
-        forgotLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
-        forgotLabel.setForeground(primaryColor);
-        forgotLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        forgotLabel.addMouseListener(new MouseAdapter() {
+        termsLink.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                handleForgotPassword();
+                handleTermsOfService();
             }
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                forgotLabel.setForeground(primaryHover);
+                termsLink.setForeground(primaryHover);
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                forgotLabel.setForeground(primaryColor);
+                termsLink.setForeground(primaryColor);
             }
         });
 
-        rightPanel.add(forgotLabel);
+        JLabel andText = new JLabel(" and ");
+        andText.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
+        andText.setForeground(textSecondary);
 
-        options.add(leftPanel, BorderLayout.WEST);
-        options.add(rightPanel, BorderLayout.EAST);
+        JLabel privacyLink = new JLabel("Privacy Policy");
+        privacyLink.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
+        privacyLink.setForeground(primaryColor);
+        privacyLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        return options;
+        privacyLink.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                handlePrivacyPolicy();
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                privacyLink.setForeground(primaryHover);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                privacyLink.setForeground(primaryColor);
+            }
+        });
+
+        terms.add(termsCheck);
+        terms.add(termsText);
+        terms.add(termsLink);
+        terms.add(andText);
+        terms.add(privacyLink);
+
+        return terms;
     }
 
     private JPanel createDivider(String text) {
@@ -438,8 +470,8 @@ public class LoginPage extends Page {
         JButton googleButton = createModernButton("🌐 Google", new Color(66, 133, 244), Color.WHITE, false);
         JButton appleButton = createModernButton("🍎 Apple", new Color(0, 0, 0), Color.WHITE, false);
 
-        googleButton.addActionListener(e -> handleSocialLogin("google"));
-        appleButton.addActionListener(e -> handleSocialLogin("apple"));
+        googleButton.addActionListener(e -> handleSocialRegister("google"));
+        appleButton.addActionListener(e -> handleSocialRegister("apple"));
 
         social.add(googleButton);
         social.add(appleButton);
@@ -447,40 +479,39 @@ public class LoginPage extends Page {
         return social;
     }
 
-    private JPanel createLoginFooter() {
+    private JPanel createRegisterFooter() {
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
         footer.setOpaque(false);
         footer.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
 
-        JLabel signupText = new JLabel("Don't have an account? ");
-        signupText.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
-        signupText.setForeground(textSecondary);
+        JLabel loginText = new JLabel("Already have an account? ");
+        loginText.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
+        loginText.setForeground(textSecondary);
 
-        JLabel signupLink = new JLabel("Sign up");
-        signupLink.setFont(new Font("SF Pro Text", Font.BOLD, 14));
-        signupLink.setForeground(primaryColor);
-        signupLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        JLabel loginLink = new JLabel("Log in");
+        loginLink.setFont(new Font("SF Pro Text", Font.BOLD, 14));
+        loginLink.setForeground(primaryColor);
+        loginLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        signupLink.addMouseListener(new MouseAdapter() {
+        loginLink.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                changePage("register");
+                handleSignIn();
             }
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                signupLink.setForeground(primaryHover);
+                loginLink.setForeground(primaryHover);
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                signupLink.setForeground(primaryColor);
+                loginLink.setForeground(primaryColor);
             }
         });
 
-
-        footer.add(signupText);
-        footer.add(signupLink);
+        footer.add(loginText);
+        footer.add(loginLink);
 
         return footer;
     }
@@ -598,44 +629,70 @@ public class LoginPage extends Page {
     }
 
     // Event handlers
-    private void handleLogin() {
+    private void handleRegister() {
+        String name = nameField.getText();
         String email = emailField.getText();
         String password = new String(passwordField.getPassword());
+        String confirmPassword = new String(confirmPasswordField.getPassword());
 
         // Basic validation
-        if (email.isEmpty() || password.isEmpty()) {
+        if (name.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
             JOptionPane.showMessageDialog(this,
                     "Please fill in all fields",
-                    "Login Error",
+                    "Registration Error",
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        // Here you would implement actual login logic
-        // For demo purposes, just navigate to home
-        changePage("home");
+        if (!password.equals(confirmPassword)) {
+            JOptionPane.showMessageDialog(this,
+                    "Passwords do not match",
+                    "Registration Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (!termsCheck.isSelected()) {
+            JOptionPane.showMessageDialog(this,
+                    "Please accept the Terms of Service and Privacy Policy",
+                    "Registration Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Here you would implement actual registration logic
+        // For demo purposes, show success message and navigate to login
+        JOptionPane.showMessageDialog(this,
+                "Account created successfully! Please sign in.",
+                "Registration Success",
+                JOptionPane.INFORMATION_MESSAGE);
+        changePage("login");
     }
 
-    private void handleForgotPassword() {
+    private void handleSocialRegister(String provider) {
         JOptionPane.showMessageDialog(this,
-                "Password reset functionality would be implemented here",
-                "Forgot Password",
+                "Social registration with " + provider + " would be implemented here",
+                "Social Registration",
                 JOptionPane.INFORMATION_MESSAGE);
     }
 
-    private void handleSocialLogin(String provider) {
+    private void handleTermsOfService() {
         JOptionPane.showMessageDialog(this,
-                "Social login with " + provider + " would be implemented here",
-                "Social Login",
+                "Terms of Service would be displayed here",
+                "Terms of Service",
                 JOptionPane.INFORMATION_MESSAGE);
     }
 
-    private void handleSignUp() {
-        // Navigate to sign up page
+    private void handlePrivacyPolicy() {
         JOptionPane.showMessageDialog(this,
-                "Sign up page would be implemented here",
-                "Sign Up",
+                "Privacy Policy would be displayed here",
+                "Privacy Policy",
                 JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void handleSignIn() {
+        // Navigate to sign in page
+        changePage("login");
     }
 
     private JPanel createModernBottomNavigationPanel() {

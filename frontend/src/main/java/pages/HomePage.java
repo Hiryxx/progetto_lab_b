@@ -2,17 +2,12 @@ package pages;
 
 import classes.MainFrame;
 import classes.Page;
-import components.BookCard;
 import components.ModernScrollBarUI;
-import components.buttons.StyledButton;
 
 import javax.swing.*;
-import javax.swing.border.AbstractBorder;
-import javax.swing.plaf.basic.BasicScrollBarUI;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.RoundRectangle2D;
 
 public class HomePage extends Page {
     private JTextField searchField;
