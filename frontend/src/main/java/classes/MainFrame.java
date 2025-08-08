@@ -2,6 +2,7 @@ package classes;
 
 import connection.SocketConnection;
 import pages.HomePage;
+import pages.LoginPage;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,8 +13,8 @@ public class MainFrame extends JFrame {
     private CardLayout cardLayout;
     private SocketConnection socketConnection;
 
-    public MainFrame(SocketConnection socketConnection) {
-        this.socketConnection = socketConnection;
+    public MainFrame() {
+        this.socketConnection = null;
         // Set up the frame
         setTitle("Book Recommender");
         setSize(1200, 900);
@@ -25,8 +26,9 @@ public class MainFrame extends JFrame {
 
         // Create and add pages
         HomePage homePage = new HomePage(this);
+        LoginPage loginPage = new LoginPage(this);
         contentPanel.add(homePage, "home");
-
+        contentPanel.add(loginPage, "login");
         // Show the first page
         cardLayout.show(contentPanel, "home");
 

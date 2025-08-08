@@ -7,7 +7,7 @@ import java.net.Socket;
 public class Main {
     static int PORT = 9000;
     public static void main(String[] args) {
-        Socket clientSocket = new Socket();
+/*        Socket clientSocket = new Socket();
 
         try {
             clientSocket.connect(new java.net.InetSocketAddress("localhost", PORT));
@@ -33,10 +33,10 @@ public class Main {
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
-
+*/
 
         SwingUtilities.invokeLater(() -> {
-            MainFrame app = new MainFrame(socket);
+            MainFrame app = new MainFrame();
             app.setLocationRelativeTo(null); // Center the window
             app.setVisible(true);
 
