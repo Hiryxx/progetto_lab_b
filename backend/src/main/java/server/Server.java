@@ -15,6 +15,7 @@ import server.connection.response.Sendable;
 import server.connection.response.SingleResponse;
 import server.router.CommandRegister;
 import utils.DbUtil;
+import utils.HashUtils;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -127,6 +128,10 @@ public class Server implements AutoCloseable {
     private void registerCommands() {
         commandRegister.register("REGISTER", (User user) -> {
             try {
+                String unhashedPassword = user.getPassword();
+                String hashedPassword = HashUtils.hash(unhashedPassword);
+
+                user.setPassword(hashedPassword);
                 user.create();
                 return new SingleResponse("User created successfully");
             } catch (IllegalAccessException | SQLException e) {
@@ -135,7 +140,9 @@ public class Server implements AutoCloseable {
         }, User.class);
 
         commandRegister.register("LOGIN", (User user) -> {
-            // TODO hash password
+            String hashedPassword = HashUtils.hash(user.getPassword());
+            user.setPassword(hashedPassword);
+
             PrepareQuery pq = User.selectBy("*")
                     .where("cf = ? AND password = ?")
                     .prepare(List.of(user.getCf(), user.getPassword()));
@@ -165,7 +172,7 @@ public class Server implements AutoCloseable {
             try {
                 PrepareQuery pq = LibraryBook.selectBy("*")
                         .where("libraryId = ?")
-                        .join("Book on Book.id = LibraryBooks.bookId")
+                        .join(Book.class, "Book.id = LibraryBooks.bookId")
                         .prepare(List.of(library.getId()));
 
                 QueryResult result = pq.executeResult();
@@ -194,6 +201,21 @@ public class Server implements AutoCloseable {
                 return new ErrorResponse("Error removing book: " + e.getMessage());
             }
         }, LibraryBook.class);
+
+
+        commandRegister.register("BOOK_INFO", (Book book) -> {
+            try {
+                PrepareQuery pq = Book.selectBy("*")
+                        .where("id = ?")
+                        .prepare(List.of(book.getId()));
+
+                QueryResult result = pq.executeResult();
+
+                return new MultiResponse(result);
+            } catch (SQLException e) {
+                return new ErrorResponse("Error checking book info: " + e.getMessage());
+            }
+        }, Book.class);
 
         // TODO add useful fields
         commandRegister.register("ADD_RATING", (BookRating bookRating) -> {
@@ -277,7 +299,6 @@ public class Server implements AutoCloseable {
                 } catch (Exception e) {
                     System.err.println("Error processing command: " + e.getMessage());
                     connection.getOut().println("Error: " + e.getMessage());
-                    e.printStackTrace();
                 }
                 System.out.println("SENDING STOP MESSAGE");
                 connection.sendStopMessage();

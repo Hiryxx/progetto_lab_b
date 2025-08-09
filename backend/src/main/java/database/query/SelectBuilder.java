@@ -1,6 +1,7 @@
 package database.query;
 
 import database.models.base.Entity;
+import database.models.base.annotations.Table;
 import utils.DbUtil;
 
 import java.util.List;
@@ -109,16 +110,16 @@ public class SelectBuilder {
     /**
      * Adds a join clause to the query
      *
-     * @param join the join clause
+     * @param from the class to join from
+     * @param on the join clause
      * @return the SelectBuilder instance
      */
     //todo maybe make it better with a JoinBuilder?
-    public SelectBuilder join(String join) {
-        joinClause = " JOIN " + join;
+    public SelectBuilder join(Class<?extends Entity> from, String on) {
+        String joinTable = DbUtil.getTableName(from);
+
+        joinClause = " JOIN " + joinTable + " ON " + on;
         return this;
     }
-
-    // todo implement others
-
 
 }

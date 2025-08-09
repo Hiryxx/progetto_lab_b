@@ -48,4 +48,8 @@ public class User extends Entity {
     public String getPassword() {
         return password;
     }
+
+    public void setPassword(String hashedPassword) {
+        this.password = hashedPassword;
+    }
 }
