@@ -1,6 +1,8 @@
 package utils;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
@@ -24,6 +26,8 @@ public class JSONUtil {
         ObjectMapper mapper = new ObjectMapper();
         // Register the module here. This will now only happen one time.
         mapper.registerModule(new ParameterNamesModule());
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        //mapper.setSerializationInclusion(JsonInclude.Include.);
         return mapper;
     }
 

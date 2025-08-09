@@ -21,6 +21,8 @@ public class BookRating extends Entity {
     @Column(type = "CHAR(36)", nullable = false)
     private String userCf;
 
+    // add stuff
+
     public BookRating(int bookId, String userCf) {
         this.bookId = bookId;
         this.userCf = userCf;

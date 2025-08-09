@@ -55,6 +55,7 @@ public class Server implements AutoCloseable {
             DbUtil.init(User.class);
             DbUtil.init(Book.class);
             DbUtil.init(Library.class);
+            DbUtil.init(LibraryBook.class);
             DbUtil.init(BookRating.class);
             DbUtil.init(BookSuggestion.class);
 
@@ -150,6 +151,70 @@ public class Server implements AutoCloseable {
 
         }, User.class);
 
+        commandRegister.register("CREATE_LIBRARY", (Library library) -> {
+            try {
+                library.create();
+                return new SingleResponse("Library created successfully");
+            } catch (IllegalAccessException | SQLException e) {
+                return new ErrorResponse("Error creating user: " + e.getMessage());
+            }
+        }, Library.class);
+
+
+        commandRegister.register("GET_LIBRARY_BOOKS", (Library library) -> {
+            try {
+                PrepareQuery pq = LibraryBook.selectBy("*")
+                        .where("libraryId = ?")
+                        .join("Book on Book.id = LibraryBooks.bookId")
+                        .prepare(List.of(library.getId()));
+
+                QueryResult result = pq.executeResult();
+                return new MultiResponse(result);
+            } catch (SQLException e) {
+                return new ErrorResponse("Error listing books: " + e.getMessage());
+            }
+        }, Library.class);
+
+
+        commandRegister.register("ADD_BOOK", (LibraryBook libraryBook) -> {
+            try {
+                libraryBook.create();
+                return new SingleResponse("Book added successfully");
+            } catch (IllegalAccessException | SQLException e) {
+                return new ErrorResponse("Error creating book: " + e.getMessage());
+            }
+        }, LibraryBook.class);
+
+
+        commandRegister.register("REMOVE_BOOK", (LibraryBook libraryBook) -> {
+            try {
+                libraryBook.delete();
+                return new SingleResponse("Book removed successfully");
+            } catch (IllegalAccessException | SQLException e) {
+                return new ErrorResponse("Error removing book: " + e.getMessage());
+            }
+        }, LibraryBook.class);
+
+        // TODO add useful fields
+        commandRegister.register("ADD_RATING", (BookRating bookRating) -> {
+            try {
+                bookRating.create();
+                return new SingleResponse("Book rating added successfully");
+            } catch (IllegalAccessException | SQLException e) {
+                return new ErrorResponse("Error creating book rating: " + e.getMessage());
+            }
+        }, BookRating.class);
+
+
+        commandRegister.register("ADD_SUGGESTION", (BookSuggestion bookSuggestion) -> {
+            try {
+                bookSuggestion.create();
+                return new SingleResponse("Book suggestion added successfully");
+            } catch (IllegalAccessException | SQLException e) {
+                return new ErrorResponse("Error creating book suggestion: " + e.getMessage());
+            }
+        }, BookSuggestion.class);
+
 
         commandRegister.register("PING", () -> new SingleResponse("PONG"));
 
@@ -203,6 +268,8 @@ public class Server implements AutoCloseable {
                     String command = parts[0].toUpperCase();
                     // Check if it has a json argument
                     Optional<String> args = parts.length > 1 ? Optional.of(parts[1]) : Optional.empty();
+
+                    // todo accept user id to validate permissions and check if it is needed for the route
 
                     Sendable result = commandRegister.execute(command, args);
                     System.out.println("SENDING DATA");

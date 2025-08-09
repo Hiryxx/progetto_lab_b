@@ -9,18 +9,18 @@ import database.query.SelectBuilder;
 
 @Table(name = "Libraries")
 public class Library extends Entity {
-    @Id
-    @Column(name = "id", type = "CHAR(36)")
-    private String id;
+    @Id(autoIncrement = true)
+    @Column( type = "SERIAL")
+    private int id;
 
-    @Column(name = "name", type = "VARCHAR(255)", nullable = false)
+    @Column(type = "VARCHAR(255)", nullable = false)
     private String name;
 
     @ForeignKey(references = User.class, column = "cf")
-    @Column(name = "user_id", type = "CHAR(36)", nullable = false)
+    @Column( type = "CHAR(36)", nullable = false)
     private String userId;
 
-    public Library(String id, String name, String userId) {
+    public Library(int id, String name, String userId) {
         this.id = id;
         this.name = name;
         this.userId = userId;
@@ -32,4 +32,7 @@ public class Library extends Entity {
     }
 
 
+    public Object getId() {
+        return id;
+    }
 }
