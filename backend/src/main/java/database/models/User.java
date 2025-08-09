@@ -22,7 +22,7 @@ public class User extends Entity {
     @Unique
     private String email;
 
-    @Column(type = "VARCHAR(255)", nullable = false)
+    @Column(type = "CHAR(64)", nullable = false) // SHA-256 hash
     private String password;
 
 
