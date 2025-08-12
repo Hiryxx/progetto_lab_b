@@ -8,6 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.function.Supplier;
 
 public class HomePage extends Page {
     private JTextField searchField;
@@ -225,7 +226,7 @@ public class HomePage extends Page {
 
     private JPanel createFeaturedBooksPanel() {
         return createSectionPanel("✨ Libri in Evidenza", "Le migliori scelte per te", () -> {
-            JPanel booksPanel = new JPanel(new GridLayout(1, 4, 20, 0));
+            JPanel booksPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 0));
             booksPanel.setOpaque(false);
 
             for (int i = 1; i <= 4; i++) {
@@ -265,7 +266,7 @@ public class HomePage extends Page {
 
     private JPanel createRecentBooksPanel() {
         return createSectionPanel("🕐 Aggiunti di Recente", "Nuovi arrivi nella nostra collezione", () -> {
-            JPanel booksPanel = new JPanel(new GridLayout(1, 4, 20, 0));
+            JPanel booksPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 0));
             booksPanel.setOpaque(false);
 
             for (int i = 1; i <= 4; i++) {
@@ -276,7 +277,7 @@ public class HomePage extends Page {
         });
     }
 
-    private JPanel createSectionPanel(String title, String subtitle, java.util.function.Supplier<JPanel> contentSupplier) {
+    private JPanel createSectionPanel(String title, String subtitle, Supplier<JPanel> contentSupplier) {
         JPanel panel = new JPanel(new BorderLayout(0, 25));
         panel.setOpaque(false);
 
@@ -344,11 +345,6 @@ public class HomePage extends Page {
         card.addMouseListener(new MouseAdapter() {
             private Timer hoverTimer;
 
-            /*@Override
-            public void mouseClicked(MouseEvent e) {
-                changePage("profile");
-            }*/
-
             @Override
             public void mouseEntered(MouseEvent e) {
                 card.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -413,13 +409,16 @@ public class HomePage extends Page {
         JButton libraryButton = createNavButton("📚", "Libreria", textSecondary, false);
         JButton recommendButton = createNavButton("⭐", "Scopri", textSecondary, false);
         JButton profileButton = createNavButton("👤", "Profilo", textSecondary, false);
+        JButton profileTryButton = createNavButton("👤", "Profilo1", textSecondary, false);
         profileButton.addActionListener(e -> changePage("login"));
+        profileTryButton.addActionListener(e -> changePage("profile"));
 
 
         panel.add(homeButton);
         panel.add(libraryButton);
         panel.add(recommendButton);
         panel.add(profileButton);
+        panel.add(profileTryButton);
 
         return panel;
     }
@@ -505,8 +504,9 @@ public class HomePage extends Page {
 
         card.setLayout(new BorderLayout(0, 10));
         card.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-        card.setPreferredSize(new Dimension(200, 280)); // Più piccola
-        card.setMaximumSize(new Dimension(200, 280));
+        card.setPreferredSize(new Dimension(180, 260));
+        card.setMaximumSize(new Dimension(180, 260));
+        card.setMinimumSize(new Dimension(180, 260));
 
         // Segnaposto copertina libro
         JPanel coverPanel = new JPanel() {
@@ -532,7 +532,7 @@ public class HomePage extends Page {
                 g2d.dispose();
             }
         };
-        coverPanel.setPreferredSize(new Dimension(0, 160));
+        coverPanel.setPreferredSize(new Dimension(0, 140));
 
         // Spazio informazioni libro
         JPanel infoPanel = new JPanel();

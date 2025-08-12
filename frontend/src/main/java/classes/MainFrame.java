@@ -3,6 +3,7 @@ package classes;
 import connection.SocketConnection;
 import pages.HomePage;
 import pages.LoginPage;
+import pages.ProfilePage;
 import pages.RegisterPage;
 
 import javax.swing.*;
@@ -29,9 +30,11 @@ public class MainFrame extends JFrame {
         HomePage homePage = new HomePage(this);
         LoginPage loginPage = new LoginPage(this);
         RegisterPage registerPage = new RegisterPage(this);
+        ProfilePage profilePage = new ProfilePage(this);
         contentPanel.add(homePage, "home");
         contentPanel.add(loginPage, "login");
         contentPanel.add(registerPage,"register");
+        contentPanel.add(profilePage, "profile");
         // Show the first page
         cardLayout.show(contentPanel, "home");
 
