@@ -2,17 +2,18 @@ package pages;
 
 import classes.MainFrame;
 import classes.Page;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.regex.Pattern;
 
 public class RegisterPage extends Page {
     private JTextField nameField;
+    private JTextField userField;
+    private JTextField fiscalCodeField;
     private JTextField emailField;
     private JPasswordField passwordField;
-    private JPasswordField confirmPasswordField;
     private JCheckBox termsCheck;
 
     // Modern color palette (same as LoginPage)
@@ -30,6 +31,9 @@ public class RegisterPage extends Page {
     // Modern gradients
     private Color gradientStart = new Color(139, 92, 246);     // Purple
     private Color gradientEnd = new Color(59, 130, 246);       // Blue
+
+    // Regex per la validazione del Codice Fiscale
+    private static final String FISCAL_CODE_REGEX = "^[A-Z]{6}\\d{2}[A-Z]\\d{2}[A-Z]\\d{3}[A-Z]$";
 
     public RegisterPage(MainFrame mainFrame) {
         super(mainFrame);
@@ -128,8 +132,8 @@ public class RegisterPage extends Page {
         };
 
         card.setLayout(new BorderLayout(0, 0));
-        card.setBorder(BorderFactory.createEmptyBorder(35, 35, 35, 35)); // Ridotti da 50 a 35
-        card.setPreferredSize(new Dimension(450, 660)); // Leggermente ingrandita per migliore visibilità
+        card.setBorder(BorderFactory.createEmptyBorder(35, 35, 35, 35));
+        card.setPreferredSize(new Dimension(450, 660)); // Ritorna alla dimensione originale
 
         // Header
         JPanel headerPanel = createRegisterHeader();
@@ -150,28 +154,28 @@ public class RegisterPage extends Page {
         JPanel header = new JPanel();
         header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
         header.setOpaque(false);
-        header.setBorder(BorderFactory.createEmptyBorder(0, 0, 25, 0)); // Ridotto da 30 a 25
+        header.setBorder(BorderFactory.createEmptyBorder(0, 0, 25, 0));
 
         // Logo
         JPanel logoPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
         logoPanel.setOpaque(false);
 
         JLabel logoLabel = new JLabel();
-        logoLabel.setIcon(createModernBookIcon(40, 40)); // Ridotto da 50x50 a 40x40
+        logoLabel.setIcon(createModernBookIcon(40, 40));
         logoPanel.add(logoLabel);
 
         // Welcome text
         JLabel welcomeLabel = new JLabel("Join BookHub!");
-        welcomeLabel.setFont(new Font("SF Pro Display", Font.BOLD, 28)); // Ridotto da 32 a 28
+        welcomeLabel.setFont(new Font("SF Pro Display", Font.BOLD, 28));
         welcomeLabel.setForeground(textPrimary);
         welcomeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        welcomeLabel.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0)); // Ridotto da 20 a 15
+        welcomeLabel.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
 
         JLabel subtitleLabel = new JLabel("Create your BookHub account");
-        subtitleLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 14)); // Ridotto da 16 a 14
+        subtitleLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
         subtitleLabel.setForeground(textSecondary);
         subtitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        subtitleLabel.setBorder(BorderFactory.createEmptyBorder(6, 0, 0, 0)); // Ridotto da 8 a 6
+        subtitleLabel.setBorder(BorderFactory.createEmptyBorder(6, 0, 0, 0));
 
         header.add(logoPanel);
         header.add(welcomeLabel);
@@ -189,42 +193,48 @@ public class RegisterPage extends Page {
         JPanel namePanel = createFormField("Full Name", "user");
         nameField = (JTextField) findTextComponent(namePanel);
         form.add(namePanel);
-        form.add(Box.createRigidArea(new Dimension(0, 15))); // Ridotto da 20 a 15
+        form.add(Box.createRigidArea(new Dimension(0, 15)));
+
+        // User field
+        JPanel userPanel = createFormField("Username", "username");
+        userField = (JTextField) findTextComponent(userPanel);
+        form.add(userPanel);
+        form.add(Box.createRigidArea(new Dimension(0, 15)));
+
+        // Fiscal Code field
+        JPanel fiscalCodePanel = createFormField("Fiscal Code", "fiscal");
+        fiscalCodeField = (JTextField) findTextComponent(fiscalCodePanel);
+        form.add(fiscalCodePanel);
+        form.add(Box.createRigidArea(new Dimension(0, 15)));
 
         // Email field
         JPanel emailPanel = createFormField("Email Address", "email");
         emailField = (JTextField) findTextComponent(emailPanel);
         form.add(emailPanel);
-        form.add(Box.createRigidArea(new Dimension(0, 15))); // Ridotto da 20 a 15
+        form.add(Box.createRigidArea(new Dimension(0, 15)));
 
         // Password field
         JPanel passwordPanel = createPasswordField("Password");
         passwordField = (JPasswordField) findTextComponent(passwordPanel);
         form.add(passwordPanel);
-        form.add(Box.createRigidArea(new Dimension(0, 15))); // Ridotto da 20 a 15
-
-        // Confirm password field
-        JPanel confirmPasswordPanel = createPasswordField("Confirm Password");
-        confirmPasswordField = (JPasswordField) findTextComponent(confirmPasswordPanel);
-        form.add(confirmPasswordPanel);
-        form.add(Box.createRigidArea(new Dimension(0, 12))); // Ridotto da 15 a 12
+        form.add(Box.createRigidArea(new Dimension(0, 12)));
 
         // Terms and conditions
         JPanel termsPanel = createTermsPanel();
         form.add(termsPanel);
-        form.add(Box.createRigidArea(new Dimension(0, 22))); // Aumentato per dare più spazio al pulsante
+        form.add(Box.createRigidArea(new Dimension(0, 22)));
 
         // Register button
         JButton registerButton = createModernButton("Create Account", primaryColor, Color.WHITE, true);
         registerButton.addActionListener(e -> handleRegister());
         registerButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         form.add(registerButton);
-        form.add(Box.createRigidArea(new Dimension(0, 18))); // Aumentato leggermente per dare più spazio
+        form.add(Box.createRigidArea(new Dimension(0, 18)));
 
         // Or divider
         JPanel dividerPanel = createDivider("or");
         form.add(dividerPanel);
-        form.add(Box.createRigidArea(new Dimension(0, 18))); // Aumentato per migliore spaziatura
+        form.add(Box.createRigidArea(new Dimension(0, 18)));
 
         // Social login buttons
         JPanel socialPanel = createSocialLoginPanel();
@@ -239,10 +249,10 @@ public class RegisterPage extends Page {
         fieldPanel.setOpaque(false);
 
         // Label
-        JLabel fieldLabel = new JLabel(label);
-        fieldLabel.setFont(new Font("SF Pro Text", Font.BOLD, 13)); // Ridotto da 14 a 13
+        JLabel fieldLabel = new JLabel(label, SwingConstants.CENTER); // Modifica qui
+        fieldLabel.setFont(new Font("SF Pro Text", Font.BOLD, 13));
         fieldLabel.setForeground(textPrimary);
-        fieldLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        fieldLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // Modifica qui
 
         // Input field container
         JPanel inputContainer = new JPanel(new BorderLayout()) {
@@ -263,8 +273,8 @@ public class RegisterPage extends Page {
                 g2d.dispose();
             }
         };
-        inputContainer.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14)); // Ridotto da 12,16 a 10,14
-        inputContainer.setPreferredSize(new Dimension(0, 44)); // Ridotto da 50 a 44
+        inputContainer.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
+        inputContainer.setPreferredSize(new Dimension(0, 44));
 
         // Text field
         JTextField textField = new JTextField() {
@@ -275,21 +285,21 @@ public class RegisterPage extends Page {
             }
         };
         textField.setBorder(null);
-        textField.setFont(new Font("SF Pro Text", Font.PLAIN, 15)); // Ridotto da 16 a 15
+        textField.setFont(new Font("SF Pro Text", Font.PLAIN, 15));
         textField.setForeground(textPrimary);
         textField.setCaretColor(primaryColor);
 
         // Icon
         JLabel iconLabel = new JLabel(getFieldIcon(type));
-        iconLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 15)); // Ridotto da 16 a 15
+        iconLabel.setFont(new Font("Apple Color Emoji", Font.PLAIN, 15));
         iconLabel.setForeground(textSecondary);
 
         inputContainer.add(iconLabel, BorderLayout.WEST);
-        inputContainer.add(Box.createHorizontalStrut(8)); // Ridotto da 10 a 8
+        inputContainer.add(Box.createHorizontalStrut(8));
         inputContainer.add(textField, BorderLayout.CENTER);
 
         fieldPanel.add(fieldLabel);
-        fieldPanel.add(Box.createRigidArea(new Dimension(0, 6))); // Ridotto da 8 a 6
+        fieldPanel.add(Box.createRigidArea(new Dimension(0, 6)));
         fieldPanel.add(inputContainer);
 
         return fieldPanel;
@@ -301,10 +311,10 @@ public class RegisterPage extends Page {
         fieldPanel.setOpaque(false);
 
         // Label
-        JLabel fieldLabel = new JLabel(label);
-        fieldLabel.setFont(new Font("SF Pro Text", Font.BOLD, 13)); // Ridotto da 14 a 13
+        JLabel fieldLabel = new JLabel(label, SwingConstants.CENTER); // Modifica qui
+        fieldLabel.setFont(new Font("SF Pro Text", Font.BOLD, 13));
         fieldLabel.setForeground(textPrimary);
-        fieldLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        fieldLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // Modifica qui
 
         // Input field container
         JPanel inputContainer = new JPanel(new BorderLayout()) {
@@ -323,8 +333,8 @@ public class RegisterPage extends Page {
                 g2d.dispose();
             }
         };
-        inputContainer.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14)); // Ridotto da 12,16 a 10,14
-        inputContainer.setPreferredSize(new Dimension(0, 44)); // Ridotto da 50 a 44
+        inputContainer.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
+        inputContainer.setPreferredSize(new Dimension(0, 44));
 
         // Password field
         JPasswordField passwordField = new JPasswordField() {
@@ -335,20 +345,20 @@ public class RegisterPage extends Page {
             }
         };
         passwordField.setBorder(null);
-        passwordField.setFont(new Font("SF Pro Text", Font.PLAIN, 15)); // Ridotto da 16 a 15
+        passwordField.setFont(new Font("SF Pro Text", Font.PLAIN, 15));
         passwordField.setForeground(textPrimary);
         passwordField.setCaretColor(primaryColor);
 
         // Icon
         JLabel iconLabel = new JLabel("🔒");
-        iconLabel.setFont(new Font("Apple Color Emoji", Font.PLAIN, 15)); // Ridotto da 16 a 15
+        iconLabel.setFont(new Font("Apple Color Emoji", Font.PLAIN, 15));
 
         inputContainer.add(iconLabel, BorderLayout.WEST);
-        inputContainer.add(Box.createHorizontalStrut(8)); // Ridotto da 10 a 8
+        inputContainer.add(Box.createHorizontalStrut(8));
         inputContainer.add(passwordField, BorderLayout.CENTER);
 
         fieldPanel.add(fieldLabel);
-        fieldPanel.add(Box.createRigidArea(new Dimension(0, 6))); // Ridotto da 8 a 6
+        fieldPanel.add(Box.createRigidArea(new Dimension(0, 6)));
         fieldPanel.add(inputContainer);
 
         return fieldPanel;
@@ -363,11 +373,11 @@ public class RegisterPage extends Page {
         termsCheck.setFocusPainted(false);
 
         JLabel termsText = new JLabel("I agree to the ");
-        termsText.setFont(new Font("SF Pro Text", Font.PLAIN, 13)); // Ridotto da 14 a 13
+        termsText.setFont(new Font("SF Pro Text", Font.PLAIN, 13));
         termsText.setForeground(textSecondary);
 
         JLabel termsLink = new JLabel("Terms of Service");
-        termsLink.setFont(new Font("SF Pro Text", Font.PLAIN, 13)); // Ridotto da 14 a 13
+        termsLink.setFont(new Font("SF Pro Text", Font.PLAIN, 13));
         termsLink.setForeground(primaryColor);
         termsLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
@@ -389,11 +399,11 @@ public class RegisterPage extends Page {
         });
 
         JLabel andText = new JLabel(" and ");
-        andText.setFont(new Font("SF Pro Text", Font.PLAIN, 13)); // Ridotto da 14 a 13
+        andText.setFont(new Font("SF Pro Text", Font.PLAIN, 13));
         andText.setForeground(textSecondary);
 
         JLabel privacyLink = new JLabel("Privacy Policy");
-        privacyLink.setFont(new Font("SF Pro Text", Font.PLAIN, 13)); // Ridotto da 14 a 13
+        privacyLink.setFont(new Font("SF Pro Text", Font.PLAIN, 13));
         privacyLink.setForeground(primaryColor);
         privacyLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
@@ -450,7 +460,7 @@ public class RegisterPage extends Page {
 
         // Text
         JLabel textLabel = new JLabel(" " + text + " ");
-        textLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 13)); // Ridotto da 14 a 13
+        textLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 13));
         textLabel.setForeground(textSecondary);
         textLabel.setOpaque(true);
         textLabel.setBackground(cardColor);
@@ -464,7 +474,7 @@ public class RegisterPage extends Page {
     }
 
     private JPanel createSocialLoginPanel() {
-        JPanel social = new JPanel(new GridLayout(1, 2, 12, 0)); // Ridotto da 15 a 12
+        JPanel social = new JPanel(new GridLayout(1, 2, 12, 0));
         social.setOpaque(false);
 
         JButton googleButton = createModernButton("🌐 Google", new Color(66, 133, 244), Color.WHITE, false);
@@ -482,14 +492,14 @@ public class RegisterPage extends Page {
     private JPanel createRegisterFooter() {
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
         footer.setOpaque(false);
-        footer.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0)); // Ridotto da 20 a 15
+        footer.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
 
         JLabel loginText = new JLabel("Already have an account? ");
-        loginText.setFont(new Font("SF Pro Text", Font.PLAIN, 13)); // Ridotto da 14 a 13
+        loginText.setFont(new Font("SF Pro Text", Font.PLAIN, 13));
         loginText.setForeground(textSecondary);
 
         JLabel loginLink = new JLabel("Log in");
-        loginLink.setFont(new Font("SF Pro Text", Font.BOLD, 13)); // Ridotto da 14 a 13
+        loginLink.setFont(new Font("SF Pro Text", Font.BOLD, 13));
         loginLink.setForeground(primaryColor);
         loginLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
@@ -553,14 +563,14 @@ public class RegisterPage extends Page {
             }
         };
 
-        button.setFont(new Font("SF Pro Text", Font.BOLD, 15)); // Ridotto da 16 a 15
+        button.setFont(new Font("SF Pro Text", Font.BOLD, 15));
         button.setForeground(textColor);
-        button.setBorder(BorderFactory.createEmptyBorder(12, 20, 12, 20)); // Ridotto da 14,24 a 12,20
+        button.setBorder(BorderFactory.createEmptyBorder(12, 20, 12, 20));
         button.setContentAreaFilled(false);
         button.setFocusPainted(false);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        button.setPreferredSize(new Dimension(0, 44)); // Ridotto da 50 a 44
-        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44)); // Ridotto da 50 a 44
+        button.setPreferredSize(new Dimension(0, 44));
+        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
 
         return button;
     }
@@ -569,6 +579,8 @@ public class RegisterPage extends Page {
         switch (type) {
             case "email": return "✉️";
             case "user": return "👤";
+            case "username": return "👤";
+            case "fiscal": return "🇮🇹";
             default: return "📝";
         }
     }
@@ -631,12 +643,13 @@ public class RegisterPage extends Page {
     // Event handlers
     private void handleRegister() {
         String name = nameField.getText();
+        String username = userField.getText();
+        String fiscalCode = fiscalCodeField.getText();
         String email = emailField.getText();
         String password = new String(passwordField.getPassword());
-        String confirmPassword = new String(confirmPasswordField.getPassword());
 
         // Basic validation
-        if (name.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
+        if (name.isEmpty() || username.isEmpty() || fiscalCode.isEmpty() || email.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(this,
                     "Please fill in all fields",
                     "Registration Error",
@@ -644,9 +657,10 @@ public class RegisterPage extends Page {
             return;
         }
 
-        if (!password.equals(confirmPassword)) {
+        // Validate fiscal code format
+        if (!Pattern.matches(FISCAL_CODE_REGEX, fiscalCode.toUpperCase())) {
             JOptionPane.showMessageDialog(this,
-                    "Passwords do not match",
+                    "Invalid fiscal code format. It must be 16 alphanumeric characters.",
                     "Registration Error",
                     JOptionPane.ERROR_MESSAGE);
             return;

@@ -5,7 +5,6 @@ import classes.Page;
 import components.ModernScrollBarUI;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -806,6 +805,20 @@ public class ProfilePage extends Page {
             @Override
             public void mouseEntered(MouseEvent e) {
                 card.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+        });
+
+        card.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                card.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Quando si clicca, cambia la pagina del MainFrame
+                mainFrame.changePage("bookDetails");
+                System.out.println("Cliccato sul libro: " + title); // Log di verifica
             }
         });
 

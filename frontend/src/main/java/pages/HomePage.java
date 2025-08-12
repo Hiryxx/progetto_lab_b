@@ -582,6 +582,13 @@ public class HomePage extends Page {
             public void mouseEntered(MouseEvent e) {
                 card.setCursor(new Cursor(Cursor.HAND_CURSOR));
             }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Quando si clicca, cambia la pagina del MainFrame
+                mainFrame.changePage("bookDetails");
+                System.out.println("Cliccato sul libro: " + title); // Log di verifica
+            }
         });
 
         return card;
