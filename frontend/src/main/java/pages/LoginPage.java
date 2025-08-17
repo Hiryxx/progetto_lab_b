@@ -2,6 +2,7 @@ package pages;
 
 import classes.MainFrame;
 import classes.Page;
+import components.buttons.AuthButton;
 
 import javax.swing.*;
 import java.awt.*;
@@ -167,9 +168,9 @@ public class LoginPage extends Page {
         form.setLayout(new BoxLayout(form, BoxLayout.Y_AXIS));
         form.setOpaque(false);
 
-        // Email field
+        // TODO FIX THIS findTextComponent SHIT
         JPanel emailPanel = createFormField("Email", "email");
-        emailField = (JTextField) findTextComponent(emailPanel);
+        emailField = findTextComponent(emailPanel);
         form.add(emailPanel);
         form.add(Box.createRigidArea(new Dimension(0, 20)));
 
@@ -185,7 +186,7 @@ public class LoginPage extends Page {
         form.add(Box.createRigidArea(new Dimension(0, 30)));
 
         // Login button
-        JButton loginButton = createModernButton("Sign In", primaryColor, Color.WHITE, true);
+        JButton loginButton = new AuthButton("Sign In", primaryColor, Color.WHITE, true);
         loginButton.addActionListener(e -> handleLogin());
         loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         form.add(loginButton);
@@ -196,7 +197,7 @@ public class LoginPage extends Page {
         form.add(dividerPanel);
         form.add(Box.createRigidArea(new Dimension(0, 20)));
 
-        // Social login buttons
+        // Social login buttons todo ??
         JPanel socialPanel = createSocialLoginPanel();
         form.add(socialPanel);
 
@@ -209,10 +210,10 @@ public class LoginPage extends Page {
         fieldPanel.setOpaque(false);
 
         // Label
-        JLabel fieldLabel = new JLabel(label);
-        fieldLabel.setFont(new Font("SF Pro Text", Font.BOLD, 14));
+        JLabel fieldLabel = new JLabel(label, SwingConstants.CENTER); // Modifica qui
+        fieldLabel.setFont(new Font("SF Pro Text", Font.BOLD, 13));
         fieldLabel.setForeground(textPrimary);
-        fieldLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        fieldLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // Modifica qui
 
         // Input field container
         JPanel inputContainer = new JPanel(new BorderLayout()) {
@@ -233,8 +234,8 @@ public class LoginPage extends Page {
                 g2d.dispose();
             }
         };
-        inputContainer.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
-        inputContainer.setPreferredSize(new Dimension(0, 50));
+        inputContainer.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
+        inputContainer.setPreferredSize(new Dimension(0, 44));
 
         // Text field
         JTextField textField = new JTextField() {
@@ -245,21 +246,21 @@ public class LoginPage extends Page {
             }
         };
         textField.setBorder(null);
-        textField.setFont(new Font("SF Pro Text", Font.PLAIN, 16));
+        textField.setFont(new Font("SF Pro Text", Font.PLAIN, 15));
         textField.setForeground(textPrimary);
         textField.setCaretColor(primaryColor);
 
         // Icon
         JLabel iconLabel = new JLabel(getFieldIcon(type));
-        iconLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 16));
+        iconLabel.setFont(new Font("Apple Color Emoji", Font.PLAIN, 15));
         iconLabel.setForeground(textSecondary);
 
         inputContainer.add(iconLabel, BorderLayout.WEST);
-        inputContainer.add(Box.createHorizontalStrut(10));
+        inputContainer.add(Box.createHorizontalStrut(8));
         inputContainer.add(textField, BorderLayout.CENTER);
 
         fieldPanel.add(fieldLabel);
-        fieldPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+        fieldPanel.add(Box.createRigidArea(new Dimension(0, 6)));
         fieldPanel.add(inputContainer);
 
         return fieldPanel;
@@ -354,30 +355,6 @@ public class LoginPage extends Page {
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         rightPanel.setOpaque(false);
 
-        JLabel forgotLabel = new JLabel("Forgot password?");
-        forgotLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
-        forgotLabel.setForeground(primaryColor);
-        forgotLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        forgotLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                handleForgotPassword();
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                forgotLabel.setForeground(primaryHover);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                forgotLabel.setForeground(primaryColor);
-            }
-        });
-
-        rightPanel.add(forgotLabel);
-
         options.add(leftPanel, BorderLayout.WEST);
         options.add(rightPanel, BorderLayout.EAST);
 
@@ -428,8 +405,8 @@ public class LoginPage extends Page {
         JPanel social = new JPanel(new GridLayout(1, 2, 15, 0));
         social.setOpaque(false);
 
-        JButton googleButton = createModernButton("🌐 Google", new Color(66, 133, 244), Color.WHITE, false);
-        JButton appleButton = createModernButton("🍎 Apple", new Color(0, 0, 0), Color.WHITE, false);
+        JButton googleButton = new AuthButton("🌐 Google", new Color(66, 133, 244), Color.WHITE, false);
+        JButton appleButton = new AuthButton("🍎 Apple", new Color(0, 0, 0), Color.WHITE, false);
 
         googleButton.addActionListener(e -> handleSocialLogin("google"));
         appleButton.addActionListener(e -> handleSocialLogin("apple"));
@@ -478,54 +455,7 @@ public class LoginPage extends Page {
         return footer;
     }
 
-    private JButton createModernButton(String text, Color bgColor, Color textColor, boolean isPrimary) {
-        JButton button = new JButton(text) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                Color currentBg = bgColor;
-                if (getModel().isPressed()) {
-                    currentBg = isPrimary ? primaryHover : bgColor.darker();
-                } else if (getModel().isRollover()) {
-                    currentBg = isPrimary ? primaryHover : bgColor.brighter();
-                }
-
-                if (isPrimary) {
-                    // Gradient for primary button
-                    GradientPaint gradient = new GradientPaint(0, 0, currentBg, getWidth(), getHeight(),
-                            currentBg.darker());
-                    g2d.setPaint(gradient);
-                } else {
-                    g2d.setColor(currentBg);
-                }
-
-                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
-
-                // Border for secondary buttons
-                if (!isPrimary) {
-                    g2d.setColor(borderColor);
-                    g2d.setStroke(new BasicStroke(1.5f));
-                    g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 12, 12);
-                }
-
-                g2d.dispose();
-                super.paintComponent(g);
-            }
-        };
-
-        button.setFont(new Font("SF Pro Text", Font.BOLD, 16));
-        button.setForeground(textColor);
-        button.setBorder(BorderFactory.createEmptyBorder(14, 24, 14, 24));
-        button.setContentAreaFilled(false);
-        button.setFocusPainted(false);
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        button.setPreferredSize(new Dimension(0, 50));
-        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
-
-        return button;
-    }
 
     private String getFieldIcon(String type) {
         switch (type) {
@@ -609,12 +539,6 @@ public class LoginPage extends Page {
         changePage("home");
     }
 
-    private void handleForgotPassword() {
-        JOptionPane.showMessageDialog(this,
-                "Password reset functionality would be implemented here",
-                "Forgot Password",
-                JOptionPane.INFORMATION_MESSAGE);
-    }
 
     private void handleSocialLogin(String provider) {
         JOptionPane.showMessageDialog(this,
@@ -623,109 +547,5 @@ public class LoginPage extends Page {
                 JOptionPane.INFORMATION_MESSAGE);
     }
 
-    private void handleSignUp() {
-        // Navigate to sign up page
-        JOptionPane.showMessageDialog(this,
-                "Sign up page would be implemented here",
-                "Sign Up",
-                JOptionPane.INFORMATION_MESSAGE);
-    }
 
-    private JPanel createModernBottomNavigationPanel() {
-        JPanel panel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setColor(cardColor);
-                g2d.fillRect(0, 0, getWidth(), getHeight());
-
-                // Top border with shadow
-                g2d.setColor(borderColor);
-                g2d.fillRect(0, 0, getWidth(), 1);
-
-                // Subtle shadow
-                GradientPaint shadow = new GradientPaint(0, 1, new Color(0, 0, 0, 8), 0, 10, new Color(0, 0, 0, 0));
-                g2d.setPaint(shadow);
-                g2d.fillRect(0, 1, getWidth(), 10);
-                g2d.dispose();
-            }
-        };
-
-        panel.setLayout(new FlowLayout(FlowLayout.CENTER, 40, 0));
-        panel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
-
-        JButton homeButton = createModernNavButton("🏠", "Home", textSecondary, false);
-        JButton libraryButton = createModernNavButton("📚", "Library", textSecondary, false);
-        JButton recommendButton = createModernNavButton("⭐", "Discover", textSecondary, false);
-        JButton profileButton = createModernNavButton("👤", "Profile", textSecondary, false);
-
-        // Add click handlers for navigation
-        homeButton.addActionListener(e -> changePage("home"));
-        libraryButton.addActionListener(e -> changePage("library"));
-        recommendButton.addActionListener(e -> changePage("recommendations"));
-        profileButton.addActionListener(e -> changePage("profile"));
-
-        panel.add(homeButton);
-        panel.add(libraryButton);
-        panel.add(recommendButton);
-        panel.add(profileButton);
-
-        return panel;
-    }
-
-    private JButton createModernNavButton(String icon, String text, Color color, boolean active) {
-        JButton button = new JButton() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                if (active) {
-                    g2d.setColor(new Color(primaryColor.getRed(), primaryColor.getGreen(), primaryColor.getBlue(), 20));
-                    g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
-                }
-
-                g2d.dispose();
-                super.paintComponent(g);
-            }
-        };
-
-        button.setLayout(new BorderLayout(0, 5));
-        button.setBorder(BorderFactory.createEmptyBorder(12, 20, 12, 20));
-        button.setContentAreaFilled(false);
-        button.setFocusPainted(false);
-        button.setBorderPainted(false);
-
-        JLabel iconLabel = new JLabel(icon);
-        iconLabel.setFont(new Font("Apple Color Emoji", Font.PLAIN, 20));
-        iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
-
-        JLabel textLabel = new JLabel(text);
-        textLabel.setFont(new Font("SF Pro Text", Font.BOLD, 13));
-        textLabel.setForeground(color);
-        textLabel.setHorizontalAlignment(SwingConstants.CENTER);
-
-        button.add(iconLabel, BorderLayout.CENTER);
-        button.add(textLabel, BorderLayout.SOUTH);
-
-        button.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                if (!active) {
-                    textLabel.setForeground(primaryColor);
-                    button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                }
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (!active) {
-                    textLabel.setForeground(color);
-                }
-            }
-        });
-
-        return button;
-    }
 }

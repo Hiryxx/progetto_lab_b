@@ -2,11 +2,15 @@ package pages;
 
 import classes.MainFrame;
 import classes.Page;
+import components.buttons.AuthButton;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.regex.Pattern;
+
+import static classes.styles.Colors.*;
 
 public class RegisterPage extends Page {
     private JTextField nameField;
@@ -16,21 +20,6 @@ public class RegisterPage extends Page {
     private JPasswordField passwordField;
     private JCheckBox termsCheck;
 
-    // Modern color palette (same as LoginPage)
-    private Color primaryColor = new Color(99, 102, 241);      // Modern indigo
-    private Color primaryHover = new Color(79, 70, 229);       // Darker indigo
-    private Color accentColor = new Color(248, 113, 113);      // Modern coral
-    private Color backgroundColor = new Color(248, 250, 252);   // Very light blue-gray
-    private Color cardColor = new Color(255, 255, 255);        // Pure white
-    private Color textPrimary = new Color(15, 23, 42);         // Dark slate
-    private Color textSecondary = new Color(100, 116, 139);    // Medium slate
-    private Color borderColor = new Color(226, 232, 240);      // Light slate
-    private Color errorColor = new Color(239, 68, 68);         // Red for errors
-    private Color successColor = new Color(34, 197, 94);       // Green for success
-
-    // Modern gradients
-    private Color gradientStart = new Color(139, 92, 246);     // Purple
-    private Color gradientEnd = new Color(59, 130, 246);       // Blue
 
     // Regex per la validazione del Codice Fiscale
     private static final String FISCAL_CODE_REGEX = "^[A-Z]{6}\\d{2}[A-Z]\\d{2}[A-Z]\\d{3}[A-Z]$";
@@ -54,9 +43,6 @@ public class RegisterPage extends Page {
 
         this.add(backgroundPanel, BorderLayout.CENTER);
 
-        // Modern bottom navigation (same as LoginPage)
-        JPanel bottomPanel = createModernBottomNavigationPanel();
-        this.add(bottomPanel, BorderLayout.SOUTH);
     }
 
     private JPanel createGradientBackground() {
@@ -97,7 +83,7 @@ public class RegisterPage extends Page {
 
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.insets = new Insets(20, 20, 20, 20); // Ridotti da 50 a 20
+        gbc.insets = new Insets(20, 20, 20, 20);
 
         contentPanel.add(registerCard, gbc);
         return contentPanel;
@@ -133,7 +119,7 @@ public class RegisterPage extends Page {
 
         card.setLayout(new BorderLayout(0, 0));
         card.setBorder(BorderFactory.createEmptyBorder(35, 35, 35, 35));
-        card.setPreferredSize(new Dimension(450, 660)); // Ritorna alla dimensione originale
+        card.setPreferredSize(new Dimension(450, 700));
 
         // Header
         JPanel headerPanel = createRegisterHeader();
@@ -209,7 +195,7 @@ public class RegisterPage extends Page {
 
         // Email field
         JPanel emailPanel = createFormField("Email Address", "email");
-        emailField = (JTextField) findTextComponent(emailPanel);
+        emailField = findTextComponent(emailPanel);
         form.add(emailPanel);
         form.add(Box.createRigidArea(new Dimension(0, 15)));
 
@@ -219,17 +205,14 @@ public class RegisterPage extends Page {
         form.add(passwordPanel);
         form.add(Box.createRigidArea(new Dimension(0, 12)));
 
-        // Terms and conditions
-        JPanel termsPanel = createTermsPanel();
-        form.add(termsPanel);
-        form.add(Box.createRigidArea(new Dimension(0, 22)));
-
         // Register button
-        JButton registerButton = createModernButton("Create Account", primaryColor, Color.WHITE, true);
-        registerButton.addActionListener(e -> handleRegister());
-        registerButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        form.add(registerButton);
+        JButton loginButton = new AuthButton("Register", primaryColor, Color.WHITE, true);
+        loginButton.addActionListener(e -> handleRegister());
+        loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        form.add(loginButton);
         form.add(Box.createRigidArea(new Dimension(0, 18)));
+
+        // todo add show password
 
         // Or divider
         JPanel dividerPanel = createDivider("or");
@@ -364,74 +347,7 @@ public class RegisterPage extends Page {
         return fieldPanel;
     }
 
-    private JPanel createTermsPanel() {
-        JPanel terms = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        terms.setOpaque(false);
 
-        termsCheck = new JCheckBox();
-        termsCheck.setOpaque(false);
-        termsCheck.setFocusPainted(false);
-
-        JLabel termsText = new JLabel("I agree to the ");
-        termsText.setFont(new Font("SF Pro Text", Font.PLAIN, 13));
-        termsText.setForeground(textSecondary);
-
-        JLabel termsLink = new JLabel("Terms of Service");
-        termsLink.setFont(new Font("SF Pro Text", Font.PLAIN, 13));
-        termsLink.setForeground(primaryColor);
-        termsLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        termsLink.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                handleTermsOfService();
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                termsLink.setForeground(primaryHover);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                termsLink.setForeground(primaryColor);
-            }
-        });
-
-        JLabel andText = new JLabel(" and ");
-        andText.setFont(new Font("SF Pro Text", Font.PLAIN, 13));
-        andText.setForeground(textSecondary);
-
-        JLabel privacyLink = new JLabel("Privacy Policy");
-        privacyLink.setFont(new Font("SF Pro Text", Font.PLAIN, 13));
-        privacyLink.setForeground(primaryColor);
-        privacyLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        privacyLink.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                handlePrivacyPolicy();
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                privacyLink.setForeground(primaryHover);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                privacyLink.setForeground(primaryColor);
-            }
-        });
-
-        terms.add(termsCheck);
-        terms.add(termsText);
-        terms.add(termsLink);
-        terms.add(andText);
-        terms.add(privacyLink);
-
-        return terms;
-    }
 
     private JPanel createDivider(String text) {
         JPanel divider = new JPanel(new BorderLayout());
@@ -709,101 +625,4 @@ public class RegisterPage extends Page {
         changePage("login");
     }
 
-    private JPanel createModernBottomNavigationPanel() {
-        JPanel panel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setColor(cardColor);
-                g2d.fillRect(0, 0, getWidth(), getHeight());
-
-                // Top border with shadow
-                g2d.setColor(borderColor);
-                g2d.fillRect(0, 0, getWidth(), 1);
-
-                // Subtle shadow
-                GradientPaint shadow = new GradientPaint(0, 1, new Color(0, 0, 0, 8), 0, 10, new Color(0, 0, 0, 0));
-                g2d.setPaint(shadow);
-                g2d.fillRect(0, 1, getWidth(), 10);
-                g2d.dispose();
-            }
-        };
-
-        panel.setLayout(new FlowLayout(FlowLayout.CENTER, 40, 0));
-        panel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
-
-        JButton homeButton = createModernNavButton("🏠", "Home", textSecondary, false);
-        JButton libraryButton = createModernNavButton("📚", "Library", textSecondary, false);
-        JButton recommendButton = createModernNavButton("⭐", "Discover", textSecondary, false);
-        JButton profileButton = createModernNavButton("👤", "Profile", textSecondary, false);
-
-        // Add click handlers for navigation
-        homeButton.addActionListener(e -> changePage("home"));
-        libraryButton.addActionListener(e -> changePage("library"));
-        recommendButton.addActionListener(e -> changePage("recommendations"));
-        profileButton.addActionListener(e -> changePage("profile"));
-
-        panel.add(homeButton);
-        panel.add(libraryButton);
-        panel.add(recommendButton);
-        panel.add(profileButton);
-
-        return panel;
-    }
-
-    private JButton createModernNavButton(String icon, String text, Color color, boolean active) {
-        JButton button = new JButton() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                if (active) {
-                    g2d.setColor(new Color(primaryColor.getRed(), primaryColor.getGreen(), primaryColor.getBlue(), 20));
-                    g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
-                }
-
-                g2d.dispose();
-                super.paintComponent(g);
-            }
-        };
-
-        button.setLayout(new BorderLayout(0, 5));
-        button.setBorder(BorderFactory.createEmptyBorder(12, 20, 12, 20));
-        button.setContentAreaFilled(false);
-        button.setFocusPainted(false);
-        button.setBorderPainted(false);
-
-        JLabel iconLabel = new JLabel(icon);
-        iconLabel.setFont(new Font("Apple Color Emoji", Font.PLAIN, 20));
-        iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
-
-        JLabel textLabel = new JLabel(text);
-        textLabel.setFont(new Font("SF Pro Text", Font.BOLD, 13));
-        textLabel.setForeground(color);
-        textLabel.setHorizontalAlignment(SwingConstants.CENTER);
-
-        button.add(iconLabel, BorderLayout.CENTER);
-        button.add(textLabel, BorderLayout.SOUTH);
-
-        button.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                if (!active) {
-                    textLabel.setForeground(primaryColor);
-                    button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                }
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (!active) {
-                    textLabel.setForeground(color);
-                }
-            }
-        });
-
-        return button;
-    }
 }
