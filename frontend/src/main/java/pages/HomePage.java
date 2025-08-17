@@ -67,8 +67,7 @@ public class HomePage extends Page {
         this.add(scrollPane, BorderLayout.CENTER);
 
         // Menù di navigazione
-        JPanel bottomPanel = createBottomNavigationPanel();
-        this.add(bottomPanel, BorderLayout.SOUTH);
+
     }
 
     private JPanel createTopPanel() {
@@ -381,102 +380,8 @@ public class HomePage extends Page {
         return scrollPane;
     }
 
-    private JPanel createBottomNavigationPanel() {
-        JPanel panel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setColor(cardColor);
-                g2d.fillRect(0, 0, getWidth(), getHeight());
-
-                // Bordo superiore
-                g2d.setColor(borderColor);
-                g2d.fillRect(0, 0, getWidth(), 1);
-
-                // Ombra
-                GradientPaint shadow = new GradientPaint(0, 1, new Color(0, 0, 0, 8), 0, 10, new Color(0, 0, 0, 0));
-                g2d.setPaint(shadow);
-                g2d.fillRect(0, 1, getWidth(), 10);
-                g2d.dispose();
-            }
-        };
-
-        panel.setLayout(new FlowLayout(FlowLayout.CENTER, 40, 0));
-        panel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
-
-        JButton homeButton = createNavButton("🏠", "Home", primaryColor, true);
-        JButton libraryButton = createNavButton("📚", "Libreria", textSecondary, false);
-        JButton recommendButton = createNavButton("⭐", "Scopri", textSecondary, false);
-        JButton profileButton = createNavButton("👤", "Profilo", textSecondary, false);
-        JButton profileTryButton = createNavButton("👤", "Profilo1", textSecondary, false);
-        profileButton.addActionListener(e -> changePage("login"));
-        profileTryButton.addActionListener(e -> changePage("profile"));
 
 
-        panel.add(homeButton);
-        panel.add(libraryButton);
-        panel.add(recommendButton);
-        panel.add(profileButton);
-        panel.add(profileTryButton);
-
-        return panel;
-    }
-
-    private JButton createNavButton(String icon, String text, Color color, boolean active) {
-        JButton button = new JButton() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                if (active) {
-                    g2d.setColor(new Color(primaryColor.getRed(), primaryColor.getGreen(), primaryColor.getBlue(), 20));
-                    g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
-                }
-
-                g2d.dispose();
-                super.paintComponent(g);
-            }
-        };
-
-        button.setLayout(new BorderLayout(0, 5));
-        button.setBorder(BorderFactory.createEmptyBorder(12, 20, 12, 20));
-        button.setContentAreaFilled(false);
-        button.setFocusPainted(false);
-        button.setBorderPainted(false);
-
-        JLabel iconLabel = new JLabel(icon);
-        iconLabel.setFont(new Font("Apple Color Emoji", Font.PLAIN, 20));
-        iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
-
-        JLabel textLabel = new JLabel(text);
-        textLabel.setFont(new Font("SF Pro Text", Font.BOLD, 13));
-        textLabel.setForeground(color);
-        textLabel.setHorizontalAlignment(SwingConstants.CENTER);
-
-        button.add(iconLabel, BorderLayout.CENTER);
-        button.add(textLabel, BorderLayout.SOUTH);
-
-        button.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                if (!active) {
-                    textLabel.setForeground(primaryColor);
-                    button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                }
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (!active) {
-                    textLabel.setForeground(color);
-                }
-            }
-        });
-
-        return button;
-    }
 
     private JPanel createBookCard(String title, String author, String genre, float rating) {
         JPanel card = new JPanel() {
@@ -586,7 +491,7 @@ public class HomePage extends Page {
             @Override
             public void mouseClicked(MouseEvent e) {
                 // Quando si clicca, cambia la pagina del MainFrame
-                mainFrame.changePage("bookDetails");
+                mainFrame.showPage("bookDetails");
                 System.out.println("Cliccato sul libro: " + title); // Log di verifica
             }
         });

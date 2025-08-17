@@ -12,22 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
+import static classes.styles.Colors.*;
+
 public class ProfilePage extends Page {
-
-    // Colori (stessi della HomePage)
-    private Color primaryColor = new Color(99, 102, 241);      // Indaco
-    private Color primaryHover = new Color(79, 70, 229);       // Indaco scuro
-    private Color accentColor = new Color(248, 113, 113);      // Corallo
-    private Color backgroundColor = new Color(248, 250, 252);   // Azzurro-grigio chiaro
-    private Color cardColor = new Color(255, 255, 255);        // Bianco puro
-    private Color textPrimary = new Color(15, 23, 42);         // Ardesia scura
-    private Color textSecondary = new Color(100, 116, 139);    // Ardesia media
-    private Color borderColor = new Color(226, 232, 240);      // Ardesia chiara
-    private Color successColor = new Color(34, 197, 94);       // Verde per successo
-
-    // Sfumature
-    private Color gradientStart = new Color(139, 92, 246);     // Viola
-    private Color gradientEnd = new Color(59, 130, 246);       // Blu
 
     // Pannello per le librerie, lo rendo un campo della classe per poterlo aggiornare
     private JPanel librariesContainer;
@@ -67,8 +54,6 @@ public class ProfilePage extends Page {
         JScrollPane scrollPane = createScrollPane(contentPanel);
         this.add(scrollPane, BorderLayout.CENTER);
 
-        JPanel bottomPanel = createBottomNavigationPanel();
-        this.add(bottomPanel, BorderLayout.SOUTH);
     }
 
     private JPanel createProfileHeader() {
@@ -817,7 +802,7 @@ public class ProfilePage extends Page {
             @Override
             public void mouseClicked(MouseEvent e) {
                 // Quando si clicca, cambia la pagina del MainFrame
-                mainFrame.changePage("bookDetails");
+                mainFrame.showPage("bookDetails");
                 System.out.println("Cliccato sul libro: " + title); // Log di verifica
             }
         });

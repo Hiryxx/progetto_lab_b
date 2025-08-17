@@ -9,26 +9,12 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
 
+import static classes.styles.Colors.*;
+
 public class LoginPage extends Page {
     private JTextField emailField;
     private JPasswordField passwordField;
-    private JCheckBox rememberMeCheck;
-
-    // Modern color palette (same as HomePage)
-    private Color primaryColor = new Color(99, 102, 241);      // Modern indigo
-    private Color primaryHover = new Color(79, 70, 229);       // Darker indigo
-    private Color accentColor = new Color(248, 113, 113);      // Modern coral
-    private Color backgroundColor = new Color(248, 250, 252);   // Very light blue-gray
-    private Color cardColor = new Color(255, 255, 255);        // Pure white
-    private Color textPrimary = new Color(15, 23, 42);         // Dark slate
-    private Color textSecondary = new Color(100, 116, 139);    // Medium slate
-    private Color borderColor = new Color(226, 232, 240);      // Light slate
-    private Color errorColor = new Color(239, 68, 68);         // Red for errors
-    private Color successColor = new Color(34, 197, 94);       // Green for success
-
-    // Modern gradients
-    private Color gradientStart = new Color(139, 92, 246);     // Purple
-    private Color gradientEnd = new Color(59, 130, 246);       // Blue
+    private JCheckBox showPasswordCheck;
 
     public LoginPage(MainFrame mainFrame) {
         super(mainFrame);
@@ -49,9 +35,6 @@ public class LoginPage extends Page {
 
         this.add(backgroundPanel, BorderLayout.CENTER);
 
-        // Modern bottom navigation (same as HomePage)
-        JPanel bottomPanel = createModernBottomNavigationPanel();
-        this.add(bottomPanel, BorderLayout.SOUTH);
     }
 
     private JPanel createGradientBackground() {
@@ -325,6 +308,7 @@ public class LoginPage extends Page {
         passwordField.setFont(new Font("SF Pro Text", Font.PLAIN, 16));
         passwordField.setForeground(textPrimary);
         passwordField.setCaretColor(primaryColor);
+        passwordField.setEchoChar('•'); // Default hidden
 
         // Icon
         JLabel iconLabel = new JLabel("🔒");
@@ -349,13 +333,22 @@ public class LoginPage extends Page {
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         leftPanel.setOpaque(false);
 
-        rememberMeCheck = new JCheckBox("Remember me");
-        rememberMeCheck.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
-        rememberMeCheck.setForeground(textSecondary);
-        rememberMeCheck.setOpaque(false);
-        rememberMeCheck.setFocusPainted(false);
+        showPasswordCheck = new JCheckBox("Show password");
+        showPasswordCheck.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
+        showPasswordCheck.setForeground(textSecondary);
+        showPasswordCheck.setOpaque(false);
+        showPasswordCheck.setFocusPainted(false);
 
-        leftPanel.add(rememberMeCheck);
+        showPasswordCheck.addActionListener(e -> {
+            boolean isSelected = showPasswordCheck.isSelected();
+            if (isSelected) {
+                passwordField.setEchoChar((char) 0);
+            } else {
+                passwordField.setEchoChar('•');
+            }
+        });
+
+        leftPanel.add(showPasswordCheck);
 
         // Forgot password link
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
