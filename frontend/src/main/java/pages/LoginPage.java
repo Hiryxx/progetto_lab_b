@@ -3,6 +3,11 @@ package pages;
 import classes.MainFrame;
 import classes.Page;
 import components.buttons.AuthButton;
+import components.checks.PasswordCheck;
+import components.inputs.FormField;
+import components.inputs.PasswordFormField;
+import components.inputs.TextFormField;
+import components.panels.AuthOptionPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -143,14 +148,13 @@ public class LoginPage extends Page {
         logoLabel.setIcon(createModernBookIcon(50, 50));
         logoPanel.add(logoLabel);
 
-        // Welcome text
-        JLabel welcomeLabel = new JLabel("Welcome Back!");
+        JLabel welcomeLabel = new JLabel("Bentornato!");
         welcomeLabel.setFont(new Font("SF Pro Display", Font.BOLD, 32));
         welcomeLabel.setForeground(textPrimary);
         welcomeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         welcomeLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
 
-        JLabel subtitleLabel = new JLabel("Sign in to your BookHub account");
+        JLabel subtitleLabel = new JLabel("Accedi al tuo account BookHub");
         subtitleLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 16));
         subtitleLabel.setForeground(textSecondary);
         subtitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -169,24 +173,24 @@ public class LoginPage extends Page {
         form.setOpaque(false);
 
         // TODO FIX THIS findTextComponent SHIT
-        JPanel emailPanel = createFormField("Email", "email");
-        emailField = findTextComponent(emailPanel);
+        FormField emailPanel = new TextFormField("Email", "email");
+        emailField = emailPanel.getField();
         form.add(emailPanel);
         form.add(Box.createRigidArea(new Dimension(0, 20)));
 
         // Password field
-        JPanel passwordPanel = createPasswordField("Password");
-        passwordField = (JPasswordField) findTextComponent(passwordPanel);
+        FormField passwordPanel = new PasswordFormField("Password");
+        passwordField = (JPasswordField) passwordPanel.getField();
         form.add(passwordPanel);
         form.add(Box.createRigidArea(new Dimension(0, 15)));
 
         // Remember me and forgot password
-        JPanel optionsPanel = createOptionsPanel();
+        JPanel optionsPanel = new AuthOptionPanel(passwordField);
         form.add(optionsPanel);
         form.add(Box.createRigidArea(new Dimension(0, 30)));
 
         // Login button
-        JButton loginButton = new AuthButton("Sign In", primaryColor, Color.WHITE, true);
+        JButton loginButton = new AuthButton("Accedi", primaryColor, Color.WHITE, true);
         loginButton.addActionListener(e -> handleLogin());
         loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         form.add(loginButton);
@@ -197,73 +201,8 @@ public class LoginPage extends Page {
         form.add(dividerPanel);
         form.add(Box.createRigidArea(new Dimension(0, 20)));
 
-        // Social login buttons todo ??
-        JPanel socialPanel = createSocialLoginPanel();
-        form.add(socialPanel);
 
         return form;
-    }
-
-    private JPanel createFormField(String label, String type) {
-        JPanel fieldPanel = new JPanel();
-        fieldPanel.setLayout(new BoxLayout(fieldPanel, BoxLayout.Y_AXIS));
-        fieldPanel.setOpaque(false);
-
-        // Label
-        JLabel fieldLabel = new JLabel(label, SwingConstants.CENTER); // Modifica qui
-        fieldLabel.setFont(new Font("SF Pro Text", Font.BOLD, 13));
-        fieldLabel.setForeground(textPrimary);
-        fieldLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // Modifica qui
-
-        // Input field container
-        JPanel inputContainer = new JPanel(new BorderLayout()) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                // Field background
-                g2d.setColor(backgroundColor);
-                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
-
-                // Border
-                g2d.setColor(borderColor);
-                g2d.setStroke(new BasicStroke(1.5f));
-                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 12, 12);
-
-                g2d.dispose();
-            }
-        };
-        inputContainer.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
-        inputContainer.setPreferredSize(new Dimension(0, 44));
-
-        // Text field
-        JTextField textField = new JTextField() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                setOpaque(false);
-                super.paintComponent(g);
-            }
-        };
-        textField.setBorder(null);
-        textField.setFont(new Font("SF Pro Text", Font.PLAIN, 15));
-        textField.setForeground(textPrimary);
-        textField.setCaretColor(primaryColor);
-
-        // Icon
-        JLabel iconLabel = new JLabel(getFieldIcon(type));
-        iconLabel.setFont(new Font("Apple Color Emoji", Font.PLAIN, 15));
-        iconLabel.setForeground(textSecondary);
-
-        inputContainer.add(iconLabel, BorderLayout.WEST);
-        inputContainer.add(Box.createHorizontalStrut(8));
-        inputContainer.add(textField, BorderLayout.CENTER);
-
-        fieldPanel.add(fieldLabel);
-        fieldPanel.add(Box.createRigidArea(new Dimension(0, 6)));
-        fieldPanel.add(inputContainer);
-
-        return fieldPanel;
     }
 
     private JPanel createPasswordField(String label) {
@@ -309,7 +248,7 @@ public class LoginPage extends Page {
         passwordField.setFont(new Font("SF Pro Text", Font.PLAIN, 16));
         passwordField.setForeground(textPrimary);
         passwordField.setCaretColor(primaryColor);
-        passwordField.setEchoChar('•'); // Default hidden
+
 
         // Icon
         JLabel iconLabel = new JLabel("🔒");
@@ -325,7 +264,7 @@ public class LoginPage extends Page {
 
         return fieldPanel;
     }
-
+    // todo remove later
     private JPanel createOptionsPanel() {
         JPanel options = new JPanel(new BorderLayout());
         options.setOpaque(false);
@@ -334,11 +273,7 @@ public class LoginPage extends Page {
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         leftPanel.setOpaque(false);
 
-        showPasswordCheck = new JCheckBox("Show password");
-        showPasswordCheck.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
-        showPasswordCheck.setForeground(textSecondary);
-        showPasswordCheck.setOpaque(false);
-        showPasswordCheck.setFocusPainted(false);
+        showPasswordCheck = new PasswordCheck("Mostra password");
 
         showPasswordCheck.addActionListener(e -> {
             boolean isSelected = showPasswordCheck.isSelected();
@@ -401,32 +336,17 @@ public class LoginPage extends Page {
         return divider;
     }
 
-    private JPanel createSocialLoginPanel() {
-        JPanel social = new JPanel(new GridLayout(1, 2, 15, 0));
-        social.setOpaque(false);
-
-        JButton googleButton = new AuthButton("🌐 Google", new Color(66, 133, 244), Color.WHITE, false);
-        JButton appleButton = new AuthButton("🍎 Apple", new Color(0, 0, 0), Color.WHITE, false);
-
-        googleButton.addActionListener(e -> handleSocialLogin("google"));
-        appleButton.addActionListener(e -> handleSocialLogin("apple"));
-
-        social.add(googleButton);
-        social.add(appleButton);
-
-        return social;
-    }
 
     private JPanel createLoginFooter() {
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
         footer.setOpaque(false);
         footer.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
 
-        JLabel signupText = new JLabel("Don't have an account? ");
+        JLabel signupText = new JLabel("Non hai un account? ");
         signupText.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
         signupText.setForeground(textSecondary);
 
-        JLabel signupLink = new JLabel("Sign up");
+        JLabel signupLink = new JLabel("Registrati");
         signupLink.setFont(new Font("SF Pro Text", Font.BOLD, 14));
         signupLink.setForeground(primaryColor);
         signupLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -455,35 +375,6 @@ public class LoginPage extends Page {
         return footer;
     }
 
-
-
-    private String getFieldIcon(String type) {
-        switch (type) {
-            case "email": return "✉️";
-            case "user": return "👤";
-            default: return "📝";
-        }
-    }
-
-    private JTextField findTextComponent(JPanel panel) {
-        for (Component comp : panel.getComponents()) {
-            if (comp instanceof JPanel) {
-                for (Component innerComp : ((JPanel) comp).getComponents()) {
-                    if (innerComp instanceof JTextField || innerComp instanceof JPasswordField) {
-                        return (JTextField) innerComp;
-                    }
-                    if (innerComp instanceof JPanel) {
-                        for (Component deepComp : ((JPanel) innerComp).getComponents()) {
-                            if (deepComp instanceof JTextField || deepComp instanceof JPasswordField) {
-                                return (JTextField) deepComp;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return null;
-    }
 
     private Icon createModernBookIcon(int width, int height) {
         return new Icon() {

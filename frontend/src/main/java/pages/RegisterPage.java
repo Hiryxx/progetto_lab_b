@@ -3,6 +3,11 @@ package pages;
 import classes.MainFrame;
 import classes.Page;
 import components.buttons.AuthButton;
+import components.checks.PasswordCheck;
+import components.inputs.FormField;
+import components.inputs.PasswordFormField;
+import components.inputs.TextFormField;
+import components.panels.AuthOptionPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,7 +23,7 @@ public class RegisterPage extends Page {
     private JTextField fiscalCodeField;
     private JTextField emailField;
     private JPasswordField passwordField;
-    private JCheckBox termsCheck;
+    private JCheckBox showPasswordCheck;
 
 
     // Regex per la validazione del Codice Fiscale
@@ -151,13 +156,13 @@ public class RegisterPage extends Page {
         logoPanel.add(logoLabel);
 
         // Welcome text
-        JLabel welcomeLabel = new JLabel("Join BookHub!");
+        JLabel welcomeLabel = new JLabel("Unisciti a BookHub!");
         welcomeLabel.setFont(new Font("SF Pro Display", Font.BOLD, 28));
         welcomeLabel.setForeground(textPrimary);
         welcomeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         welcomeLabel.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
 
-        JLabel subtitleLabel = new JLabel("Create your BookHub account");
+        JLabel subtitleLabel = new JLabel("Crea il tuo account BookHub");
         subtitleLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
         subtitleLabel.setForeground(textSecondary);
         subtitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -176,177 +181,54 @@ public class RegisterPage extends Page {
         form.setOpaque(false);
 
         // Name field
-        JPanel namePanel = createFormField("Full Name", "user");
-        nameField = (JTextField) findTextComponent(namePanel);
+        FormField namePanel = new TextFormField("Nome", "user");
+        nameField = namePanel.getField();
         form.add(namePanel);
         form.add(Box.createRigidArea(new Dimension(0, 15)));
 
         // User field
-        JPanel userPanel = createFormField("Username", "username");
-        userField = (JTextField) findTextComponent(userPanel);
+        FormField userPanel = new TextFormField("Username", "username");
+        userField = userPanel.getField();
         form.add(userPanel);
         form.add(Box.createRigidArea(new Dimension(0, 15)));
 
         // Fiscal Code field
-        JPanel fiscalCodePanel = createFormField("Fiscal Code", "fiscal");
-        fiscalCodeField = (JTextField) findTextComponent(fiscalCodePanel);
+        FormField fiscalCodePanel = new TextFormField("Fiscal Code", "fiscal");
+        fiscalCodeField = fiscalCodePanel.getField();
         form.add(fiscalCodePanel);
         form.add(Box.createRigidArea(new Dimension(0, 15)));
 
         // Email field
-        JPanel emailPanel = createFormField("Email Address", "email");
-        emailField = findTextComponent(emailPanel);
+        FormField emailPanel = new TextFormField("Email Address", "email");
+        emailField = emailPanel.getField();
         form.add(emailPanel);
         form.add(Box.createRigidArea(new Dimension(0, 15)));
 
         // Password field
-        JPanel passwordPanel = createPasswordField("Password");
-        passwordField = (JPasswordField) findTextComponent(passwordPanel);
+        FormField passwordPanel = new PasswordFormField("Password");
+        passwordField = (JPasswordField) passwordPanel.getField();
         form.add(passwordPanel);
         form.add(Box.createRigidArea(new Dimension(0, 12)));
 
+        JPanel optionsPanel = new AuthOptionPanel(passwordField);
+        form.add(optionsPanel);
+        form.add(Box.createRigidArea(new Dimension(0, 30)));
+
         // Register button
-        JButton loginButton = new AuthButton("Register", primaryColor, Color.WHITE, true);
+        JButton loginButton = new AuthButton("Registrati", primaryColor, Color.WHITE, true);
         loginButton.addActionListener(e -> handleRegister());
         loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         form.add(loginButton);
         form.add(Box.createRigidArea(new Dimension(0, 18)));
 
-        // todo add show password
 
-        // Or divider
         JPanel dividerPanel = createDivider("or");
         form.add(dividerPanel);
         form.add(Box.createRigidArea(new Dimension(0, 18)));
 
-        // Social login buttons
-        JPanel socialPanel = createSocialLoginPanel();
-        form.add(socialPanel);
 
         return form;
     }
-
-    private JPanel createFormField(String label, String type) {
-        JPanel fieldPanel = new JPanel();
-        fieldPanel.setLayout(new BoxLayout(fieldPanel, BoxLayout.Y_AXIS));
-        fieldPanel.setOpaque(false);
-
-        // Label
-        JLabel fieldLabel = new JLabel(label, SwingConstants.CENTER); // Modifica qui
-        fieldLabel.setFont(new Font("SF Pro Text", Font.BOLD, 13));
-        fieldLabel.setForeground(textPrimary);
-        fieldLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // Modifica qui
-
-        // Input field container
-        JPanel inputContainer = new JPanel(new BorderLayout()) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                // Field background
-                g2d.setColor(backgroundColor);
-                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
-
-                // Border
-                g2d.setColor(borderColor);
-                g2d.setStroke(new BasicStroke(1.5f));
-                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 12, 12);
-
-                g2d.dispose();
-            }
-        };
-        inputContainer.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
-        inputContainer.setPreferredSize(new Dimension(0, 44));
-
-        // Text field
-        JTextField textField = new JTextField() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                setOpaque(false);
-                super.paintComponent(g);
-            }
-        };
-        textField.setBorder(null);
-        textField.setFont(new Font("SF Pro Text", Font.PLAIN, 15));
-        textField.setForeground(textPrimary);
-        textField.setCaretColor(primaryColor);
-
-        // Icon
-        JLabel iconLabel = new JLabel(getFieldIcon(type));
-        iconLabel.setFont(new Font("Apple Color Emoji", Font.PLAIN, 15));
-        iconLabel.setForeground(textSecondary);
-
-        inputContainer.add(iconLabel, BorderLayout.WEST);
-        inputContainer.add(Box.createHorizontalStrut(8));
-        inputContainer.add(textField, BorderLayout.CENTER);
-
-        fieldPanel.add(fieldLabel);
-        fieldPanel.add(Box.createRigidArea(new Dimension(0, 6)));
-        fieldPanel.add(inputContainer);
-
-        return fieldPanel;
-    }
-
-    private JPanel createPasswordField(String label) {
-        JPanel fieldPanel = new JPanel();
-        fieldPanel.setLayout(new BoxLayout(fieldPanel, BoxLayout.Y_AXIS));
-        fieldPanel.setOpaque(false);
-
-        // Label
-        JLabel fieldLabel = new JLabel(label, SwingConstants.CENTER); // Modifica qui
-        fieldLabel.setFont(new Font("SF Pro Text", Font.BOLD, 13));
-        fieldLabel.setForeground(textPrimary);
-        fieldLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // Modifica qui
-
-        // Input field container
-        JPanel inputContainer = new JPanel(new BorderLayout()) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                g2d.setColor(backgroundColor);
-                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
-
-                g2d.setColor(borderColor);
-                g2d.setStroke(new BasicStroke(1.5f));
-                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 12, 12);
-
-                g2d.dispose();
-            }
-        };
-        inputContainer.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
-        inputContainer.setPreferredSize(new Dimension(0, 44));
-
-        // Password field
-        JPasswordField passwordField = new JPasswordField() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                setOpaque(false);
-                super.paintComponent(g);
-            }
-        };
-        passwordField.setBorder(null);
-        passwordField.setFont(new Font("SF Pro Text", Font.PLAIN, 15));
-        passwordField.setForeground(textPrimary);
-        passwordField.setCaretColor(primaryColor);
-
-        // Icon
-        JLabel iconLabel = new JLabel("🔒");
-        iconLabel.setFont(new Font("Apple Color Emoji", Font.PLAIN, 15));
-
-        inputContainer.add(iconLabel, BorderLayout.WEST);
-        inputContainer.add(Box.createHorizontalStrut(8));
-        inputContainer.add(passwordField, BorderLayout.CENTER);
-
-        fieldPanel.add(fieldLabel);
-        fieldPanel.add(Box.createRigidArea(new Dimension(0, 6)));
-        fieldPanel.add(inputContainer);
-
-        return fieldPanel;
-    }
-
 
 
     private JPanel createDivider(String text) {
@@ -389,32 +271,16 @@ public class RegisterPage extends Page {
         return divider;
     }
 
-    private JPanel createSocialLoginPanel() {
-        JPanel social = new JPanel(new GridLayout(1, 2, 12, 0));
-        social.setOpaque(false);
-
-        JButton googleButton = createModernButton("🌐 Google", new Color(66, 133, 244), Color.WHITE, false);
-        JButton appleButton = createModernButton("🍎 Apple", new Color(0, 0, 0), Color.WHITE, false);
-
-        googleButton.addActionListener(e -> handleSocialRegister("google"));
-        appleButton.addActionListener(e -> handleSocialRegister("apple"));
-
-        social.add(googleButton);
-        social.add(appleButton);
-
-        return social;
-    }
-
     private JPanel createRegisterFooter() {
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
         footer.setOpaque(false);
         footer.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
 
-        JLabel loginText = new JLabel("Already have an account? ");
+        JLabel loginText = new JLabel("Hai gia un account? ");
         loginText.setFont(new Font("SF Pro Text", Font.PLAIN, 13));
         loginText.setForeground(textSecondary);
 
-        JLabel loginLink = new JLabel("Log in");
+        JLabel loginLink = new JLabel("Accedi");
         loginLink.setFont(new Font("SF Pro Text", Font.BOLD, 13));
         loginLink.setForeground(primaryColor);
         loginLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -442,84 +308,6 @@ public class RegisterPage extends Page {
         return footer;
     }
 
-    private JButton createModernButton(String text, Color bgColor, Color textColor, boolean isPrimary) {
-        JButton button = new JButton(text) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                Color currentBg = bgColor;
-                if (getModel().isPressed()) {
-                    currentBg = isPrimary ? primaryHover : bgColor.darker();
-                } else if (getModel().isRollover()) {
-                    currentBg = isPrimary ? primaryHover : bgColor.brighter();
-                }
-
-                if (isPrimary) {
-                    // Gradient for primary button
-                    GradientPaint gradient = new GradientPaint(0, 0, currentBg, getWidth(), getHeight(),
-                            currentBg.darker());
-                    g2d.setPaint(gradient);
-                } else {
-                    g2d.setColor(currentBg);
-                }
-
-                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
-
-                // Border for secondary buttons
-                if (!isPrimary) {
-                    g2d.setColor(borderColor);
-                    g2d.setStroke(new BasicStroke(1.5f));
-                    g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 12, 12);
-                }
-
-                g2d.dispose();
-                super.paintComponent(g);
-            }
-        };
-
-        button.setFont(new Font("SF Pro Text", Font.BOLD, 15));
-        button.setForeground(textColor);
-        button.setBorder(BorderFactory.createEmptyBorder(12, 20, 12, 20));
-        button.setContentAreaFilled(false);
-        button.setFocusPainted(false);
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        button.setPreferredSize(new Dimension(0, 44));
-        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
-
-        return button;
-    }
-
-    private String getFieldIcon(String type) {
-        switch (type) {
-            case "email": return "✉️";
-            case "user": return "👤";
-            case "username": return "👤";
-            case "fiscal": return "🇮🇹";
-            default: return "📝";
-        }
-    }
-
-    private JTextField findTextComponent(JPanel panel) {
-        for (Component comp : panel.getComponents()) {
-            if (comp instanceof JPanel) {
-                for (Component innerComp : ((JPanel) comp).getComponents()) {
-                    if (innerComp instanceof JTextField || innerComp instanceof JPasswordField) {
-                        return (JTextField) innerComp;
-                    }
-                    if (innerComp instanceof JPanel) {
-                        for (Component deepComp : ((JPanel) innerComp).getComponents()) {
-                            if (deepComp instanceof JTextField || deepComp instanceof JPasswordField) {
-                                return (JTextField) deepComp;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return null;
-    }
 
     private Icon createModernBookIcon(int width, int height) {
         return new Icon() {
@@ -567,8 +355,8 @@ public class RegisterPage extends Page {
         // Basic validation
         if (name.isEmpty() || username.isEmpty() || fiscalCode.isEmpty() || email.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(this,
-                    "Please fill in all fields",
-                    "Registration Error",
+                    "Per favore inserisci tutti i campi",
+                    "Errore di registrazione",
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -576,48 +364,20 @@ public class RegisterPage extends Page {
         // Validate fiscal code format
         if (!Pattern.matches(FISCAL_CODE_REGEX, fiscalCode.toUpperCase())) {
             JOptionPane.showMessageDialog(this,
-                    "Invalid fiscal code format. It must be 16 alphanumeric characters.",
-                    "Registration Error",
+                    "Codice fiscale non valido.",
+                    "Errore di registrazione",
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        if (!termsCheck.isSelected()) {
-            JOptionPane.showMessageDialog(this,
-                    "Please accept the Terms of Service and Privacy Policy",
-                    "Registration Error",
-                    JOptionPane.ERROR_MESSAGE);
-            return;
-        }
 
         // Here you would implement actual registration logic
         // For demo purposes, show success message and navigate to login
         JOptionPane.showMessageDialog(this,
                 "Account created successfully! Please sign in.",
-                "Registration Success",
+                "Registrato con successo",
                 JOptionPane.INFORMATION_MESSAGE);
         changePage("login");
-    }
-
-    private void handleSocialRegister(String provider) {
-        JOptionPane.showMessageDialog(this,
-                "Social registration with " + provider + " would be implemented here",
-                "Social Registration",
-                JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    private void handleTermsOfService() {
-        JOptionPane.showMessageDialog(this,
-                "Terms of Service would be displayed here",
-                "Terms of Service",
-                JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    private void handlePrivacyPolicy() {
-        JOptionPane.showMessageDialog(this,
-                "Privacy Policy would be displayed here",
-                "Privacy Policy",
-                JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void handleSignIn() {
