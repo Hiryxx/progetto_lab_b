@@ -7,9 +7,7 @@ import server.executors.Executable;
 import server.executors.NoInputCommandHandler;
 import server.executors.StringCommandHandler;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -19,6 +17,12 @@ import java.util.function.Supplier;
  */
 public class CommandRegister {
     private final Map<String, Executable> commands = new HashMap<>();
+
+    /***
+     Set of commands that can be executed without authentication
+     * This is used to allow public access to certain commands
+     */
+    private final Set<String> freeCommands = new HashSet<>();
 
     /***
      Register an endpoint with its function
@@ -59,6 +63,32 @@ public class CommandRegister {
             throw new RouterNotFoundException("Command not found: " + command);
         }
         return executable.execute(args);
+    }
+
+    /***
+     Set a command that can be executed without authentication
+     * @param command The command to set
+     */
+    public void setFreeCommand(String command) {
+        if (command == null || command.isEmpty()) {
+            throw new IllegalArgumentException("Command cannot be null or empty");
+        }
+        if (!commands.containsKey(command)) {
+            throw new RuntimeException("Command not found: " + command);
+        }
+        freeCommands.add(command);
+    }
+
+    /***
+     Check if a command is free (can be executed without authentication)
+     * @param command The command to check
+     * @return true if the command is free, false otherwise
+     */
+    public boolean isFreeCommand(String command) {
+        if (command == null || command.isEmpty()) {
+            throw new IllegalArgumentException("Command cannot be null or empty");
+        }
+        return freeCommands.contains(command);
     }
 }
 

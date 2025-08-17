@@ -241,6 +241,8 @@ public class Server implements AutoCloseable {
         commandRegister.register("PING", () -> new SingleResponse("PONG"));
 
         commandRegister.register("TRY", SingleResponse::new);
+
+        commandRegister.setFreeCommand("BOOK_INFO");
     }
 
     /**
@@ -280,7 +282,8 @@ public class Server implements AutoCloseable {
                 System.out.println("Received from " + connection.getInetAddress() + ": " + inputLine);
 
                 try {
-                    String[] parts = inputLine.split(";", 2);
+                    // parts are command;?json;?userId
+                    String[] parts = inputLine.split(";", 3);
                     if (parts.length < 1) {
                         // TODO specific method for sending error message
                         connection.getOut().println("Error: Invalid command format. You need to provide a command.");
@@ -291,7 +294,13 @@ public class Server implements AutoCloseable {
                     // Check if it has a json argument
                     Optional<String> args = parts.length > 1 ? Optional.of(parts[1]) : Optional.empty();
 
-                    // todo accept user id to validate permissions and check if it is needed for the route
+                    String userId = parts.length > 2 ? parts[2] : null;
+
+                    // Simple way to "authenticate" the user
+                    if (!commandRegister.isFreeCommand(command) && userId == null) {
+                        connection.getOut().println("Error: You need to provide a userId for this command.");
+                        continue;
+                    }
 
                     Sendable result = commandRegister.execute(command, args);
                     System.out.println("SENDING DATA");
