@@ -15,8 +15,6 @@ import java.util.function.Supplier;
 import static classes.styles.Colors.*;
 
 public class ProfilePage extends Page {
-
-    // Pannello per le librerie, lo rendo un campo della classe per poterlo aggiornare
     private JPanel librariesContainer;
 
     public ProfilePage(MainFrame mainFrame) {
@@ -801,7 +799,6 @@ public class ProfilePage extends Page {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                // Quando si clicca, cambia la pagina del MainFrame
                 mainFrame.showPage("bookDetails");
                 System.out.println("Cliccato sul libro: " + title); // Log di verifica
             }

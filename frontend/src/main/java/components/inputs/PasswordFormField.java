@@ -3,8 +3,7 @@ package components.inputs;
 import javax.swing.*;
 import java.awt.*;
 
-import static classes.styles.Colors.primaryColor;
-import static classes.styles.Colors.textPrimary;
+import classes.styles.Colors;
 
 public class PasswordFormField extends FormField{
     private JPasswordField passwordField;
@@ -20,8 +19,8 @@ public class PasswordFormField extends FormField{
         };
         passwordField.setBorder(null);
         passwordField.setFont(new Font("SF Pro Text", Font.PLAIN, 15));
-        passwordField.setForeground(textPrimary);
-        passwordField.setCaretColor(primaryColor);
+        passwordField.setForeground(Colors.textPrimary);
+        passwordField.setCaretColor(Colors.primaryColor);
         passwordField.setEchoChar('•'); // Default hidden
 
         JLabel iconLabel = new JLabel("🔒");

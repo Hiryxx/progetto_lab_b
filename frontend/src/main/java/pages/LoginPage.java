@@ -430,13 +430,4 @@ public class LoginPage extends Page {
         changePage("home");
     }
 
-
-    private void handleSocialLogin(String provider) {
-        JOptionPane.showMessageDialog(this,
-                "Social login with " + provider + " would be implemented here",
-                "Social Login",
-                JOptionPane.INFORMATION_MESSAGE);
-    }
-
-
 }

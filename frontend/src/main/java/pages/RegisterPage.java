@@ -23,7 +23,6 @@ public class RegisterPage extends Page {
     private JTextField fiscalCodeField;
     private JTextField emailField;
     private JPasswordField passwordField;
-    private JCheckBox showPasswordCheck;
 
 
     // Regex per la validazione del Codice Fiscale
