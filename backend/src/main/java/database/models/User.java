@@ -11,14 +11,14 @@ import database.query.SelectBuilder;
 @Table(name = "Users")
 public class User extends Entity {
     @Id
-    @Column(type = "CHAR(36)")
+    @Column(type = "CHAR(16)")
     private String cf;
 
     @Column(type = "VARCHAR(255)", nullable = false)
     private String name;
 
     @Column(type = "VARCHAR(255)", nullable = false)
-    private String lastName;
+    private String lastname;
 
     @Column(type = "VARCHAR(255)", nullable = false)
     @Unique
@@ -31,12 +31,12 @@ public class User extends Entity {
     public User(
             String cf,
             String name,
-            String lastName,
+            String lastname,
             String email,
             String password) {
         this.cf = cf;
         this.name = name;
-        this.lastName = lastName;
+        this.lastname = lastname;
         this.email = email;
         this.password = password;
     }

@@ -71,6 +71,7 @@ public class MainFrame extends JFrame {
         } else
             currentPage = name;
         cardLayout.show(contentPanel, name);
+        contentPanel.repaint();
         // System.out.println("Showing page: " + name);
         System.out.println("TRYING TO SHOW PAGE: " + name);
         updateNavButtonStates();
@@ -137,6 +138,7 @@ public class MainFrame extends JFrame {
         panel.add(homeButton);
         panel.add(libraryButton);
         panel.add(authButton);
+        homeButton.setSelected(true);
 
         return panel;
     }

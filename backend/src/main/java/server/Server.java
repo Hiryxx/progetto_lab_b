@@ -9,10 +9,7 @@ import database.query.PrepareQuery;
 import database.query.Query;
 import database.query.QueryResult;
 import server.connection.SocketConnection;
-import server.connection.response.ErrorResponse;
-import server.connection.response.MultiResponse;
-import server.connection.response.Sendable;
-import server.connection.response.SingleResponse;
+import server.connection.response.*;
 import server.router.CommandRegister;
 import utils.DbUtil;
 import utils.HashUtils;
@@ -154,8 +151,8 @@ public class Server implements AutoCloseable {
                     return new ErrorResponse("Credenziali non valide");
                 }
                 ResultSet rs = iterator.next();
-                String cf = rs.getString("cf");
-                return new SingleResponse(cf);
+
+                return new JsonResponse(rs);
             } catch (Exception e) {
                 return new ErrorResponse("Error executing login query: " + e.getMessage());
             }

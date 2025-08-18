@@ -3,6 +3,7 @@ package pages;
 import classes.MainFrame;
 import classes.Page;
 import components.ModernScrollBarUI;
+import state.UserState;
 
 import javax.swing.*;
 import java.awt.*;
@@ -83,26 +84,26 @@ public class ProfilePage extends Page {
         textInfoPanel.setLayout(new BoxLayout(textInfoPanel, BoxLayout.Y_AXIS));
         textInfoPanel.setOpaque(false);
 
-        JLabel nameLabel = new JLabel("Mario Rossi");
+        JLabel nameLabel = new JLabel(UserState.name + " " + UserState.lastname);
         nameLabel.setFont(new Font("SF Pro Display", Font.BOLD, 28));
         nameLabel.setForeground(Color.WHITE);
         nameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel emailLabel = new JLabel("mario.rossi@email.com");
+        JLabel emailLabel = new JLabel(UserState.email);
         emailLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 16));
         emailLabel.setForeground(new Color(255, 255, 255, 180));
         emailLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         emailLabel.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
 
-        JLabel memberSinceLabel = new JLabel("Membro dal Gennaio 2023");
+      /*  JLabel memberSinceLabel = new JLabel("Membro dal Gennaio 2023");
         memberSinceLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
         memberSinceLabel.setForeground(new Color(255, 255, 255, 150));
         memberSinceLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        memberSinceLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
+        memberSinceLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));*/
 
         textInfoPanel.add(nameLabel);
         textInfoPanel.add(emailLabel);
-        textInfoPanel.add(memberSinceLabel);
+     /*   textInfoPanel.add(memberSinceLabel);*/
 
         userInfoPanel.add(textInfoPanel, BorderLayout.CENTER);
 

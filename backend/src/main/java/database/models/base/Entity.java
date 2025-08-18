@@ -1,9 +1,11 @@
 package database.models.base;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import database.connection.DbConnection;
 import database.query.PrepareQuery;
 import database.query.SelectBuilder;
 import utils.DbUtil;
+import utils.JSONUtil;
 
 import java.sql.SQLException;
 
@@ -40,6 +42,10 @@ public abstract class Entity {
         System.out.println("Delete query: " + deleteQuery);
         // Deletes the entity from the database
         DbConnection.executeUpdate(deleteQuery);
+    }
+
+    public String asJson() throws JsonProcessingException {
+        return JSONUtil.entityToJson(this);
     }
 
     /**

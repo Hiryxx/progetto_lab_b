@@ -388,7 +388,7 @@ public class RegisterPage extends Page {
 
         Response response = mainFrame.getSocketConnection().receive();
         if (!response.isError()) {
-            UserState.login(fiscalCode);
+            UserState.login(userJson.toString());
             System.out.println("User registered successfully: " + fiscalCode);
             changePage("home");
         } else {

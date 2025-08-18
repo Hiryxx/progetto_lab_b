@@ -43,6 +43,8 @@ public class LoginPage extends Page {
         backgroundPanel.add(contentPanel, BorderLayout.CENTER);
 
         this.add(backgroundPanel, BorderLayout.CENTER);
+        this.emailField.setText("franco@gmail.com");
+        this.passwordField.setText("franco");
 
     }
 
@@ -175,7 +177,6 @@ public class LoginPage extends Page {
         form.setLayout(new BoxLayout(form, BoxLayout.Y_AXIS));
         form.setOpaque(false);
 
-        // TODO FIX THIS findTextComponent SHIT
         FormField emailPanel = new TextFormField("Email", "email");
         emailField = emailPanel.getField();
         form.add(emailPanel);
@@ -435,13 +436,13 @@ public class LoginPage extends Page {
 
         Response response = mainFrame.getSocketConnection().receive();
         if (!response.isError()) {
-            String cf = response.getResponse();
-            System.out.println("Login successful for CF: " + cf);
-            UserState.login(cf);
+            String user = response.getResponse();
+            System.out.println("Login successful for user: " + user);
+            UserState.login(user);
             changePage("home");
         } else {
             JOptionPane.showMessageDialog(this,
-                    "Errore durante la registrazione: " + response.getResponse(),
+                    "Errore durante il login: " + response.getResponse(),
                     "Errore di registrazione",
                     JOptionPane.ERROR_MESSAGE);
         }

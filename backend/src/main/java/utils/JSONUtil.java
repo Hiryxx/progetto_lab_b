@@ -43,6 +43,13 @@ public class JSONUtil {
         return MAPPER.readValue(json, classType);
     }
     /**
+     Converts an Entity object to a JSON string.
+
+     @param entity the Entity object to convert
+     @return the JSON string representation of the Entity
+     @throws JsonProcessingException if there is an error processing the Entity */
+    public static String entityToJson(Entity entity) throws JsonProcessingException { return MAPPER.writeValueAsString(entity); }
+    /**
      * Converts an object to a JSON string.
      *
      * @param obj the object to convert

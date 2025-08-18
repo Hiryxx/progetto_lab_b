@@ -1,10 +1,7 @@
 package server.connection;
 
 
-import server.connection.response.ErrorResponse;
-import server.connection.response.MultiResponse;
-import server.connection.response.Sendable;
-import server.connection.response.SingleResponse;
+import server.connection.response.*;
 import utils.JSONUtil;
 
 import java.io.*;
@@ -43,6 +40,10 @@ public class SocketConnection {
                 out.println(singleResponse.object());
                 out.flush();
             }
+            case JsonResponse jsonResponse -> {
+                out.println(jsonResponse.getJson());
+                out.flush();
+            }
             case MultiResponse multiResponse -> {
                 var stream = multiResponse.getQueryResult().stream();
                 stream.forEach(item -> {
@@ -51,6 +52,8 @@ public class SocketConnection {
                         out.flush();
                     } catch (SQLException e) {
                         System.err.println("Error converting ResultSet to JSON: " + e.getMessage());
+                        out.println("ERROR: " + e.getMessage());
+                        out.flush();
                     }
                 });
             }
