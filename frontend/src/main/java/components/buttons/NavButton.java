@@ -12,6 +12,7 @@ import static classes.styles.Colors.textSecondary;
 
 public class NavButton extends JButton {
     private JLabel textLabel;
+    private boolean isSelected = false;
 
     public NavButton (String icon, String text, String pageName, ActionListener action) {
         this.setLayout(new BorderLayout(0, 5));
@@ -39,7 +40,6 @@ public class NavButton extends JButton {
             @Override
             public void mouseEntered(MouseEvent e) {
                     textLabel.setForeground(primaryColor);
-
             }
 
             @Override
@@ -52,12 +52,13 @@ public class NavButton extends JButton {
     }
     @Override
     protected void paintComponent(Graphics g) {
-        Graphics2D g2d = (Graphics2D) g.create();
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2d.setColor(new Color(primaryColor.getRed(), primaryColor.getGreen(), primaryColor.getBlue(), 20));
-        g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
-        g2d.dispose();
-
+        if (isSelected) {
+            Graphics2D g2d = (Graphics2D) g.create();
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2d.setColor(new Color(primaryColor.getRed(), primaryColor.getGreen(), primaryColor.getBlue(), 20));
+            g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+            g2d.dispose();
+        }
         super.paintComponent(g);
     }
 
@@ -67,6 +68,11 @@ public class NavButton extends JButton {
 
     public void setTextLabel(String text) {
         this.textLabel.setText(text);
+    }
+
+    @Override
+    public void setSelected(boolean selected) {
+        isSelected = selected;
     }
 
     public void setActionListener(ActionListener action) {

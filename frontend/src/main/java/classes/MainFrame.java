@@ -65,10 +65,14 @@ public class MainFrame extends JFrame {
     }
 
     public void showPage(String name) {
-        currentPage = name;
+        //todo maybe found a better way
+        if (name.equals("profile") || name.equals("login")){
+            currentPage = "auth";
+        } else
+            currentPage = name;
         cardLayout.show(contentPanel, name);
         // System.out.println("Showing page: " + name);
-
+        System.out.println("TRYING TO SHOW PAGE: " + name);
         updateNavButtonStates();
     }
 
@@ -82,7 +86,6 @@ public class MainFrame extends JFrame {
             } else if (authButton.getText().equals("Profilo")) {
                 authButton.setActionListener(e -> showPage("login"));
                 authButton.setTextLabel("Login");
-
             }
             authButton.repaint();
         }
@@ -91,8 +94,10 @@ public class MainFrame extends JFrame {
             JLabel textLabel = button.getTextLabel();
             if (isActive) {
                 textLabel.setForeground(primaryColor);
+                button.setSelected(true);
             } else {
                 textLabel.setForeground(textSecondary);
+                button.setSelected(false);
             }
 
             button.repaint();
@@ -123,7 +128,7 @@ public class MainFrame extends JFrame {
 
         NavButton homeButton = new NavButton("🏠", "Home", "home", e -> showPage("home"));
         NavButton libraryButton = new NavButton("📚", "Libreria", "library", e -> showPage("library"));
-        NavButton authButton = new NavButton("👤", "Login", "login", e -> showPage("login"));
+        NavButton authButton = new NavButton("👤", "Login", "auth", e -> showPage("login"));
 
         navButtons.put("home", homeButton);
         navButtons.put("library", libraryButton);
