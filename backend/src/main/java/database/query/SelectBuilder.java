@@ -45,9 +45,9 @@ public class SelectBuilder {
      * @param values the values to be used in the query
      * @return a PrepareQuery object that can be executed
      */
-    public PrepareQuery prepare(List<Object> values) {
+    public PrepareQuery prepare(Object... values) {
         Query query = this.build();
-        return new PrepareQuery(query, values);
+        return new PrepareQuery(query, List.of(values));
     }
 
     /**

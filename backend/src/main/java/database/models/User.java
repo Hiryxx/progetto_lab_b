@@ -49,6 +49,10 @@ public class User extends Entity {
         return cf;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
     public String getPassword() {
         return password;
     }

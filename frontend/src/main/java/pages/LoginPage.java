@@ -435,8 +435,9 @@ public class LoginPage extends Page {
 
         Response response = mainFrame.getSocketConnection().receive();
         if (!response.isError()) {
-            // todo fix add id as a response
-            UserState.login("fiscalCode");
+            String cf = response.getResponse();
+            System.out.println("Login successful for CF: " + cf);
+            UserState.login(cf);
             changePage("home");
         } else {
             JOptionPane.showMessageDialog(this,

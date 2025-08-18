@@ -29,17 +29,23 @@ public class PrepareQuery {
             for (int i = 0; i < values.size(); i++) {
                 Object value = values.get(i);
 
-                // make this into a function to handle different types
-                if (value instanceof String) {
-                    String strValue = (String) value;
-                    if (strValue.startsWith("'") && strValue.endsWith("'")) {
-                        value = strValue.substring(1, strValue.length() - 1);
-                    }
-                }
+                value = getTypedValue(value);
 
                 stmt.setObject(i + 1, value);
             }
         }
+    }
+
+    private Object getTypedValue(Object startingValue){
+        return switch (startingValue){
+            case String strValue-> {
+                if (strValue.startsWith("'") && strValue.endsWith("'")) {
+                    yield strValue.substring(1, strValue.length() - 1);
+                }
+                yield strValue;
+            }
+            default -> startingValue;
+        };
     }
 
     /**

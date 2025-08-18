@@ -20,6 +20,7 @@ import utils.HashUtils;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -128,11 +129,8 @@ public class Server implements AutoCloseable {
     private void registerCommands() {
         commandRegister.register("REGISTER", (User user) -> {
             try {
-                System.out.println("Registering user: " + user.getCf());
                 String unhashedPassword = user.getPassword();
                 String hashedPassword = HashUtils.hash(unhashedPassword);
-
-                System.out.println("HASHED PASSWORD: " + hashedPassword + " with length: " + hashedPassword.length());
 
                 user.setPassword(hashedPassword);
                 user.create();
@@ -147,17 +145,21 @@ public class Server implements AutoCloseable {
             user.setPassword(hashedPassword);
 
             PrepareQuery pq = User.selectBy("*")
-                    .where("cf = ? AND password = ?")
-                    .prepare(List.of(user.getCf(), user.getPassword()));
+                    .where("email = ? AND password = ?")
+                    .prepare(user.getEmail(), user.getPassword());
 
             try (QueryResult result = pq.executeResult()) {
-                if (!result.iterator().hasNext()) {
-                    return new SingleResponse("Invalid credentials");
+                var iterator = result.iterator();
+                if (!iterator.hasNext()) {
+                    return new ErrorResponse("Credenziali non valide");
                 }
+                ResultSet rs = iterator.next();
+                String cf = rs.getString("cf");
+                return new SingleResponse(cf);
             } catch (Exception e) {
                 return new ErrorResponse("Error executing login query: " + e.getMessage());
             }
-            return new SingleResponse("User created successfully");
+
 
         }, User.class);
 
@@ -176,7 +178,7 @@ public class Server implements AutoCloseable {
                 PrepareQuery pq = LibraryBook.selectBy("*")
                         .where("libraryId = ?")
                         .join(Book.class, "Book.id = LibraryBooks.bookId")
-                        .prepare(List.of(library.getId()));
+                        .prepare(library.getId());
 
                 QueryResult result = pq.executeResult();
                 return new MultiResponse(result);
@@ -210,7 +212,7 @@ public class Server implements AutoCloseable {
             try {
                 PrepareQuery pq = Book.selectBy("*")
                         .where("id = ?")
-                        .prepare(List.of(book.getId()));
+                        .prepare(book.getId());
 
                 QueryResult result = pq.executeResult();
 
@@ -317,8 +319,8 @@ public class Server implements AutoCloseable {
                     Sendable errorResponse = new ErrorResponse("Error processing command: " + e.getMessage());
                     connection.send(errorResponse);
                 }
-                System.out.println("SENDING STOP MESSAGE");
-                connection.sendStopMessage();
+                /*System.out.println("SENDING STOP MESSAGE");
+                connection.sendStopMessage();*/
             }
         } catch (IOException e) {
             if (connection.getSocket().isClosed()) {
