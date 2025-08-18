@@ -35,9 +35,9 @@ public class Main {
         }*/
 
         SwingUtilities.invokeLater(() -> {
-            MainFrame app = new MainFrame(socket);
-            app.setLocationRelativeTo(null);
-            app.setVisible(true);
+            MainFrame.init(socket);
+            MainFrame.mainFrame.setLocationRelativeTo(null);
+            MainFrame.mainFrame.setVisible(true);
 
         });
     }

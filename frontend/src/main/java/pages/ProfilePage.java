@@ -13,13 +13,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
+import static classes.MainFrame.mainFrame;
 import static classes.styles.Colors.*;
 
 public class ProfilePage extends Page {
     private JPanel librariesContainer;
 
-    public ProfilePage(MainFrame mainFrame) {
-        super(mainFrame);
+    public ProfilePage() {
+        super();
         this.render();
     }
 
@@ -52,6 +53,10 @@ public class ProfilePage extends Page {
 
         JScrollPane scrollPane = createScrollPane(contentPanel);
         this.add(scrollPane, BorderLayout.CENTER);
+
+    }
+    @Override
+    public void refresh() {
 
     }
 
@@ -800,7 +805,7 @@ public class ProfilePage extends Page {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                mainFrame.showPage("bookDetails");
+                changePage("bookDetails");
                 System.out.println("Cliccato sul libro: " + title); // Log di verifica
             }
         });

@@ -4,9 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public abstract class Page extends JPanel {
-    protected MainFrame mainFrame;
-    public Page(MainFrame mainFrame) {
-        this.mainFrame = mainFrame;
+    public Page() {
         initComponents();
     }
 
@@ -19,7 +17,13 @@ public abstract class Page extends JPanel {
      */
     public abstract void render();
 
+    /**
+     * This method should be overridden to update the content of the panel.
+     */
+    public abstract void refresh();
+
+
     protected void changePage(String page) {
-        mainFrame.showPage(page);
+        MainFrame.showPage(page);
     }
 }

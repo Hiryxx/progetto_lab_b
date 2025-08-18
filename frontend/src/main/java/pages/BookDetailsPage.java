@@ -10,25 +10,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.function.Supplier;
 
+import static classes.styles.Colors.*;
+
 public class BookDetailsPage extends Page {
-
-    // Colori (stessi della HomePage)
-    private Color primaryColor = new Color(99, 102, 241);      // Indaco
-    private Color primaryHover = new Color(79, 70, 229);       // Indaco scuro
-    private Color accentColor = new Color(248, 113, 113);      // Corallo
-    private Color backgroundColor = new Color(248, 250, 252);   // Azzurro-grigio chiaro
-    private Color cardColor = new Color(255, 255, 255);        // Bianco puro
-    private Color textPrimary = new Color(15, 23, 42);         // Ardesia scura
-    private Color textSecondary = new Color(100, 116, 139);    // Ardesia media
-    private Color borderColor = new Color(226, 232, 240);      // Ardesia chiara
-    private Color successColor = new Color(16, 185, 129);      // Verde
-    private Color warningColor = new Color(245, 158, 11);      // Ambra
-
-    // Sfumature
-    private Color gradientStart = new Color(139, 92, 246);     // Viola
-    private Color gradientEnd = new Color(59, 130, 246);       // Blu
-
-    // Dati del libro (esempio)
     private String bookTitle = "Il Nome della Rosa";
     private String bookAuthor = "Umberto Eco";
     private String bookCategory = "Narrativa Storica";
@@ -39,8 +23,8 @@ public class BookDetailsPage extends Page {
     private String bookGenre = "Thriller Storico";
     private int totalReviews = 2847;
 
-    public BookDetailsPage(MainFrame mainFrame) {
-        super(mainFrame);
+    public BookDetailsPage() {
+        super();
         this.render();
     }
 
@@ -78,6 +62,10 @@ public class BookDetailsPage extends Page {
         // Bottom navigation
         JPanel bottomPanel = createBottomNavigationPanel();
         this.add(bottomPanel, BorderLayout.SOUTH);
+    }
+    @Override
+    public void refresh() {
+
     }
 
     private JPanel createHeaderPanel() {

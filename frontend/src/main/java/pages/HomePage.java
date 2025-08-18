@@ -10,25 +10,14 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.function.Supplier;
 
+import static classes.styles.Colors.*;
+
 public class HomePage extends Page {
     private JTextField searchField;
 
-    // Colori
-    private Color primaryColor = new Color(99, 102, 241);      // Indaco
-    private Color primaryHover = new Color(79, 70, 229);       // Indaco  scuro
-    private Color accentColor = new Color(248, 113, 113);      // Corallo
-    private Color backgroundColor = new Color(248, 250, 252);   // Azzurro-grigio  chiaro
-    private Color cardColor = new Color(255, 255, 255);        // Bianco puro
-    private Color textPrimary = new Color(15, 23, 42);         // Ardesia scura
-    private Color textSecondary = new Color(100, 116, 139);    // Ardesia media
-    private Color borderColor = new Color(226, 232, 240);      // Ardesia chiara
 
-    // Sfumature
-    private Color gradientStart = new Color(139, 92, 246);     // Viola
-    private Color gradientEnd = new Color(59, 130, 246);       // Blu
-
-    public HomePage(MainFrame mainFrame) {
-        super(mainFrame);
+    public HomePage() {
+        super();
         this.render();
     }
 
@@ -67,6 +56,11 @@ public class HomePage extends Page {
         this.add(scrollPane, BorderLayout.CENTER);
 
         // Menù di navigazione
+
+    }
+
+    @Override
+    public void refresh() {
 
     }
 
@@ -491,7 +485,7 @@ public class HomePage extends Page {
             @Override
             public void mouseClicked(MouseEvent e) {
                 // Quando si clicca, cambia la pagina del MainFrame
-                mainFrame.showPage("bookDetails");
+                changePage("bookDetails");
                 System.out.println("Cliccato sul libro: " + title); // Log di verifica
             }
         });

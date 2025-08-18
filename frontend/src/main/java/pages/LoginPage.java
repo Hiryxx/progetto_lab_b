@@ -25,8 +25,8 @@ public class LoginPage extends Page {
     private JPasswordField passwordField;
     private JCheckBox showPasswordCheck;
 
-    public LoginPage(MainFrame mainFrame) {
-        super(mainFrame);
+    public LoginPage() {
+        super();
         this.render();
     }
 
@@ -45,6 +45,11 @@ public class LoginPage extends Page {
         this.add(backgroundPanel, BorderLayout.CENTER);
         this.emailField.setText("franco@gmail.com");
         this.passwordField.setText("franco");
+
+    }
+
+    @Override
+    public void refresh() {
 
     }
 
@@ -432,9 +437,9 @@ public class LoginPage extends Page {
         JsonObject userJson = new JsonObject();
         userJson.put("email", email);
         userJson.put("password", password);
-        mainFrame.getSocketConnection().send("LOGIN", userJson);
+        MainFrame.getSocketConnection().send("LOGIN", userJson);
 
-        Response response = mainFrame.getSocketConnection().receive();
+        Response response = MainFrame.getSocketConnection().receive();
         if (!response.isError()) {
             String user = response.getResponse();
             System.out.println("Login successful for user: " + user);

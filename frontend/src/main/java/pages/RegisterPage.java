@@ -31,8 +31,8 @@ public class RegisterPage extends Page {
     // Regex per la validazione del Codice Fiscale
     private static final String FISCAL_CODE_REGEX = "^[A-Z]{6}\\d{2}[A-Z]\\d{2}[A-Z]\\d{3}[A-Z]$";
 
-    public RegisterPage(MainFrame mainFrame) {
-        super(mainFrame);
+    public RegisterPage() {
+        super();
         this.render();
     }
 
@@ -54,6 +54,10 @@ public class RegisterPage extends Page {
         fiscalCodeField.setText("RSSFNC80A01F205E");
         emailField.setText("franco@gmail.com");
         passwordField.setText("franco");
+
+    }
+    @Override
+    public void refresh() {
 
     }
 
@@ -383,10 +387,10 @@ public class RegisterPage extends Page {
         userJson.put("email", email);
         userJson.put("password", password);
 
-        mainFrame.getSocketConnection().send("REGISTER", userJson);
+        MainFrame.getSocketConnection().send("REGISTER", userJson);
 
 
-        Response response = mainFrame.getSocketConnection().receive();
+        Response response = MainFrame.getSocketConnection().receive();
         if (!response.isError()) {
             UserState.login(userJson.toString());
             System.out.println("User registered successfully: " + fiscalCode);

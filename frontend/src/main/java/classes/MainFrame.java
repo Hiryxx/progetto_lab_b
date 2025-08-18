@@ -15,30 +15,30 @@ import java.util.Map;
 import static classes.styles.Colors.*;
 
 public class MainFrame extends JFrame {
+    public static JFrame mainFrame = new JFrame();
+    private static JPanel contentPanel;
+    private static CardLayout cardLayout;
+    private static SocketConnection socketConnection;
+    private static String currentPage;
+    private static Map<String, NavButton> navButtons = new HashMap<>();
 
-    private JPanel contentPanel;
-    private CardLayout cardLayout;
-    private SocketConnection socketConnection;
-    private String currentPage;
-    private Map<String, NavButton> navButtons = new HashMap<>();
 
+    public static void init(SocketConnection socketConnection) {
+        MainFrame.socketConnection = socketConnection;
 
-    public MainFrame(SocketConnection socketConnection) {
-        this.socketConnection = socketConnection;
-
-        setTitle("Book Recommender");
-        setSize(1200, 900);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        mainFrame.setTitle("Book Recommender");
+        mainFrame.setSize(1200, 900);
+        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // Create the main container with CardLayout
         cardLayout = new CardLayout();
         contentPanel = new JPanel(cardLayout);
 
-        HomePage homePage = new HomePage(this);
-        LoginPage loginPage = new LoginPage(this);
-        RegisterPage registerPage = new RegisterPage(this);
-        ProfilePage profilePage = new ProfilePage(this);
-        BookDetailsPage bookDetailsPage = new BookDetailsPage(this);
+        HomePage homePage = new HomePage();
+        LoginPage loginPage = new LoginPage();
+        RegisterPage registerPage = new RegisterPage();
+        ProfilePage profilePage = new ProfilePage();
+        BookDetailsPage bookDetailsPage = new BookDetailsPage();
 
         contentPanel.add(homePage, "home");
         contentPanel.add(loginPage, "login");
@@ -49,14 +49,14 @@ public class MainFrame extends JFrame {
         showPage("home");
 
         // Add content panel to frame
-        add(contentPanel);
+        mainFrame.add(contentPanel);
 
         render();
     }
 
-    public void render() {
+    public static void render() {
         JPanel bottomPanel = createBottomNavigationPanel();
-        this.add(bottomPanel, BorderLayout.SOUTH);
+        mainFrame.add(bottomPanel, BorderLayout.SOUTH);
     }
 
 
@@ -64,20 +64,21 @@ public class MainFrame extends JFrame {
         contentPanel.add(page, name);
     }
 
-    public void showPage(String name) {
+    public static void showPage(String name) {
         //todo maybe found a better way
         if (name.equals("profile") || name.equals("login")){
             currentPage = "auth";
         } else
             currentPage = name;
         cardLayout.show(contentPanel, name);
+        // todo add better repaint handling with revalidate
         contentPanel.repaint();
         // System.out.println("Showing page: " + name);
         System.out.println("TRYING TO SHOW PAGE: " + name);
         updateNavButtonStates();
     }
 
-    private void updateNavButtonStates() {
+    private static void updateNavButtonStates() {
         NavButton authButton = navButtons.get("auth");
         if (authButton != null) {
             if (UserState.isLoggedIn) {
@@ -105,7 +106,7 @@ public class MainFrame extends JFrame {
         });
     }
 
-    private JPanel createBottomNavigationPanel() {
+    private static JPanel createBottomNavigationPanel() {
         JPanel panel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -198,7 +199,7 @@ public class MainFrame extends JFrame {
         return button;
     }
 
-    public SocketConnection getSocketConnection() {
+    public static SocketConnection getSocketConnection() {
         return socketConnection;
     }
 }
