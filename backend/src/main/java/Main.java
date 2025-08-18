@@ -39,7 +39,7 @@ public class Main {
         }
     }
 
-    private static void tryDb() throws SQLException, IllegalAccessException {
+   /* private static void tryDb() throws SQLException, IllegalAccessException {
         Scanner in = new Scanner(System.in);
 
         int res;
@@ -89,5 +89,5 @@ public class Main {
             }
 
         } while (res != 0);
-    }
+    }*/
 }

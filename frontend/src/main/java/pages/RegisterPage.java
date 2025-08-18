@@ -2,12 +2,16 @@ package pages;
 
 import classes.MainFrame;
 import classes.Page;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import components.buttons.AuthButton;
 import components.checks.PasswordCheck;
 import components.inputs.FormField;
 import components.inputs.PasswordFormField;
 import components.inputs.TextFormField;
 import components.panels.AuthOptionPanel;
+import connection.Response;
+import json.JsonObject;
+import state.UserState;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,11 +23,10 @@ import static classes.styles.Colors.*;
 
 public class RegisterPage extends Page {
     private JTextField nameField;
-    private JTextField userField;
+    private JTextField lastNameField;
     private JTextField fiscalCodeField;
     private JTextField emailField;
     private JPasswordField passwordField;
-
 
     // Regex per la validazione del Codice Fiscale
     private static final String FISCAL_CODE_REGEX = "^[A-Z]{6}\\d{2}[A-Z]\\d{2}[A-Z]\\d{3}[A-Z]$";
@@ -46,6 +49,11 @@ public class RegisterPage extends Page {
         backgroundPanel.add(contentPanel, BorderLayout.CENTER);
 
         this.add(backgroundPanel, BorderLayout.CENTER);
+        nameField.setText("Franco");
+        lastNameField.setText("Rossi");
+        fiscalCodeField.setText("RSSFNC80A01F205E");
+        emailField.setText("franco@gmail.com");
+        passwordField.setText("franco");
 
     }
 
@@ -186,19 +194,19 @@ public class RegisterPage extends Page {
         form.add(Box.createRigidArea(new Dimension(0, 15)));
 
         // User field
-        FormField userPanel = new TextFormField("Username", "username");
-        userField = userPanel.getField();
+        FormField userPanel = new TextFormField("Cognome", "lastname");
+        lastNameField = userPanel.getField();
         form.add(userPanel);
         form.add(Box.createRigidArea(new Dimension(0, 15)));
 
         // Fiscal Code field
-        FormField fiscalCodePanel = new TextFormField("Fiscal Code", "fiscal");
+        FormField fiscalCodePanel = new TextFormField("Codice fiscale", "fiscal");
         fiscalCodeField = fiscalCodePanel.getField();
         form.add(fiscalCodePanel);
         form.add(Box.createRigidArea(new Dimension(0, 15)));
 
         // Email field
-        FormField emailPanel = new TextFormField("Email Address", "email");
+        FormField emailPanel = new TextFormField("Email", "email");
         emailField = emailPanel.getField();
         form.add(emailPanel);
         form.add(Box.createRigidArea(new Dimension(0, 15)));
@@ -346,13 +354,14 @@ public class RegisterPage extends Page {
     // Event handlers
     private void handleRegister() {
         String name = nameField.getText();
-        String username = userField.getText();
-        String fiscalCode = fiscalCodeField.getText();
+        String lastName = lastNameField.getText();
+        String fiscalCode = fiscalCodeField.getText().toUpperCase();
         String email = emailField.getText();
         String password = new String(passwordField.getPassword());
 
-        // Basic validation
-        if (name.isEmpty() || username.isEmpty() || fiscalCode.isEmpty() || email.isEmpty() || password.isEmpty()) {
+        System.out.println("Registering user: " + name + ", " + lastName + ", " + fiscalCode + ", " + email);
+
+        if (name.isEmpty() || lastName.isEmpty() || fiscalCode.isEmpty() || email.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(this,
                     "Per favore inserisci tutti i campi",
                     "Errore di registrazione",
@@ -360,23 +369,36 @@ public class RegisterPage extends Page {
             return;
         }
 
-        // Validate fiscal code format
-        if (!Pattern.matches(FISCAL_CODE_REGEX, fiscalCode.toUpperCase())) {
+        if (!Pattern.matches(FISCAL_CODE_REGEX, fiscalCode)) {
             JOptionPane.showMessageDialog(this,
                     "Codice fiscale non valido.",
                     "Errore di registrazione",
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
+        JsonObject userJson = new JsonObject();
+        userJson.put("cf", fiscalCode);
+        userJson.put("name", name);
+        userJson.put("lastName", lastName);
+        userJson.put("email", email);
+        userJson.put("password", password);
+
+        mainFrame.getSocketConnection().send("REGISTER", userJson);
 
 
-        // Here you would implement actual registration logic
-        // For demo purposes, show success message and navigate to login
-        JOptionPane.showMessageDialog(this,
-                "Account created successfully! Please sign in.",
-                "Registrato con successo",
-                JOptionPane.INFORMATION_MESSAGE);
-        changePage("login");
+        Response response = mainFrame.getSocketConnection().receive();
+        if (!response.isError()) {
+            UserState.login(fiscalCode);
+            System.out.println("User registered successfully: " + fiscalCode);
+            changePage("home");
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "Errore durante la registrazione: " + response.getResponse(),
+                    "Errore di registrazione",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+
+
     }
 
     private void handleSignIn() {

@@ -8,6 +8,9 @@ import components.inputs.FormField;
 import components.inputs.PasswordFormField;
 import components.inputs.TextFormField;
 import components.panels.AuthOptionPanel;
+import connection.Response;
+import json.JsonObject;
+import state.UserState;
 
 import javax.swing.*;
 import java.awt.*;
@@ -425,9 +428,21 @@ public class LoginPage extends Page {
             return;
         }
 
-        // Here you would implement actual login logic
-        // For demo purposes, just navigate to home
-        changePage("home");
-    }
+        JsonObject userJson = new JsonObject();
+        userJson.put("email", email);
+        userJson.put("password", password);
+        mainFrame.getSocketConnection().send("LOGIN", userJson);
 
+        Response response = mainFrame.getSocketConnection().receive();
+        if (!response.isError()) {
+            // todo fix add id as a response
+            UserState.login("fiscalCode");
+            changePage("home");
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "Errore durante la registrazione: " + response.getResponse(),
+                    "Errore di registrazione",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
 }

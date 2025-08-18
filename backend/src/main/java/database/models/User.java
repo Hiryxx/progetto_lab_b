@@ -7,7 +7,6 @@ import database.models.base.annotations.Unique;
 import database.models.base.Entity;
 import database.query.SelectBuilder;
 
-import java.util.List;
 
 @Table(name = "Users")
 public class User extends Entity {
@@ -17,6 +16,9 @@ public class User extends Entity {
 
     @Column(type = "VARCHAR(255)", nullable = false)
     private String name;
+
+    @Column(type = "VARCHAR(255)", nullable = false)
+    private String lastName;
 
     @Column(type = "VARCHAR(255)", nullable = false)
     @Unique
@@ -29,10 +31,12 @@ public class User extends Entity {
     public User(
             String cf,
             String name,
+            String lastName,
             String email,
             String password) {
         this.cf = cf;
         this.name = name;
+        this.lastName = lastName;
         this.email = email;
         this.password = password;
     }

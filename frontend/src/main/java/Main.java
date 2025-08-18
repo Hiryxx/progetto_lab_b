@@ -7,7 +7,7 @@ import java.net.Socket;
 public class Main {
     static int PORT = 9000;
     public static void main(String[] args) {
-/*        Socket clientSocket = new Socket();
+        Socket clientSocket = new Socket();
 
         try {
             clientSocket.connect(new java.net.InetSocketAddress("localhost", PORT));
@@ -16,7 +16,7 @@ public class Main {
             return;
         }
         SocketConnection socket = new SocketConnection(clientSocket);
-        try {
+        /*try {
             socket.send("PING");
             //String response = socket.receive();
             socket.receiveUntilStop(); // todo fix this
@@ -32,12 +32,11 @@ public class Main {
 
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
-        }
-*/
+        }*/
 
         SwingUtilities.invokeLater(() -> {
-            MainFrame app = new MainFrame();
-            app.setLocationRelativeTo(null); // Center the window
+            MainFrame app = new MainFrame(socket);
+            app.setLocationRelativeTo(null);
             app.setVisible(true);
 
         });

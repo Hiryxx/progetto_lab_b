@@ -37,4 +37,9 @@ public class TextFormField extends FormField{
 
         this.textField = textField;
     }
+
+    @Override
+    public JTextField getField() {
+        return textField;
+    }
 }

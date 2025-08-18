@@ -52,7 +52,7 @@ public class FormField extends JPanel {
     protected String getFieldIcon(String type) {
         return switch (type) {
             case "email" -> "✉️";
-            case "user", "username" -> "👤";
+            case "user", "lastname" -> "👤";
             case "fiscal" -> "🇮🇹";
             case "password" -> "🔒";
             default -> "📝";

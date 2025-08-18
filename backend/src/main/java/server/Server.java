@@ -128,8 +128,11 @@ public class Server implements AutoCloseable {
     private void registerCommands() {
         commandRegister.register("REGISTER", (User user) -> {
             try {
+                System.out.println("Registering user: " + user.getCf());
                 String unhashedPassword = user.getPassword();
                 String hashedPassword = HashUtils.hash(unhashedPassword);
+
+                System.out.println("HASHED PASSWORD: " + hashedPassword + " with length: " + hashedPassword.length());
 
                 user.setPassword(hashedPassword);
                 user.create();
@@ -243,6 +246,8 @@ public class Server implements AutoCloseable {
         commandRegister.register("TRY", SingleResponse::new);
 
         commandRegister.setFreeCommand("BOOK_INFO");
+        commandRegister.setFreeCommand("REGISTER");
+        commandRegister.setFreeCommand("LOGIN");
     }
 
     /**
@@ -298,16 +303,19 @@ public class Server implements AutoCloseable {
 
                     // Simple way to "authenticate" the user
                     if (!commandRegister.isFreeCommand(command) && userId == null) {
-                        connection.getOut().println("Error: You need to provide a userId for this command.");
+                        Sendable errorResponse = new ErrorResponse("You need to provide a userId for this command.");
+                        connection.send(errorResponse);
                         continue;
                     }
+                    System.out.println("Processing command: " + command + " with args: " + args.orElse("None"));
 
                     Sendable result = commandRegister.execute(command, args);
                     System.out.println("SENDING DATA");
                     connection.send(result);
                 } catch (Exception e) {
                     System.err.println("Error processing command: " + e.getMessage());
-                    connection.getOut().println("Error: " + e.getMessage());
+                    Sendable errorResponse = new ErrorResponse("Error processing command: " + e.getMessage());
+                    connection.send(errorResponse);
                 }
                 System.out.println("SENDING STOP MESSAGE");
                 connection.sendStopMessage();

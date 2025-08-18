@@ -1,5 +1,7 @@
 package connection;
 
+import json.JsonObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -21,15 +23,38 @@ public class SocketConnection implements AutoCloseable {
         }
     }
 
-    public void send(String message) {
-        out.println(message);
-        //out.flush();
+    public void send(String command) {
+        out.println(command);
     }
 
-    public String receive() throws IOException {
-        String line = in.readLine();
-        in.readLine();
-        return line;
+    public void send(String command, JsonObject jsonObject) {
+        // Format is: <command>;?<json>;?<userId>
+        String jsonString = jsonObject.toString();
+        String formattedCommand = String.format("%s;%s", command, jsonString);
+        out.println(formattedCommand);
+    }
+
+    public void send(String command, JsonObject jsonObject, String userId) {
+        // Format is: <command>;?<json>;?<userId>
+        String jsonString = jsonObject.toString();
+        String formattedCommand = String.format("%s;%s;%s", command, jsonString, userId);
+        out.println(formattedCommand);
+    }
+
+    public Response receive() {
+        String line;
+        try {
+            line = in.readLine();
+           // in.readLine();
+        } catch (IOException e) {
+            System.err.println("Error reading from socket: " + e.getMessage());
+            return new Response("Error reading from socket", true);
+        }
+
+        if (line.startsWith("ERROR:")) {
+            return new Response(line.substring(6).trim(), true);
+        }
+        return new Response(line, false);
     }
 
     // try method for now
