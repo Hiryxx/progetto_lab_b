@@ -1,5 +1,6 @@
 package classes;
 
+import components.thiss.NavButton;
 import connection.SocketConnection;
 import pages.*;
 import state.UserState;
@@ -19,7 +20,7 @@ public class MainFrame extends JFrame {
     private CardLayout cardLayout;
     private SocketConnection socketConnection;
     private String currentPage;
-    private Map<String, JButton> navButtons = new HashMap<>();
+    private Map<String, NavButton> navButtons = new HashMap<>();
 
 
     public MainFrame(SocketConnection socketConnection) {
@@ -41,7 +42,7 @@ public class MainFrame extends JFrame {
 
         contentPanel.add(homePage, "home");
         contentPanel.add(loginPage, "login");
-        contentPanel.add(registerPage,"register");
+        contentPanel.add(registerPage, "register");
         contentPanel.add(profilePage, "profile");
         contentPanel.add(bookDetailsPage, "bookDetails");
         // Show the first page
@@ -50,36 +51,50 @@ public class MainFrame extends JFrame {
         // Add content panel to frame
         add(contentPanel);
 
-       render();
+        render();
     }
 
-    public void render(){
+    public void render() {
         JPanel bottomPanel = createBottomNavigationPanel();
         this.add(bottomPanel, BorderLayout.SOUTH);
     }
 
 
-    public void addPage(JPanel page, String name ) {
+    public void addPage(JPanel page, String name) {
         contentPanel.add(page, name);
     }
 
     public void showPage(String name) {
         currentPage = name;
         cardLayout.show(contentPanel, name);
-       // System.out.println("Showing page: " + name);
+        // System.out.println("Showing page: " + name);
 
         updateNavButtonStates();
     }
 
     private void updateNavButtonStates() {
+        NavButton authButton = navButtons.get("auth");
+        if (authButton != null) {
+            if (UserState.isLoggedIn) {
+                System.out.println("User is logged in, updating auth button to profile");
+                authButton.setActionListener(e -> showPage("profile"));
+                authButton.setTextLabel("Profilo");
+            } else if (authButton.getText().equals("Profilo")) {
+                authButton.setActionListener(e -> showPage("login"));
+                authButton.setTextLabel("Login");
+
+            }
+            authButton.repaint();
+        }
         navButtons.forEach((pageName, button) -> {
             boolean isActive = currentPage.equals(pageName);
-            JLabel textLabel = (JLabel) button.getComponent(1); // Assuming text is the second component
+            JLabel textLabel = button.getTextLabel();
             if (isActive) {
                 textLabel.setForeground(primaryColor);
             } else {
                 textLabel.setForeground(textSecondary);
             }
+
             button.repaint();
         });
     }
@@ -106,24 +121,13 @@ public class MainFrame extends JFrame {
         panel.setLayout(new FlowLayout(FlowLayout.CENTER, 40, 0));
         panel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
 
-        JButton homeButton = createNavButton("🏠", "Home", "home");
-        JButton libraryButton = createNavButton("📚", "Libreria", "library");
-        JButton authButton;
-
-        if (UserState.isLoggedIn) {
-            authButton = createNavButton("👤", "Profilo", "profile");
-            authButton.addActionListener(e -> showPage("profile"));
-        }
-        else {
-            authButton = createNavButton("👤", "Login", "login");
-            authButton.addActionListener(e -> showPage("login"));
-        }
-
-        homeButton.addActionListener(e -> showPage("home"));
+        NavButton homeButton = new NavButton("🏠", "Home", "home", e -> showPage("home"));
+        NavButton libraryButton = new NavButton("📚", "Libreria", "library", e -> showPage("library"));
+        NavButton authButton = new NavButton("👤", "Login", "login", e -> showPage("login"));
 
         navButtons.put("home", homeButton);
         navButtons.put("library", libraryButton);
-        navButtons.put("profile", authButton);
+        navButtons.put("auth", authButton);
 
         panel.add(homeButton);
         panel.add(libraryButton);
