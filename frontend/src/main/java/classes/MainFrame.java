@@ -21,6 +21,7 @@ public class MainFrame extends JFrame {
     private static SocketConnection socketConnection;
     private static String currentPage;
     private static Map<String, NavButton> navButtons = new HashMap<>();
+    private static Map<String, Page> pages = new HashMap<>();
 
 
     public static void init(SocketConnection socketConnection) {
@@ -40,11 +41,11 @@ public class MainFrame extends JFrame {
         ProfilePage profilePage = new ProfilePage();
         BookDetailsPage bookDetailsPage = new BookDetailsPage();
 
-        contentPanel.add(homePage, "home");
-        contentPanel.add(loginPage, "login");
-        contentPanel.add(registerPage, "register");
-        contentPanel.add(profilePage, "profile");
-        contentPanel.add(bookDetailsPage, "bookDetails");
+        addPage(homePage, "home");
+        addPage(loginPage, "login");
+        addPage(registerPage, "register");
+        addPage(profilePage, "profile");
+        addPage(bookDetailsPage, "bookDetails");
         // Show the first page
         showPage("home");
 
@@ -60,16 +61,19 @@ public class MainFrame extends JFrame {
     }
 
 
-    public void addPage(JPanel page, String name) {
+    public static void addPage(Page page, String name) {
         contentPanel.add(page, name);
+        pages.put(name, page);
     }
 
     public static void showPage(String name) {
+        pages.get(name).refresh();
         //todo maybe found a better way
         if (name.equals("profile") || name.equals("login")){
             currentPage = "auth";
         } else
             currentPage = name;
+
         cardLayout.show(contentPanel, name);
         // todo add better repaint handling with revalidate
         contentPanel.repaint();

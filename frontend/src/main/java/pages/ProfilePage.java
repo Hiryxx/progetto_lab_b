@@ -18,6 +18,8 @@ import static classes.styles.Colors.*;
 
 public class ProfilePage extends Page {
     private JPanel librariesContainer;
+    private JLabel nameLabel = new JLabel();
+    private JLabel emailLabel = new JLabel();
 
     public ProfilePage() {
         super();
@@ -57,7 +59,8 @@ public class ProfilePage extends Page {
     }
     @Override
     public void refresh() {
-
+        nameLabel.setText(UserState.name + " " + UserState.lastname);
+        emailLabel.setText(UserState.email);
     }
 
     private JPanel createProfileHeader() {
@@ -89,12 +92,10 @@ public class ProfilePage extends Page {
         textInfoPanel.setLayout(new BoxLayout(textInfoPanel, BoxLayout.Y_AXIS));
         textInfoPanel.setOpaque(false);
 
-        JLabel nameLabel = new JLabel(UserState.name + " " + UserState.lastname);
         nameLabel.setFont(new Font("SF Pro Display", Font.BOLD, 28));
         nameLabel.setForeground(Color.WHITE);
         nameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel emailLabel = new JLabel(UserState.email);
         emailLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 16));
         emailLabel.setForeground(new Color(255, 255, 255, 180));
         emailLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -157,7 +158,10 @@ public class ProfilePage extends Page {
         panel.add(editButton);
         panel.add(logoutButton);
 
-        logoutButton.addActionListener(e -> changePage("login"));
+        logoutButton.addActionListener(e -> {
+            UserState.logout();
+            changePage("login");
+        });
 
         return panel;
     }
