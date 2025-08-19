@@ -16,7 +16,7 @@ import java.util.List;
 import static classes.styles.Colors.*;
 
 public class LibraryDetailPage extends Page {
-    private String libraryName;
+    private JLabel titleLabel = new JLabel();
     private List<BookData> libraryBooks;
     private JPanel booksContainer;
     private JTextField searchField;
@@ -58,13 +58,10 @@ public class LibraryDetailPage extends Page {
         this.render();
     }
 
-    public void setLibraryName(String libraryName) {
-        this.libraryName = libraryName;
-    }
 
     private void initializeBooks() {
         libraryBooks = new ArrayList<>();
-
+        String libraryName = LibraryDetail.libraryName;
         if (libraryName.equals("Da Leggere")) {
             libraryBooks.add(new BookData("Il nome del vento", "Patrick Rothfuss", "Fantasy", 0, 4.5f, false, false, "978-8804668695", 2007));
             libraryBooks.add(new BookData("Fondazione", "Isaac Asimov", "Fantascienza", 5.0f, 4.3f, true, true, "978-8804719", 1951));
@@ -114,7 +111,7 @@ public class LibraryDetailPage extends Page {
 
     @Override
     public void refresh() {
-        setLibraryName(LibraryDetail.libraryName);
+        titleLabel.setText("📚 " + LibraryDetail.libraryName);
         initializeBooks();
 
         refreshBooksGrid();
@@ -149,7 +146,6 @@ public class LibraryDetailPage extends Page {
         titleSection.setLayout(new BoxLayout(titleSection, BoxLayout.Y_AXIS));
         titleSection.setOpaque(false);
 
-        JLabel titleLabel = new JLabel("📚 " + libraryName);
         titleLabel.setFont(new Font("SF Pro Display", Font.BOLD, 36));
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
