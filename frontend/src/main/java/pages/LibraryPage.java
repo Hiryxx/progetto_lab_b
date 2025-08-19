@@ -2,7 +2,6 @@ package pages;
 
 import classes.Page;
 import components.ModernScrollBarUI;
-import state.UserState;
 
 import javax.swing.*;
 import java.awt.*;
@@ -143,11 +142,9 @@ public class LibraryPage extends Page {
         JPanel statsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 30, 0));
         statsPanel.setOpaque(false);
 
-        // Total libraries stat
         JPanel libraryStat = createStatItem(String.valueOf(userLibraries.size()), "Librerie");
         statsPanel.add(libraryStat);
 
-        // Total books stat
         int totalBooks = userLibraries.stream().mapToInt(lib -> lib.bookCount).sum();
         JPanel bookStat = createStatItem(String.valueOf(totalBooks), "Libri Totali");
         statsPanel.add(bookStat);
@@ -177,23 +174,36 @@ public class LibraryPage extends Page {
     }
 
     private JPanel createLibrariesSection() {
-        JPanel section = new JPanel(new BorderLayout(0, 30));
+        JPanel section = new JPanel(new BorderLayout(0, 20));
         section.setOpaque(false);
+
+        JPanel buttonWrapper = new JPanel(new BorderLayout());
+        buttonWrapper.setOpaque(false);
+        buttonWrapper.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         buttonPanel.setOpaque(false);
 
         JButton addButton = createAddLibraryButton();
         buttonPanel.add(addButton);
+        buttonWrapper.add(buttonPanel, BorderLayout.CENTER);
 
-        section.add(buttonPanel, BorderLayout.NORTH);
+        section.add(buttonWrapper, BorderLayout.NORTH);
 
-        librariesContainer = new JPanel(new GridBagLayout());
+        librariesContainer = new JPanel();
         librariesContainer.setOpaque(false);
+        librariesContainer.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         refreshLibrariesGrid();
 
-        section.add(librariesContainer, BorderLayout.CENTER);
+        JScrollPane gridScroll = new JScrollPane(librariesContainer);
+        gridScroll.setBorder(null);
+        gridScroll.setOpaque(false);
+        gridScroll.getViewport().setOpaque(false);
+        gridScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        gridScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+        section.add(gridScroll, BorderLayout.CENTER);
 
         return section;
     }
@@ -205,7 +215,6 @@ public class LibraryPage extends Page {
                 Graphics2D g2d = (Graphics2D) g.create();
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                // Button background
                 if (getModel().isPressed()) {
                     g2d.setColor(primaryHover);
                 } else if (getModel().isRollover()) {
@@ -229,13 +238,14 @@ public class LibraryPage extends Page {
 
         addButton.setFont(new Font("SF Pro Text", Font.BOLD, 16));
         addButton.setForeground(Color.WHITE);
-        addButton.setPreferredSize(new Dimension(200, 50));
+        addButton.setPreferredSize(new Dimension(180, 45));
+        addButton.setMinimumSize(new Dimension(150, 40));
+        addButton.setMaximumSize(new Dimension(200, 50));
         addButton.setBorder(null);
         addButton.setFocusPainted(false);
         addButton.setContentAreaFilled(false);
         addButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Add hover effect
         addButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -248,7 +258,6 @@ public class LibraryPage extends Page {
             }
         });
 
-        // Add action listener
         addButton.addActionListener(e -> {
             String libraryName = JOptionPane.showInputDialog(
                     this,
@@ -268,20 +277,28 @@ public class LibraryPage extends Page {
     private void refreshLibrariesGrid() {
         librariesContainer.removeAll();
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(15, 15, 15, 15);
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
+        librariesContainer.setLayout(new GridLayout(0, 1, 15, 15)); // Single column by default
 
-        int columns = 3;
+        librariesContainer.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentResized(java.awt.event.ComponentEvent e) {
+                int width = librariesContainer.getWidth();
+                int columns = 1;
 
-        for (int i = 0; i < userLibraries.size(); i++) {
-            gbc.gridx = i % columns;
-            gbc.gridy = i / columns;
+                if (width > 1100) {
+                    columns = 3;
+                } else if (width > 750) {
+                    columns = 2;
+                }
 
-            JPanel libraryCard = createLibraryCard(userLibraries.get(i));
-            librariesContainer.add(libraryCard, gbc);
+                librariesContainer.setLayout(new GridLayout(0, columns, 15, 15));
+                librariesContainer.revalidate();
+            }
+        });
+
+        for (LibraryData library : userLibraries) {
+            JPanel libraryCard = createLibraryCard(library);
+            librariesContainer.add(libraryCard);
         }
 
         librariesContainer.revalidate();
@@ -297,7 +314,6 @@ public class LibraryPage extends Page {
                 Graphics2D g2d = (Graphics2D) g.create();
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                // Shadow
                 if (isHovered) {
                     g2d.setColor(new Color(0, 0, 0, 20));
                     g2d.fillRoundRect(4, 4, getWidth() - 4, getHeight() - 4, 20, 20);
@@ -306,11 +322,9 @@ public class LibraryPage extends Page {
                     g2d.fillRoundRect(2, 2, getWidth() - 2, getHeight() - 2, 20, 20);
                 }
 
-                // Card background
                 g2d.setColor(cardColor);
                 g2d.fillRoundRect(0, 0, getWidth() - 4, getHeight() - 4, 20, 20);
 
-                // Border
                 g2d.setColor(borderColor);
                 g2d.setStroke(new BasicStroke(1f));
                 g2d.drawRoundRect(0, 0, getWidth() - 5, getHeight() - 5, 20, 20);
@@ -326,8 +340,9 @@ public class LibraryPage extends Page {
 
         card.setLayout(new BorderLayout(0, 15));
         card.setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
-        card.setPreferredSize(new Dimension(350, 200));
-        card.setMinimumSize(new Dimension(300, 180));
+        card.setPreferredSize(new Dimension(300, 200));
+        card.setMinimumSize(new Dimension(250, 180));
+        card.setMaximumSize(new Dimension(400, 220));
 
         JPanel topSection = new JPanel(new BorderLayout(15, 0));
         topSection.setOpaque(false);
@@ -336,7 +351,6 @@ public class LibraryPage extends Page {
         iconLabel.setFont(new Font("Apple Color Emoji", Font.PLAIN, 36));
         topSection.add(iconLabel, BorderLayout.WEST);
 
-        // Title and info
         JPanel titlePanel = new JPanel();
         titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
         titlePanel.setOpaque(false);
@@ -357,24 +371,31 @@ public class LibraryPage extends Page {
 
         topSection.add(titlePanel, BorderLayout.CENTER);
 
-        JPanel booksPreview = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        JPanel booksPreview = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
         booksPreview.setOpaque(false);
+        booksPreview.setPreferredSize(new Dimension(0, 60)); // Fixed height
+
 
         int maxPreview = Math.min(3, library.bookTitles.size());
         for (int i = 0; i < maxPreview; i++) {
-            JLabel bookLabel = new JLabel(library.bookTitles.get(i));
-            bookLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 12));
+            String bookTitle = library.bookTitles.get(i);
+            if (bookTitle.length() > 15) {
+                bookTitle = bookTitle.substring(0, 12) + "...";
+            }
+
+            JLabel bookLabel = new JLabel(bookTitle);
+            bookLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 11));
             bookLabel.setForeground(textSecondary);
             bookLabel.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createLineBorder(borderColor, 1),
-                    BorderFactory.createEmptyBorder(3, 8, 3, 8)
+                    BorderFactory.createEmptyBorder(2, 6, 2, 6)
             ));
             booksPreview.add(bookLabel);
         }
 
         if (library.bookTitles.size() > 3) {
             JLabel moreLabel = new JLabel("+" + (library.bookTitles.size() - 3));
-            moreLabel.setFont(new Font("SF Pro Text", Font.BOLD, 12));
+            moreLabel.setFont(new Font("SF Pro Text", Font.BOLD, 11));
             moreLabel.setForeground(primaryColor);
             booksPreview.add(moreLabel);
         }
@@ -437,7 +458,6 @@ public class LibraryPage extends Page {
         userLibraries.add(newLibrary);
         refreshLibrariesGrid();
 
-        // Here you would also save to database
         JOptionPane.showMessageDialog(
                 this,
                 "Libreria \"" + name + "\" creata con successo!",
