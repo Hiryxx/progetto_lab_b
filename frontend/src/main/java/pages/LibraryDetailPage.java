@@ -2,6 +2,7 @@ package pages;
 
 import classes.Page;
 import components.ModernScrollBarUI;
+import components.cards.BookCard;
 import components.panels.StatItem;
 import state.LibraryDetail;
 
@@ -97,8 +98,6 @@ public class LibraryDetailPage extends Page {
         contentPanel.setLayout(new BorderLayout());
         contentPanel.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
 
-        JPanel toolsBar = createToolsBar();
-        contentPanel.add(toolsBar, BorderLayout.NORTH);
 
         booksContainer = new JPanel();
         booksContainer.setOpaque(false);
@@ -229,129 +228,7 @@ public class LibraryDetailPage extends Page {
 
 
 
-    private JPanel createToolsBar() {
-        JPanel toolsBar = new JPanel(new BorderLayout(20, 0));
-        toolsBar.setOpaque(false);
-        toolsBar.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
 
-        JPanel searchPanel = createSearchBar();
-        toolsBar.add(searchPanel, BorderLayout.CENTER);
-
-        JPanel filterPanel = createFilterButtons();
-        toolsBar.add(filterPanel, BorderLayout.EAST);
-
-        return toolsBar;
-    }
-
-    private JPanel createSearchBar() {
-        JPanel searchPanel = new JPanel(new BorderLayout()) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2d.setColor(cardColor);
-                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 25, 25);
-                g2d.setColor(borderColor);
-                g2d.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 25, 25);
-                g2d.dispose();
-            }
-        };
-        searchPanel.setBorder(BorderFactory.createEmptyBorder(12, 20, 12, 20));
-        searchPanel.setPreferredSize(new Dimension(400, 50));
-
-        searchField = new JTextField();
-        searchField.setBorder(null);
-        searchField.setFont(new Font("SF Pro Text", Font.PLAIN, 16));
-        searchField.setForeground(textPrimary);
-        searchField.setOpaque(false);
-        searchField.setText("Cerca nella libreria...");
-        searchField.setForeground(textSecondary);
-
-        searchField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                if (searchField.getText().equals("Cerca nella libreria...")) {
-                    searchField.setText("");
-                    searchField.setForeground(textPrimary);
-                }
-            }
-
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                if (searchField.getText().isEmpty()) {
-                    searchField.setForeground(textSecondary);
-                    searchField.setText("Cerca nella libreria...");
-                }
-            }
-        });
-
-        searchField.addActionListener(e -> filterBooks());
-
-        JLabel searchIcon = new JLabel("🔍");
-        searchIcon.setFont(new Font("Apple Color Emoji", Font.PLAIN, 20));
-
-        searchPanel.add(searchIcon, BorderLayout.WEST);
-        searchPanel.add(searchField, BorderLayout.CENTER);
-
-        return searchPanel;
-    }
-
-    private JPanel createFilterButtons() {
-        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-        filterPanel.setOpaque(false);
-
-        String[] filters = {"Tutti", "Valutati", "Non valutati", "Con recensione"};
-        for (String filter : filters) {
-            JButton filterButton = createFilterButton(filter);
-            filterPanel.add(filterButton);
-        }
-
-        return filterPanel;
-    }
-
-    private JButton createFilterButton(String text) {
-        JButton button = new JButton(text) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                if (currentFilter.equals(text.toLowerCase()) ||
-                        (currentFilter.equals("all") && text.equals("Tutti"))) {
-                    g2d.setColor(primaryColor);
-                    g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
-                    setForeground(Color.WHITE);
-                } else {
-                    g2d.setColor(cardColor);
-                    g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
-                    g2d.setColor(borderColor);
-                    g2d.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 20, 20);
-                    setForeground(textSecondary);
-                }
-
-                g2d.dispose();
-                super.paintComponent(g);
-            }
-        };
-
-        button.setFont(new Font("SF Pro Text", Font.BOLD, 14));
-        button.setPreferredSize(new Dimension(120, 40));
-        button.setBorder(null);
-        button.setFocusPainted(false);
-        button.setContentAreaFilled(false);
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        button.addActionListener(e -> {
-            currentFilter = text.toLowerCase().replace(" ", "_");
-            if (text.equals("Tutti")) currentFilter = "all";
-            else if (text.equals("Non valutati")) currentFilter = "not_rated";
-            else if (text.equals("Con recensione")) currentFilter = "with_review";
-            else if (text.equals("Valutati")) currentFilter = "rated";
-
-            filterBooks();
-            //filterPanel.repaint();
-        });
-
-        return button;
-    }
 
     private void filterBooks() {
         refreshBooksGrid();
@@ -418,7 +295,7 @@ public class LibraryDetailPage extends Page {
 
         // Add book cards
         for (BookData book : filteredBooks) {
-            JPanel bookCard = createEnhancedBookCard(book);
+            JPanel bookCard = new BookCard(book.title, book.author, book.genre, book.userRating > 0 ? book.userRating : book.avgRating);
             booksContainer.add(bookCard);
         }
         // TODO THIS PROBABLY DOES NOT WORK

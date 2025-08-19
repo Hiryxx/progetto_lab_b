@@ -1,6 +1,7 @@
 package pages;
 
 import classes.Page;
+import components.cards.BookCard;
 import components.ModernScrollBarUI;
 
 import javax.swing.*;
@@ -222,7 +223,7 @@ public class HomePage extends Page {
             booksPanel.setOpaque(false);
 
             for (int i = 1; i <= 4; i++) {
-                JPanel bookWrapper = createBookCard("Libro in Evidenza " + i, "Autore " + i, "Genere " + i, 4.5f - (i * 0.3f) % 2);
+                JPanel bookWrapper = new BookCard("Libro in Evidenza " + i, "Autore " + i, "Genere " + i, 4.5f - (i * 0.3f) % 2);
                 booksPanel.add(bookWrapper);
             }
             return booksPanel;
@@ -262,7 +263,7 @@ public class HomePage extends Page {
             booksPanel.setOpaque(false);
 
             for (int i = 1; i <= 4; i++) {
-                JPanel bookWrapper = createBookCard("Libro Recente " + i, "Autore " + i, "Genere " + ((i + 2) % 5 + 1), 4.0f + (i * 0.2f) % 1);
+                JPanel bookWrapper = new BookCard("Libro Recente " + i, "Autore " + i, "Genere " + ((i + 2) % 5 + 1), 4.0f + (i * 0.2f) % 1);
                 booksPanel.add(bookWrapper);
             }
             return booksPanel;
@@ -376,121 +377,7 @@ public class HomePage extends Page {
 
 
 
-    private JPanel createBookCard(String title, String author, String genre, float rating) {
-        JPanel card = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                // Ombra card
-                g2d.setColor(new Color(0, 0, 0, 8));
-                g2d.fillRoundRect(3, 3, getWidth() - 3, getHeight() - 3, 16, 16);
-
-                // Sfondo card
-                g2d.setColor(cardColor);
-                g2d.fillRoundRect(0, 0, getWidth() - 3, getHeight() - 3, 16, 16);
-
-                // Bordo
-                g2d.setColor(borderColor);
-                g2d.setStroke(new BasicStroke(1f));
-                g2d.drawRoundRect(0, 0, getWidth() - 4, getHeight() - 4, 16, 16);
-
-                g2d.dispose();
-            }
-        };
-
-        card.setLayout(new BorderLayout(0, 10));
-        card.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-        card.setPreferredSize(new Dimension(180, 260));
-        card.setMaximumSize(new Dimension(180, 260));
-        card.setMinimumSize(new Dimension(180, 260));
-
-        // Segnaposto copertina libro
-        JPanel coverPanel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                // Copertina
-                GradientPaint gradient = new GradientPaint(0, 0, primaryColor, getWidth(), getHeight(), accentColor);
-                g2d.setPaint(gradient);
-                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
-
-                // Icona libro
-                g2d.setColor(Color.WHITE);
-                g2d.setFont(new Font("SF Pro Text", Font.BOLD, 24));
-                FontMetrics fm = g2d.getFontMetrics();
-                String bookIcon = "📖";
-                int x = (getWidth() - fm.stringWidth(bookIcon)) / 2;
-                int y = (getHeight() + fm.getAscent()) / 2;
-                g2d.drawString(bookIcon, x, y);
-
-                g2d.dispose();
-            }
-        };
-        coverPanel.setPreferredSize(new Dimension(0, 140));
-
-        // Spazio informazioni libro
-        JPanel infoPanel = new JPanel();
-        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
-        infoPanel.setOpaque(false);
-
-        JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(new Font("SF Pro Display", Font.BOLD, 14));
-        titleLabel.setForeground(textPrimary);
-        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        JLabel authorLabel = new JLabel("di " + author);
-        authorLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 12));
-        authorLabel.setForeground(textSecondary);
-        authorLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        authorLabel.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
-
-        JLabel genreLabel = new JLabel(genre);
-        genreLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 11));
-        genreLabel.setForeground(primaryColor);
-        genreLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        genreLabel.setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
-
-        // Valutazione
-        JPanel ratingPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        ratingPanel.setOpaque(false);
-        ratingPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        for (int i = 1; i <= 5; i++) {
-            JLabel star = new JLabel(i <= rating ? "⭐" : "☆");
-            star.setFont(new Font("Apple Color Emoji", Font.PLAIN, 12));
-            ratingPanel.add(star);
-        }
-
-        infoPanel.add(titleLabel);
-        infoPanel.add(authorLabel);
-        infoPanel.add(genreLabel);
-        infoPanel.add(Box.createRigidArea(new Dimension(0, 5)));
-        infoPanel.add(ratingPanel);
-
-        card.add(coverPanel, BorderLayout.CENTER);
-        card.add(infoPanel, BorderLayout.SOUTH);
-
-        // Effetto hover
-        card.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                card.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                // Quando si clicca, cambia la pagina del MainFrame
-                changePage("bookDetails");
-                System.out.println("Cliccato sul libro: " + title); // Log di verifica
-            }
-        });
-
-        return card;
-    }
 
     private JButton createIconButton(String icon) {
         JButton button = new JButton(icon) {
