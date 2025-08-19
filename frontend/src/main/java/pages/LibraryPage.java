@@ -2,6 +2,7 @@ package pages;
 
 import classes.Page;
 import components.ModernScrollBarUI;
+import state.LibraryDetail;
 
 import javax.swing.*;
 import java.awt.*;
@@ -336,13 +337,55 @@ public class LibraryPage extends Page {
                 this.isHovered = hovered;
                 repaint();
             }
+
+
+
         };
+        card.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(java.awt.event.MouseWheelEvent e) {
+                // Don't consume the event, just pass it up
+                if (card.getParent() != null) {
+                    card.getParent().dispatchEvent(
+                            SwingUtilities.convertMouseEvent(card, e, card.getParent())
+                    );
+                }
+            }
+        });
 
         card.setLayout(new BorderLayout(0, 15));
         card.setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
         card.setPreferredSize(new Dimension(300, 200));
         card.setMinimumSize(new Dimension(250, 180));
         card.setMaximumSize(new Dimension(400, 220));
+
+        /*card.addMouseWheelListener(e -> {
+            // Get the main scroll pane (the outermost one)
+            Container parent = card.getParent();
+            while (parent != null) {
+                if (parent.getParent() instanceof JScrollPane) {
+                    JScrollPane scrollPane = (JScrollPane) parent.getParent();
+                    JScrollBar vertical = scrollPane.getVerticalScrollBar();
+
+                    // Manually scroll the scrollbar
+                    int direction = e.getWheelRotation();
+                    int increment = vertical.getUnitIncrement() * 3; // Adjust scroll speed
+                    int oldValue = vertical.getValue();
+                    int newValue = oldValue + (increment * direction);
+
+                    // Ensure the new value is within bounds
+                    newValue = Math.max(vertical.getMinimum(),
+                            Math.min(newValue, vertical.getMaximum() - vertical.getVisibleAmount()));
+
+                    vertical.setValue(newValue);
+
+                    // Consume the event so it doesn't propagate
+                    e.consume();
+                    break;
+                }
+                parent = parent.getParent();
+            }
+        });*/
 
         JPanel topSection = new JPanel(new BorderLayout(15, 0));
         topSection.setOpaque(false);
@@ -415,6 +458,12 @@ public class LibraryPage extends Page {
         viewButton.setFocusPainted(false);
         viewButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
+        viewButton.addMouseWheelListener(e -> {
+            for (java.awt.event.MouseWheelListener listener : card.getMouseWheelListeners()) {
+                listener.mouseWheelMoved(e);
+            }
+        });
+
         bottomSection.add(modifiedLabel, BorderLayout.WEST);
         bottomSection.add(viewButton, BorderLayout.EAST);
 
@@ -467,18 +516,11 @@ public class LibraryPage extends Page {
     }
 
     private void openLibraryDetail(LibraryData library) {
-
         System.out.println("Opening library: " + library.name);
 
-        // changePage("libraryDetail", library);
+        LibraryDetail.libraryName = library.name;
+        changePage("libraryDetail");
 
-        JOptionPane.showMessageDialog(
-                this,
-                "Apertura libreria: " + library.name + "\n" +
-                        "Contiene " + library.bookCount + " libri",
-                "Dettagli Libreria",
-                JOptionPane.INFORMATION_MESSAGE
-        );
     }
 
     private JScrollPane createScrollPane(JPanel contentPanel) {

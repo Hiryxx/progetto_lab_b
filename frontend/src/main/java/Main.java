@@ -1,8 +1,11 @@
 import classes.MainFrame;
 import connection.SocketConnection;
 
+import javax.imageio.ImageIO;
 import javax.swing.SwingUtilities;
+import java.io.*;
 import java.net.Socket;
+import java.net.URL;
 
 public class Main {
     static int PORT = 9000;
@@ -16,27 +19,36 @@ public class Main {
             return;
         }
         SocketConnection socket = new SocketConnection(clientSocket);
-        /*try {
-            socket.send("PING");
-            //String response = socket.receive();
-            socket.receiveUntilStop(); // todo fix this
 
-            String userJson = "{\"cf\":\"12345678901234567890123456789013\",\"name\":\"John Doe\",\"email\":\"franco.raossi@gmail.com\",\"password\":\"password\"}";
-            socket.send("CREATE_USER;" + userJson);
-            socket.receiveUntilStop();
-            System.out.println("User created successfully");
+        URL icon = Main.class.getResource("/icon.png");
 
-            socket.send("GET_USERS");
-            socket.receiveUntilStop();
-            System.out.println("Users retrieved successfully");
-
-        } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
-        }*/
+        try {
+            assert icon != null;
+            MainFrame.mainFrame.setIconImage(ImageIO.read(icon));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.contains("mac")) {
+            try {
+                System.out.println("Setting dock icon for macOS");
+                if (icon != null && java.awt.Taskbar.isTaskbarSupported()) {
+                    java.awt.Taskbar taskbar = java.awt.Taskbar.getTaskbar();
+                    if (taskbar.isSupported(java.awt.Taskbar.Feature.ICON_IMAGE)) {
+                        taskbar.setIconImage(ImageIO.read(icon));
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Could not set dock icon: " + e.getMessage());
+            }
+        } else if (os.contains("win")) {
+            System.setProperty("java.awt.Window.locationByPlatform", "true");
+        }
 
         SwingUtilities.invokeLater(() -> {
             MainFrame.init(socket);
             MainFrame.mainFrame.setLocationRelativeTo(null);
+
             MainFrame.mainFrame.setVisible(true);
 
         });

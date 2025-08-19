@@ -40,6 +40,7 @@ public class MainFrame extends JFrame {
         ProfilePage profilePage = new ProfilePage();
         BookDetailsPage bookDetailsPage = new BookDetailsPage();
         LibraryPage libraryPage = new LibraryPage();
+        LibraryDetailPage libraryDetailPage = new LibraryDetailPage();
 
         addPage(homePage, "home");
         addPage(loginPage, "login");
@@ -47,6 +48,7 @@ public class MainFrame extends JFrame {
         addPage(profilePage, "profile");
         addPage(bookDetailsPage, "bookDetails");
         addPage(libraryPage, "library");
+        addPage(libraryDetailPage, "libraryDetail");
 
         showPage("home");
 
