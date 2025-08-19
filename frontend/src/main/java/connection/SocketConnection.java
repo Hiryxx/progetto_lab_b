@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SocketConnection implements AutoCloseable {
     private Socket socket;
@@ -57,16 +59,23 @@ public class SocketConnection implements AutoCloseable {
         return new Response(line, false);
     }
 
-    // try method for now
-    public void receiveUntilStop() throws IOException {
+    public List<String> receiveUntilStop() {
         String line;
+        List<String> messages = new ArrayList<>();
         System.out.println("Receiving messages...");
+        try{
         while ((line = in.readLine()) != null) {
             System.out.println("Received: " + line);
             if (line.equalsIgnoreCase("STOP")) {
                 break;
             }
+            messages.add(line);
         }
+        } catch (IOException e) {
+            System.err.println("Error reading from socket: " + e.getMessage());
+            return messages; // Return what we have so far
+        }
+        return messages;
     }
 
     public Socket getSocket() {

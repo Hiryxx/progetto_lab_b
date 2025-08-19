@@ -1,8 +1,13 @@
 package pages;
 
+import classes.MainFrame;
 import classes.Page;
 import components.ModernScrollBarUI;
+import connection.SocketConnection;
+import data.LibraryData;
 import state.LibraryDetail;
+import state.LibraryState;
+import state.UserState;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,59 +20,14 @@ import static classes.styles.Colors.*;
 
 public class LibraryPage extends Page {
     private JPanel librariesContainer;
-    private List<LibraryData> userLibraries;
+    private List<LibraryData> userLibraries = new ArrayList<>();
 
-    private static class LibraryData {
-        String name;
-        int bookCount;
-        List<String> bookTitles;
-        String lastModified;
-
-        LibraryData(String name, int bookCount, List<String> bookTitles, String lastModified) {
-            this.name = name;
-            this.bookCount = bookCount;
-            this.bookTitles = bookTitles;
-            this.lastModified = lastModified;
-        }
-    }
 
     public LibraryPage() {
         super();
-        initializeLibraries();
         this.render();
     }
 
-    private void initializeLibraries() {
-        userLibraries = new ArrayList<>();
-
-        userLibraries.add(new LibraryData(
-                "Da Leggere",
-                6,
-                List.of("Il nome del vento", "Fondazione", "Neuromante", "Dune", "Il problema dei tre corpi", "L'anello di Re Salomone"),
-                "Modificata 2 giorni fa"
-        ));
-
-        userLibraries.add(new LibraryData(
-                "Fantascienza",
-                8,
-                List.of("Hyperion", "Ubik", "1984", "Fahrenheit 451", "Il mondo nuovo", "Guida galattica per autostoppisti", "Solaris", "La mano sinistra delle tenebre"),
-                "Modificata 1 settimana fa"
-        ));
-
-        userLibraries.add(new LibraryData(
-                "Classici Italiani",
-                5,
-                List.of("Il nome della rosa", "Se questo è un uomo", "Il barone rampante", "La coscienza di Zeno", "Il fu Mattia Pascal"),
-                "Modificata 3 settimane fa"
-        ));
-
-        userLibraries.add(new LibraryData(
-                "Libri Preferiti",
-                12,
-                List.of("Harry Potter e la pietra filosofale", "Il Signore degli Anelli", "Il piccolo principe", "1984", "Il grande Gatsby"),
-                "Modificata 1 mese fa"
-        ));
-    }
 
     @Override
     public void render() {
@@ -89,8 +49,44 @@ public class LibraryPage extends Page {
         this.add(scrollPane, BorderLayout.CENTER);
     }
 
+    private void initializeLibraries() {
+        if (LibraryState.libraries.isEmpty()){
+            String userCf = UserState.cf;
+
+            System.out.println("Requesting libraries for user: " + userCf);
+           SocketConnection sc =  MainFrame.getSocketConnection();
+
+           sc.send("GET_LIBRARIES;" + userCf + ";" + userCf);
+
+           List<String> libraries = sc.receiveUntilStop();
+
+              if (libraries.isEmpty()) {
+                System.err.println("No libraries found for user: " + userCf);
+                // TODO: Show no libraries
+                return;
+              }
+
+           for (String libraryJson : libraries) {
+               if (libraryJson.startsWith("ERROR:")) {
+                   System.err.println("Error fetching libraries: " + libraryJson.substring(6));
+                   return;
+               } else {
+                   System.out.println("Received library data: " + libraryJson);
+                  /* LibraryData library = LibraryData.fromJson(libraryJson);
+                   if (library != null) {
+                       LibraryState.libraries.add(library);
+                   } else {
+                       System.err.println("Failed to parse library data: " + libraryJson);
+                   }*/
+               }
+           }
+
+        }
+    }
+
     @Override
     public void refresh() {
+        initializeLibraries();
     }
 
     private JPanel createHeader() {
@@ -146,7 +142,7 @@ public class LibraryPage extends Page {
         JPanel libraryStat = createStatItem(String.valueOf(userLibraries.size()), "Librerie");
         statsPanel.add(libraryStat);
 
-        int totalBooks = userLibraries.stream().mapToInt(lib -> lib.bookCount).sum();
+        int totalBooks = userLibraries.stream().mapToInt(lib -> 0).sum();
         JPanel bookStat = createStatItem(String.valueOf(totalBooks), "Libri Totali");
         statsPanel.add(bookStat);
 
@@ -341,16 +337,21 @@ public class LibraryPage extends Page {
 
 
         };
-        card.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
-            @Override
-            public void mouseWheelMoved(java.awt.event.MouseWheelEvent e) {
-                // Don't consume the event, just pass it up
-                if (card.getParent() != null) {
-                    card.getParent().dispatchEvent(
-                            SwingUtilities.convertMouseEvent(card, e, card.getParent())
-                    );
-                }
+        card.addMouseWheelListener(e -> {
+            // Don't consume the event, just pass it up
+            if (card.getParent() == null) {
+                return; // No parent to dispatch to
             }
+/*
+            System.out.println("Dispatching mouse wheel event from card to parent");
+*/
+
+            this.dispatchEvent(SwingUtilities.convertMouseEvent(card, e, card.getParent()));
+            /*if (card.getParent() != null) {
+                card.getParent().dispatchEvent(
+                        SwingUtilities.convertMouseEvent(card, e, card.getParent())
+                );
+            }*/
         });
 
         card.setLayout(new BorderLayout(0, 15));
@@ -398,19 +399,14 @@ public class LibraryPage extends Page {
         titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
         titlePanel.setOpaque(false);
 
-        JLabel nameLabel = new JLabel(library.name);
+        JLabel nameLabel = new JLabel(library.getName());
         nameLabel.setFont(new Font("SF Pro Display", Font.BOLD, 20));
         nameLabel.setForeground(textPrimary);
         nameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel countLabel = new JLabel(library.bookCount + " libri");
-        countLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
-        countLabel.setForeground(textSecondary);
-        countLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         titlePanel.add(nameLabel);
         titlePanel.add(Box.createRigidArea(new Dimension(0, 5)));
-        titlePanel.add(countLabel);
 
         topSection.add(titlePanel, BorderLayout.CENTER);
 
@@ -419,7 +415,7 @@ public class LibraryPage extends Page {
         booksPreview.setPreferredSize(new Dimension(0, 60)); // Fixed height
 
 
-        int maxPreview = Math.min(3, library.bookTitles.size());
+        /*int maxPreview = Math.min(3, library.bookTitles.size());
         for (int i = 0; i < maxPreview; i++) {
             String bookTitle = library.bookTitles.get(i);
             if (bookTitle.length() > 15) {
@@ -441,12 +437,12 @@ public class LibraryPage extends Page {
             moreLabel.setFont(new Font("SF Pro Text", Font.BOLD, 11));
             moreLabel.setForeground(primaryColor);
             booksPreview.add(moreLabel);
-        }
+        }*/
 
         JPanel bottomSection = new JPanel(new BorderLayout());
         bottomSection.setOpaque(false);
 
-        JLabel modifiedLabel = new JLabel(library.lastModified);
+        JLabel modifiedLabel = new JLabel(library.getLastModified());
         modifiedLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 12));
         modifiedLabel.setForeground(textSecondary);
 
@@ -497,14 +493,7 @@ public class LibraryPage extends Page {
     }
 
     private void addNewLibrary(String name) {
-        LibraryData newLibrary = new LibraryData(
-                name,
-                0,
-                new ArrayList<>(),
-                "Creata ora"
-        );
 
-        userLibraries.add(newLibrary);
         refreshLibrariesGrid();
 
         JOptionPane.showMessageDialog(
@@ -516,9 +505,9 @@ public class LibraryPage extends Page {
     }
 
     private void openLibraryDetail(LibraryData library) {
-        System.out.println("Opening library: " + library.name);
+        System.out.println("Opening library: " + library.getName());
 
-        LibraryDetail.libraryName = library.name;
+        LibraryDetail.libraryName = library.getName();
         changePage("libraryDetail");
 
     }

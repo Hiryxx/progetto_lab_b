@@ -8,8 +8,7 @@ import state.LibraryDetail;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -223,9 +222,6 @@ public class LibraryDetailPage extends Page {
     }
 
 
-
-
-
     private void filterBooks() {
         refreshBooksGrid();
     }
@@ -303,11 +299,13 @@ public class LibraryDetailPage extends Page {
             booksContainer.add(emptyLabel);
         }
             ratedCount = (int) libraryBooks.stream().filter(b -> b.userRating > 0).count();
-            ratedStat.setLabelText(String.valueOf(ratedCount));
+            ratedStat.setLabelText("Valutati");
+            ratedStat.setValueText(String.valueOf(ratedCount));
 
 
             reviewCount = (int) libraryBooks.stream().filter(b -> b.hasReview).count();
-            reviewStat.setLabelText(String.valueOf(reviewCount));
+            reviewStat.setLabelText("Recensiti");
+            reviewStat.setValueText(String.valueOf(reviewCount));
         }
 
 
@@ -315,186 +313,6 @@ public class LibraryDetailPage extends Page {
         booksContainer.repaint();
     }
 
-    private JPanel createEnhancedBookCard(BookData book) {
-        JPanel card = createBookCard(book.title, book.author, book.genre,
-                book.userRating > 0 ? book.userRating : book.avgRating);
-
-        JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
-        statusPanel.setOpaque(false);
-        statusPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
-
-        if (book.userRating > 0) {
-            JLabel ratedIcon = new JLabel("✓");
-            ratedIcon.setFont(new Font("SF Pro Text", Font.BOLD, 12));
-            ratedIcon.setForeground(new Color(34, 197, 94)); // Green
-            ratedIcon.setToolTipText("Hai valutato questo libro");
-            statusPanel.add(ratedIcon);
-        }
-
-        if (book.hasReview) {
-            JLabel reviewIcon = new JLabel("💬");
-            reviewIcon.setFont(new Font("Apple Color Emoji", Font.PLAIN, 12));
-            reviewIcon.setToolTipText("Hai recensito questo libro");
-            statusPanel.add(reviewIcon);
-        }
-
-        if (book.hasSuggestions) {
-            JLabel suggestionIcon = new JLabel("💡");
-            suggestionIcon.setFont(new Font("Apple Color Emoji", Font.PLAIN, 12));
-            suggestionIcon.setToolTipText("Hai suggerito libri correlati");
-            statusPanel.add(suggestionIcon);
-        }
-
-        JButton actionButton = new JButton(book.userRating > 0 ? "Modifica valutazione" : "Valuta libro") {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                if (getModel().isPressed()) {
-                    g2d.setColor(primaryHover);
-                } else if (getModel().isRollover()) {
-                    g2d.setColor(primaryHover);
-                } else {
-                    g2d.setColor(primaryColor);
-                }
-
-                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
-
-                g2d.setColor(Color.WHITE);
-                g2d.setFont(getFont());
-                FontMetrics fm = g2d.getFontMetrics();
-                int x = (getWidth() - fm.stringWidth(getText())) / 2;
-                int y = (getHeight() + fm.getAscent()) / 2 - 2;
-                g2d.drawString(getText(), x, y);
-
-                g2d.dispose();
-            }
-        };
-
-        actionButton.setFont(new Font("SF Pro Text", Font.BOLD, 12));
-        actionButton.setForeground(Color.WHITE);
-        actionButton.setPreferredSize(new Dimension(150, 30));
-        actionButton.setBorder(null);
-        actionButton.setFocusPainted(false);
-        actionButton.setContentAreaFilled(false);
-        actionButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        actionButton.addActionListener(e -> {
-            changePage("bookDetail");
-        });
-
-        // Add components to card
-        JPanel bottomPanel = new JPanel(new BorderLayout());
-        bottomPanel.setOpaque(false);
-        bottomPanel.add(statusPanel, BorderLayout.NORTH);
-        bottomPanel.add(actionButton, BorderLayout.SOUTH);
-
-        card.add(bottomPanel, BorderLayout.SOUTH);
-
-        return card;
-    }
-
-    // TODO EXTRACT CLASS
-    private JPanel createBookCard(String title, String author, String genre, float rating) {
-        JPanel card = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                g2d.setColor(new Color(0, 0, 0, 8));
-                g2d.fillRoundRect(3, 3, getWidth() - 3, getHeight() - 3, 16, 16);
-
-                g2d.setColor(cardColor);
-                g2d.fillRoundRect(0, 0, getWidth() - 3, getHeight() - 3, 16, 16);
-
-                g2d.setColor(borderColor);
-                g2d.setStroke(new BasicStroke(1f));
-                g2d.drawRoundRect(0, 0, getWidth() - 4, getHeight() - 4, 16, 16);
-
-                g2d.dispose();
-            }
-        };
-
-        card.setLayout(new BorderLayout(0, 10));
-        card.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-        card.setPreferredSize(new Dimension(220, 320));
-        card.setMaximumSize(new Dimension(220, 320));
-        card.setMinimumSize(new Dimension(200, 300));
-
-        JPanel coverPanel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                GradientPaint gradient = new GradientPaint(0, 0, primaryColor, getWidth(), getHeight(), accentColor);
-                g2d.setPaint(gradient);
-                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
-
-                g2d.setColor(Color.WHITE);
-                g2d.setFont(new Font("SF Pro Text", Font.BOLD, 24));
-                FontMetrics fm = g2d.getFontMetrics();
-                String bookIcon = "📖";
-                int x = (getWidth() - fm.stringWidth(bookIcon)) / 2;
-                int y = (getHeight() + fm.getAscent()) / 2;
-                g2d.drawString(bookIcon, x, y);
-
-                g2d.dispose();
-            }
-        };
-        coverPanel.setPreferredSize(new Dimension(0, 140));
-
-        JPanel infoPanel = new JPanel();
-        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
-        infoPanel.setOpaque(false);
-
-        JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(new Font("SF Pro Display", Font.BOLD, 14));
-        titleLabel.setForeground(textPrimary);
-        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        JLabel authorLabel = new JLabel("di " + author);
-        authorLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 12));
-        authorLabel.setForeground(textSecondary);
-        authorLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        authorLabel.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
-
-        JLabel genreLabel = new JLabel(genre);
-        genreLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 11));
-        genreLabel.setForeground(primaryColor);
-        genreLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        genreLabel.setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
-
-        JPanel ratingPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        ratingPanel.setOpaque(false);
-        ratingPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        for (int i = 1; i <= 5; i++) {
-            JLabel star = new JLabel(i <= rating ? "⭐" : "☆");
-            star.setFont(new Font("Apple Color Emoji", Font.PLAIN, 12));
-            ratingPanel.add(star);
-        }
-
-        infoPanel.add(titleLabel);
-        infoPanel.add(authorLabel);
-        infoPanel.add(genreLabel);
-        infoPanel.add(Box.createRigidArea(new Dimension(0, 5)));
-        infoPanel.add(ratingPanel);
-
-        card.add(coverPanel, BorderLayout.CENTER);
-        card.add(infoPanel, BorderLayout.SOUTH);
-
-        card.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                card.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            }
-        });
-
-        return card;
-    }
 
     private JScrollPane createScrollPane(JPanel contentPanel) {
         JScrollPane scrollPane = new JScrollPane(contentPanel);

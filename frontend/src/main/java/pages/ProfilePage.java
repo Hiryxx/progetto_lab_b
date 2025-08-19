@@ -216,57 +216,6 @@ public class ProfilePage extends Page {
         titlePanel.add(subtitleLabel);
         headerPanel.add(titlePanel, BorderLayout.WEST);
 
-        JButton addButton = new JButton("+ Aggiungi Libreria") {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                g2d.setColor(getBackground());
-                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
-
-                super.paintComponent(g);
-                g2d.dispose();
-            }
-        };
-
-        addButton.setForeground(Color.WHITE);
-        addButton.setBackground(primaryColor);
-        addButton.setFont(new Font("SF Pro Text", Font.BOLD, 14));
-        addButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-        addButton.setFocusPainted(false);
-        addButton.setBorderPainted(false);
-        addButton.setContentAreaFilled(false);
-        addButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        addButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                addButton.setBackground(primaryHover);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                addButton.setBackground(primaryColor);
-            }
-        });
-
-        addButton.addActionListener(e -> {
-            String libraryName = JOptionPane.showInputDialog(this,
-                    "Inserisci il nome della nuova libreria:",
-                    "Nuova Libreria",
-                    JOptionPane.QUESTION_MESSAGE);
-            if (libraryName != null && !libraryName.trim().isEmpty()) {
-                addLibraryCard(libraryName);
-            }
-        });
-
-        addButton.setPreferredSize(new Dimension(180, 40));
-
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        buttonPanel.setOpaque(false);
-        buttonPanel.add(addButton);
-        headerPanel.add(buttonPanel, BorderLayout.EAST);
 
         panel.add(headerPanel, BorderLayout.NORTH);
 

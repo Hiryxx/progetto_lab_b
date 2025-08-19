@@ -56,6 +56,8 @@ public class SocketConnection {
                         out.flush();
                     }
                 });
+                out.println("STOP");
+                out.flush();
             }
             case ErrorResponse errorResponse -> {
                 out.println("ERROR: " + errorResponse.getErrorMessage());

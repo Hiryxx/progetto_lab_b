@@ -23,6 +23,8 @@ public class MainFrame extends JFrame {
     private static Map<String, NavButton> navButtons = new HashMap<>();
     private static Map<String, Page> pages = new HashMap<>();
 
+    private static JPanel bottomNavigationPanel;
+
 
     public static void init(SocketConnection socketConnection) {
         MainFrame.socketConnection = socketConnection;
@@ -58,8 +60,8 @@ public class MainFrame extends JFrame {
     }
 
     public static void render() {
-        JPanel bottomPanel = createBottomNavigationPanel();
-        mainFrame.add(bottomPanel, BorderLayout.SOUTH);
+        createBottomNavigationPanel();
+        mainFrame.add(bottomNavigationPanel, BorderLayout.SOUTH);
     }
 
 
@@ -108,11 +110,17 @@ public class MainFrame extends JFrame {
                 button.setSelected(false);
             }
 
+            if (UserState.isLoggedIn && pageName.equals("library")){
+                bottomNavigationPanel.add(button);
+            } else if (!UserState.isLoggedIn && pageName.equals("library")){
+                bottomNavigationPanel.remove(button);
+            }
+
             button.repaint();
         });
     }
 
-    private static JPanel createBottomNavigationPanel() {
+    private static void createBottomNavigationPanel() {
         JPanel panel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -143,11 +151,10 @@ public class MainFrame extends JFrame {
         navButtons.put("auth", authButton);
 
         panel.add(homeButton);
-        panel.add(libraryButton);
         panel.add(authButton);
         homeButton.setSelected(true);
 
-        return panel;
+        bottomNavigationPanel = panel;
     }
 
     private JButton createNavButton(String icon, String text, String pageName) {

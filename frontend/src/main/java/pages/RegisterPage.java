@@ -383,7 +383,7 @@ public class RegisterPage extends Page {
         JsonObject userJson = new JsonObject();
         userJson.put("cf", fiscalCode);
         userJson.put("name", name);
-        userJson.put("lastName", lastName);
+        userJson.put("lastname", lastName);
         userJson.put("email", email);
         userJson.put("password", password);
 

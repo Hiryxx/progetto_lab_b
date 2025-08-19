@@ -170,6 +170,20 @@ public class Server implements AutoCloseable {
         }, Library.class);
 
 
+        commandRegister.register("GET_LIBRARIES", (String userCf) -> {
+            try {
+                PrepareQuery pq = Library.selectBy("*")
+                        .where("userCf = ?")
+                        .prepare(userCf);
+
+                QueryResult result = pq.executeResult();
+                return new MultiResponse(result);
+            } catch (SQLException e) {
+                return new ErrorResponse("Error creating user: " + e.getMessage());
+            }
+        });
+
+
         commandRegister.register("GET_LIBRARY_BOOKS", (Library library) -> {
             try {
                 PrepareQuery pq = LibraryBook.selectBy("*")

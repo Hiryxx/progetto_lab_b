@@ -5,12 +5,13 @@ import java.awt.*;
 
 public class StatItem extends JPanel {
     private JLabel textLabel;
+    private JLabel valueLabel;
 
     public StatItem (String value, String label) {
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         this.setOpaque(false);
 
-        JLabel valueLabel = new JLabel(value);
+        valueLabel = new JLabel(value);
         valueLabel.setFont(new Font("SF Pro Display", Font.BOLD, 24));
         valueLabel.setForeground(Color.WHITE);
         valueLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -26,5 +27,9 @@ public class StatItem extends JPanel {
 
     public void setLabelText(String  text) {
         this.textLabel.setText(text);
+    }
+
+    public void setValueText(String text) {
+        this.valueLabel.setText(text);
     }
 }
