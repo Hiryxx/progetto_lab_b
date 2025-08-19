@@ -1,6 +1,5 @@
 package pages;
 
-import classes.MainFrame;
 import classes.Page;
 import components.ModernScrollBarUI;
 

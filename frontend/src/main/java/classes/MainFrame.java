@@ -31,7 +31,6 @@ public class MainFrame extends JFrame {
         mainFrame.setSize(1200, 900);
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // Create the main container with CardLayout
         cardLayout = new CardLayout();
         contentPanel = new JPanel(cardLayout);
 
@@ -40,16 +39,17 @@ public class MainFrame extends JFrame {
         RegisterPage registerPage = new RegisterPage();
         ProfilePage profilePage = new ProfilePage();
         BookDetailsPage bookDetailsPage = new BookDetailsPage();
+        LibraryPage libraryPage = new LibraryPage();
 
         addPage(homePage, "home");
         addPage(loginPage, "login");
         addPage(registerPage, "register");
         addPage(profilePage, "profile");
         addPage(bookDetailsPage, "bookDetails");
-        // Show the first page
+        addPage(libraryPage, "library");
+
         showPage("home");
 
-        // Add content panel to frame
         mainFrame.add(contentPanel);
 
         render();
