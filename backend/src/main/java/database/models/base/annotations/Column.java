@@ -11,4 +11,5 @@ public @interface Column {
     String name() default "";
     String type();
     boolean nullable() default true;
+    String defaultValue() default "";
 }

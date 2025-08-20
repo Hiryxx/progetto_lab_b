@@ -18,14 +18,16 @@ public class Library extends Entity {
 
     @ForeignKey(references = User.class, column = "cf")
     @Column( type = "CHAR(36)", nullable = false)
-    private String userCf;
+    private String usercf;
 
-    //todo add timestamp
+    @Column(type = "TIMESTAMP", nullable = false, defaultValue = "current_timestamp")
+    private String createdat;
 
-    public Library(int id, String name, String userCf) {
+    public Library(int id, String name, String userCf, String createdAt) {
         this.id = id;
         this.name = name;
-        this.userCf = userCf;
+        this.usercf = userCf;
+        this.createdat = createdAt;
     }
 
 
@@ -36,5 +38,15 @@ public class Library extends Entity {
 
     public Object getId() {
         return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+    public String getUserCf() {
+        return usercf;
+    }
+    public String getCreatedAt() {
+        return createdat;
     }
 }

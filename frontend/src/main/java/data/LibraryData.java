@@ -1,21 +1,32 @@
 package data;
 
-public class LibraryData {
-    private String id;
-    private String name;
-    private String lastModified;
 
-    public LibraryData(String id, String name, String lastModified) {
+public class LibraryData {
+    private int id;
+    private String name;
+
+    private long createdat;
+
+
+    public LibraryData(){
+
+    }
+
+    public LibraryData(int id, String name, long createdat) {
         this.id = id;
         this.name = name;
-        this.lastModified = lastModified;
+        this.createdat = createdat;
     }
 
     public String getName() {
         return name;
     }
 
-    public String getLastModified() {
-        return lastModified;
+    public long getCreatedAt() {
+        return createdat;
+    }
+
+    public int getId() {
+        return id;
     }
 }

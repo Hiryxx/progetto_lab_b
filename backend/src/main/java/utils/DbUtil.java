@@ -72,6 +72,10 @@ public class DbUtil {
                 columnDef.append(" NOT NULL");
             }
 
+            if (!column.defaultValue().isEmpty()) {
+                columnDef.append(" DEFAULT ").append(column.defaultValue());
+            }
+
             if (field.isAnnotationPresent(Id.class)) {
                 if (!primaryKeys.isEmpty()) primaryKeys.append(", ");
                 primaryKeys.append(columnName);

@@ -1,6 +1,8 @@
 package utils;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,13 +22,14 @@ public class JSONUtil {
      * Returns a singleton ObjectMapper instance with the ParameterNamesModule registered.
      * This ensures that the module is only registered once, improving performance.
      *
-     * @return a singleton ObjectMapper instance
+     * @return a ObjectMapper instance
      */
     private static ObjectMapper createObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
         // Register the module here. This will now only happen one time.
         mapper.registerModule(new ParameterNamesModule());
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         //mapper.setSerializationInclusion(JsonInclude.Include.);
         return mapper;
     }

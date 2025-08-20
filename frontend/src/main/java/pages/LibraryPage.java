@@ -9,7 +9,7 @@ import connection.SocketConnection;
 import data.LibraryData;
 import json.JsonObject;
 import json.JsonUtil;
-import state.LibraryDetail;
+import state.LibraryDetailState;
 import state.LibraryState;
 import state.UserState;
 
@@ -18,6 +18,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static classes.styles.Colors.*;
@@ -64,12 +65,6 @@ public class LibraryPage extends Page {
 
             List<String> libraries = sc.receiveUntilStop();
 
-            if (libraries.isEmpty()) {
-                System.err.println("No libraries found for user: " + userCf);
-                // TODO: Show no libraries
-                return;
-            }
-
             for (String libraryJson : libraries) {
                 if (libraryJson.startsWith("ERROR:")) {
                     System.err.println("Error fetching libraries: " + libraryJson.substring(6));
@@ -80,6 +75,7 @@ public class LibraryPage extends Page {
                     try {
                         library = JsonUtil.fromString(libraryJson, LibraryData.class);
                         System.out.println("Parsed library: " + library.getName());
+                        System.out.println("Created at : " + library.getCreatedAt());
                     } catch (JsonProcessingException e) {
                         System.out.println("Error parsing library JSON: " + e.getMessage());
                     }
@@ -88,13 +84,16 @@ public class LibraryPage extends Page {
 
                 }
             }
-
+            refreshLibrariesGrid();
         }
+
+
     }
 
     @Override
     public void refresh() {
         initializeLibraries();
+
     }
 
     private JPanel createHeader() {
@@ -199,8 +198,6 @@ public class LibraryPage extends Page {
         librariesContainer.setOpaque(false);
         librariesContainer.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        refreshLibrariesGrid();
-
         JScrollPane gridScroll = new JScrollPane(librariesContainer);
         gridScroll.setBorder(null);
         gridScroll.setOpaque(false);
@@ -301,13 +298,22 @@ public class LibraryPage extends Page {
             }
         });
 
-        for (LibraryData library : userLibraries) {
-            JPanel libraryCard = createLibraryCard(library);
-            librariesContainer.add(libraryCard);
-        }
+        if (LibraryState.libraries.isEmpty()){
+            JLabel noLibrariesLabel = new JLabel("Nessuna libreria trovata.");
+            noLibrariesLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 16));
+            noLibrariesLabel.setForeground(textPrimary);
+            noLibrariesLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            librariesContainer.add(noLibrariesLabel);
 
-        librariesContainer.revalidate();
-        librariesContainer.repaint();
+        } else {
+            for (LibraryData library : LibraryState.libraries) {
+                JPanel libraryCard = createLibraryCard(library);
+                librariesContainer.add(libraryCard);
+            }
+        }
+            librariesContainer.revalidate();
+            librariesContainer.repaint();
+
     }
 
     private JPanel createLibraryCard(LibraryData library) {
@@ -449,9 +455,10 @@ public class LibraryPage extends Page {
         JPanel bottomSection = new JPanel(new BorderLayout());
         bottomSection.setOpaque(false);
 
-        JLabel modifiedLabel = new JLabel(library.getLastModified());
-        modifiedLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 12));
-        modifiedLabel.setForeground(textSecondary);
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
+        JLabel createdAtLabel = new JLabel(sdf.format(new java.util.Date(library.getCreatedAt())));
+        createdAtLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 12));
+        createdAtLabel.setForeground(textSecondary);
 
         JButton viewButton = new JButton("Visualizza →");
         viewButton.setFont(new Font("SF Pro Text", Font.BOLD, 14));
@@ -467,7 +474,7 @@ public class LibraryPage extends Page {
             }
         });
 
-        bottomSection.add(modifiedLabel, BorderLayout.WEST);
+        bottomSection.add(createdAtLabel, BorderLayout.WEST);
         bottomSection.add(viewButton, BorderLayout.EAST);
 
         // Add sections to card
@@ -517,7 +524,18 @@ public class LibraryPage extends Page {
             );
             return;
         }
-        refreshLibrariesGrid();
+
+        try {
+            System.out.println("ADDING LIBRARY: " + response.getResponseText());
+            LibraryState.libraries.add(JsonUtil.fromString(response.getResponseText(), LibraryData.class));
+        } catch (JsonProcessingException e) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Errore durante lettura nuova libreria: " + e.getMessage(),
+                    "Errore",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
 
         JOptionPane.showMessageDialog(
                 this,
@@ -525,12 +543,14 @@ public class LibraryPage extends Page {
                 "Libreria Creata",
                 JOptionPane.INFORMATION_MESSAGE
         );
+        refreshLibrariesGrid();
     }
 
     private void openLibraryDetail(LibraryData library) {
         System.out.println("Opening library: " + library.getName());
 
-        LibraryDetail.libraryName = library.getName();
+        LibraryDetailState.libraryName = library.getName();
+        LibraryDetailState.libraryId = library.getId();
         changePage("libraryDetail");
 
     }

@@ -1,5 +1,6 @@
 package server;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import database.models.Author;
 import database.models.Category;
 import database.models.book.*;
@@ -163,8 +164,19 @@ public class Server implements AutoCloseable {
         commandRegister.register("CREATE_LIBRARY", (Library library) -> {
             try {
                 library.create();
-                return new SingleResponse("Library created successfully");
-            } catch (IllegalAccessException | SQLException e) {
+
+                try (QueryResult queryResult = Library.selectBy("*")
+                        .where("name = ? AND userCf = ?")
+                        .prepare(library.getName(), library.getUserCf()).executeResult()) {
+
+                    var iterator = queryResult.iterator();
+
+                    iterator.hasNext();
+
+                    ResultSet rs = iterator.next();
+                    return new JsonResponse(rs);
+                }
+            } catch (Exception e) {
                 return new ErrorResponse("Error creating user: " + e.getMessage());
             }
         }, Library.class);

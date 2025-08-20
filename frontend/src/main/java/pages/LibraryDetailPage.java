@@ -4,7 +4,7 @@ import classes.Page;
 import components.ModernScrollBarUI;
 import components.cards.BookCard;
 import components.panels.StatItem;
-import state.LibraryDetail;
+import state.LibraryDetailState;
 
 import javax.swing.*;
 import java.awt.*;
@@ -60,7 +60,7 @@ public class LibraryDetailPage extends Page {
 
     private void initializeBooks() {
         libraryBooks = new ArrayList<>();
-        String libraryName = LibraryDetail.libraryName;
+        String libraryName = LibraryDetailState.libraryName;
         if (libraryName.equals("Da Leggere")) {
             libraryBooks.add(new BookData("Il nome del vento", "Patrick Rothfuss", "Fantasy", 0, 4.5f, false, false, "978-8804668695", 2007));
             libraryBooks.add(new BookData("Fondazione", "Isaac Asimov", "Fantascienza", 5.0f, 4.3f, true, true, "978-8804719", 1951));
@@ -110,7 +110,7 @@ public class LibraryDetailPage extends Page {
 
     @Override
     public void refresh() {
-        titleLabel.setText("📚 " + LibraryDetail.libraryName);
+        titleLabel.setText("📚 " + LibraryDetailState.libraryName);
         initializeBooks();
 
         refreshBooksGrid();
