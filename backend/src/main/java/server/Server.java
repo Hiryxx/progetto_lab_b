@@ -200,7 +200,7 @@ public class Server implements AutoCloseable {
             try {
                 PrepareQuery pq = LibraryBook.selectBy("*")
                         .where("libraryId = ?")
-                        .join(Book.class, "Book.id = LibraryBooks.bookId")
+                        .join(Book.class, "books.id = librarybooks.bookid")
                         .prepare(library.getId());
 
                 QueryResult result = pq.executeResult();

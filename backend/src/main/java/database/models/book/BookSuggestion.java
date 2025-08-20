@@ -6,7 +6,7 @@ import database.models.base.annotations.ForeignKey;
 import database.models.base.annotations.Id;
 import database.models.base.annotations.Table;
 
-@Table(name = "BookSuggestions")
+@Table(name = "booksuggestions")
 public class BookSuggestion extends Entity {
     @Id(autoIncrement = true)
     @Column(type = "SERIAL")

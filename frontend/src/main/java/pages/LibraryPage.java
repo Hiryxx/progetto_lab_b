@@ -4,6 +4,7 @@ import classes.MainFrame;
 import classes.Page;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import components.ModernScrollBarUI;
+import components.buttons.LibraryBookButton;
 import connection.Response;
 import connection.SocketConnection;
 import data.LibraryData;
@@ -188,7 +189,20 @@ public class LibraryPage extends Page {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         buttonPanel.setOpaque(false);
 
-        JButton addButton = createAddLibraryButton();
+        JButton addButton = new LibraryBookButton("+ Aggiungi Libreria");
+
+        addButton.addActionListener(e -> {
+            String libraryName = JOptionPane.showInputDialog(
+                    this,
+                    "Inserisci il nome della nuova libreria:",
+                    "Nuova Libreria",
+                    JOptionPane.QUESTION_MESSAGE
+            );
+
+            if (libraryName != null && !libraryName.trim().isEmpty()) {
+                addNewLibrary(libraryName);
+            }
+        });
         buttonPanel.add(addButton);
         buttonWrapper.add(buttonPanel, BorderLayout.CENTER);
 
@@ -210,71 +224,7 @@ public class LibraryPage extends Page {
         return section;
     }
 
-    private JButton createAddLibraryButton() {
-        JButton addButton = new JButton("+ Aggiungi Libreria") {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                if (getModel().isPressed()) {
-                    g2d.setColor(primaryHover);
-                } else if (getModel().isRollover()) {
-                    g2d.setColor(primaryHover);
-                } else {
-                    g2d.setColor(primaryColor);
-                }
-
-                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 25, 25);
-
-                g2d.setColor(Color.WHITE);
-                g2d.setFont(getFont());
-                FontMetrics fm = g2d.getFontMetrics();
-                int x = (getWidth() - fm.stringWidth(getText())) / 2;
-                int y = (getHeight() + fm.getAscent()) / 2 - 2;
-                g2d.drawString(getText(), x, y);
-
-                g2d.dispose();
-            }
-        };
-
-        addButton.setFont(new Font("SF Pro Text", Font.BOLD, 16));
-        addButton.setForeground(Color.WHITE);
-        addButton.setPreferredSize(new Dimension(180, 45));
-        addButton.setMinimumSize(new Dimension(150, 40));
-        addButton.setMaximumSize(new Dimension(200, 50));
-        addButton.setBorder(null);
-        addButton.setFocusPainted(false);
-        addButton.setContentAreaFilled(false);
-        addButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        addButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                addButton.repaint();
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                addButton.repaint();
-            }
-        });
-
-        addButton.addActionListener(e -> {
-            String libraryName = JOptionPane.showInputDialog(
-                    this,
-                    "Inserisci il nome della nuova libreria:",
-                    "Nuova Libreria",
-                    JOptionPane.QUESTION_MESSAGE
-            );
-
-            if (libraryName != null && !libraryName.trim().isEmpty()) {
-                addNewLibrary(libraryName);
-            }
-        });
-
-        return addButton;
-    }
 
     private void refreshLibrariesGrid() {
         librariesContainer.removeAll();

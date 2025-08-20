@@ -6,7 +6,7 @@ import database.models.base.annotations.Column;
 import database.models.base.annotations.Id;
 import database.models.base.annotations.Table;
 
-@Table(name = "Categories")
+@Table(name = "categories")
 public class Category extends Entity {
     @Id(autoIncrement = true)
     @Column(type = "INTEGER")

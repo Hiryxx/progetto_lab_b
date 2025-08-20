@@ -7,7 +7,7 @@ import database.models.base.annotations.Id;
 import database.models.base.annotations.Table;
 import database.models.base.Entity;
 
-@Table(name = "BookRatings")
+@Table(name = "bookratings")
 public class BookRating extends Entity {
     @Id(autoIncrement = true)
     @Column( type = "SERIAL")

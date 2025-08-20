@@ -10,7 +10,7 @@ import database.models.base.annotations.Table;
 import database.models.base.Entity;
 import database.query.SelectBuilder;
 
-@Table(name = "Books")
+@Table(name = "books")
 public class Book extends Entity {
     @Id(autoIncrement = true)
     @Column(type = "SERIAL")

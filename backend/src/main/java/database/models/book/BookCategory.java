@@ -7,7 +7,7 @@ import database.models.base.annotations.ForeignKey;
 import database.models.base.annotations.Id;
 import database.models.base.annotations.Table;
 
-@Table(name = "BookCategories")
+@Table(name = "bookcategories")
 public class BookCategory extends Entity {
     @Id(autoIncrement = true)
     private int id;

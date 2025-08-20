@@ -1,10 +1,17 @@
 package pages;
 
+import classes.MainFrame;
 import classes.Page;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import components.ModernScrollBarUI;
 import components.cards.BookCard;
 import components.panels.StatItem;
+import connection.SocketConnection;
+import data.LibraryData;
+import json.JsonObject;
+import json.JsonUtil;
 import state.LibraryDetailState;
+import state.UserState;
 
 import javax.swing.*;
 import java.awt.*;
@@ -36,10 +43,9 @@ public class LibraryDetailPage extends Page {
         float avgRating;  // Average rating from all users
         boolean hasReview;
         boolean hasSuggestions;
-        String isbn;
         int year;
 
-        public BookData(String title, String author, String genre, float userRating, float avgRating, boolean hasReview, boolean hasSuggestions, String isbn, int year) {
+        public BookData(String title, String author, String genre, float userRating, float avgRating, boolean hasReview, boolean hasSuggestions, int year) {
             this.title = title;
             this.author = author;
             this.genre = genre;
@@ -47,7 +53,6 @@ public class LibraryDetailPage extends Page {
             this.avgRating = avgRating;
             this.hasReview = hasReview;
             this.hasSuggestions = hasSuggestions;
-            this.isbn = isbn;
             this.year = year;
         }
     }
@@ -60,19 +65,33 @@ public class LibraryDetailPage extends Page {
 
     private void initializeBooks() {
         libraryBooks = new ArrayList<>();
-        String libraryName = LibraryDetailState.libraryName;
-        if (libraryName.equals("Da Leggere")) {
-            libraryBooks.add(new BookData("Il nome del vento", "Patrick Rothfuss", "Fantasy", 0, 4.5f, false, false, "978-8804668695", 2007));
-            libraryBooks.add(new BookData("Fondazione", "Isaac Asimov", "Fantascienza", 5.0f, 4.3f, true, true, "978-8804719", 1951));
-            libraryBooks.add(new BookData("Neuromante", "William Gibson", "Cyberpunk", 4.0f, 4.2f, true, false, "978-8804718", 1984));
-            libraryBooks.add(new BookData("Dune", "Frank Herbert", "Fantascienza", 0, 4.6f, false, false, "978-8804717", 1965));
-            libraryBooks.add(new BookData("Il problema dei tre corpi", "Liu Cixin", "Fantascienza", 3.5f, 4.1f, true, true, "978-8804716", 2008));
-            libraryBooks.add(new BookData("L'anello di Re Salomone", "Konrad Lorenz", "Saggistica", 0, 4.0f, false, false, "978-8804715", 1949));
-        } else if (libraryName.equals("Fantascienza")) {
-            libraryBooks.add(new BookData("Hyperion", "Dan Simmons", "Fantascienza", 4.5f, 4.4f, true, true, "978-8804714", 1989));
-            libraryBooks.add(new BookData("Ubik", "Philip K. Dick", "Fantascienza", 4.0f, 4.1f, true, false, "978-8804713", 1969));
-            libraryBooks.add(new BookData("1984", "George Orwell", "Distopia", 5.0f, 4.5f, true, true, "978-8804712", 1949));
-            libraryBooks.add(new BookData("Fahrenheit 451", "Ray Bradbury", "Distopia", 0, 4.3f, false, false, "978-8804711", 1953));
+
+        SocketConnection sc = MainFrame.getSocketConnection();
+        JsonObject libraryDetail = new JsonObject();
+        libraryDetail.put("id", LibraryDetailState.libraryId);
+
+        System.out.println("Requesting library books with id " + LibraryDetailState.libraryId);
+        sc.send("GET_LIBRARY_BOOKS", libraryDetail, UserState.cf);
+
+        List<String> books = sc.receiveUntilStop();
+
+        for (String bookJson : books){
+            if (bookJson.startsWith("ERROR:")) {
+                System.err.println("Error fetching libraries: " + bookJson.substring(6));
+                return;
+            }
+
+            BookData book;
+
+            try {
+                book = JsonUtil.fromString(bookJson, BookData.class);
+                System.out.println("Parsed book: " + book.title);
+
+                libraryBooks.add(book);
+            } catch (JsonProcessingException e) {
+                System.out.println("Error parsing library JSON: " + e.getMessage());
+            }
+
         }
 
        subtitleLabel.setText( libraryBooks.size() + " libri nella libreria");

@@ -9,21 +9,21 @@ import database.models.base.annotations.Id;
 import database.models.base.annotations.Table;
 import database.query.SelectBuilder;
 
-@Table(name = "LibraryBooks")
+@Table(name = "librarybooks")
 public class LibraryBook extends Entity {
     @Id
     @Column(type = "SERIAL")
     @ForeignKey(references = Library.class)
-    private int libraryId;
+    private int libraryid;
 
     @Id
     @Column(type = "SERIAL")
     @ForeignKey(references = Book.class)
-    private int bookId;
+    private int bookid;
 
-    public LibraryBook(int libraryId, int bookId) {
-        this.libraryId = libraryId;
-        this.bookId = bookId;
+    public LibraryBook(int libraryid, int bookid) {
+        this.libraryid = libraryid;
+        this.bookid = bookid;
     }
 
     public static SelectBuilder selectBy(String queryParameter) {

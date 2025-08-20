@@ -5,7 +5,7 @@ import database.models.base.annotations.Column;
 import database.models.base.annotations.Id;
 import database.models.base.annotations.Table;
 
-@Table(name = "Authors")
+@Table(name = "authors")
 public class Author extends Entity {
     @Id(autoIncrement = true)
     @Column(type = "INTEGER")

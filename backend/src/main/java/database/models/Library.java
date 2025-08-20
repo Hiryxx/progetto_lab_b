@@ -7,7 +7,7 @@ import database.models.base.annotations.Table;
 import database.models.base.Entity;
 import database.query.SelectBuilder;
 
-@Table(name = "Libraries")
+@Table(name = "libraries")
 public class Library extends Entity {
     @Id(autoIncrement = true)
     @Column( type = "SERIAL")

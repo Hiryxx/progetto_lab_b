@@ -47,7 +47,7 @@ public class SocketConnection implements AutoCloseable {
         String line;
         try {
             line = in.readLine();
-           // in.readLine();
+            // in.readLine();
         } catch (IOException e) {
             System.err.println("Error reading from socket: " + e.getMessage());
             return new Response("Error reading from socket", true);
@@ -63,14 +63,18 @@ public class SocketConnection implements AutoCloseable {
         String line;
         List<String> messages = new ArrayList<>();
         System.out.println("Receiving messages...");
-        try{
-        while ((line = in.readLine()) != null) {
-            System.out.println("Received: " + line);
-            if (line.equalsIgnoreCase("STOP")) {
-                break;
+        try {
+            while ((line = in.readLine()) != null) {
+                System.out.println("Received: " + line);
+                if (line.equalsIgnoreCase("STOP")) {
+                    break;
+                }
+                if (line.startsWith("ERROR:")) {
+                    System.err.println("Error received from server: " + line);
+                   break;
+                }
+                messages.add(line);
             }
-            messages.add(line);
-        }
         } catch (IOException e) {
             System.err.println("Error reading from socket: " + e.getMessage());
             return messages; // Return what we have so far

@@ -8,7 +8,7 @@ import database.models.base.Entity;
 import database.query.SelectBuilder;
 
 
-@Table(name = "Users")
+@Table(name = "users")
 public class User extends Entity {
     @Id
     @Column(type = "CHAR(16)")

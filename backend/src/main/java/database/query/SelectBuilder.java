@@ -114,7 +114,6 @@ public class SelectBuilder {
      * @param on the join clause
      * @return the SelectBuilder instance
      */
-    //todo maybe make it better with a JoinBuilder?
     public SelectBuilder join(Class<?extends Entity> from, String on) {
         String joinTable = DbUtil.getTableName(from);
 

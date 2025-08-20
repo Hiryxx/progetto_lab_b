@@ -3,6 +3,7 @@ package pages;
 import classes.MainFrame;
 import classes.Page;
 import components.ModernScrollBarUI;
+import components.buttons.LibraryBookButton;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,7 +20,6 @@ public class BookDetailsPage extends Page {
     private String bookDescription = "Un affascinante thriller medievale ambientato in un'abbazia benedettina nel 1327. Il frate francescano Guglielmo da Baskerville e il suo allievo Adso da Melk indagano su una serie di misteriose morti che scuotono la comunità monastica. Tra filosofia, teologia e investigazione, Eco ci conduce in un viaggio intellectuale attraverso il Medioevo, esplorando temi di conoscenza, fede e potere.";
     private String publicationDate = "Settembre 1980";
     private float bookRating = 4.7f;
-    private String bookPrice = "€18.90";
     private String bookGenre = "Thriller Storico";
     private int totalReviews = 2847;
 
@@ -59,9 +59,6 @@ public class BookDetailsPage extends Page {
         JScrollPane scrollPane = createScrollPane(contentPanel);
         this.add(scrollPane, BorderLayout.CENTER);
 
-        // Bottom navigation
-        JPanel bottomPanel = createBottomNavigationPanel();
-        this.add(bottomPanel, BorderLayout.SOUTH);
     }
     @Override
     public void refresh() {
@@ -252,6 +249,16 @@ public class BookDetailsPage extends Page {
         gbc.insets = new Insets(0, 0, 10, 0);
         JPanel genrePanel = createInfoItem("🎭", "Genere:", bookGenre);
         infoPanel.add(genrePanel, gbc);
+
+        // Add to library button
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(20, 0, 0, 0);
+        gbc.weighty = 0.0;
+        JButton addButton = new LibraryBookButton("+ Aggiungi alla Libreria");
+
+        infoPanel.add(addButton, gbc);
 
         // Spaziatore per spingere tutto in alto
         gbc.gridy = 5;
@@ -541,97 +548,5 @@ public class BookDetailsPage extends Page {
         scrollPane.getVerticalScrollBar().setUI(new ModernScrollBarUI());
 
         return scrollPane;
-    }
-
-    private JPanel createBottomNavigationPanel() {
-        JPanel panel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setColor(cardColor);
-                g2d.fillRect(0, 0, getWidth(), getHeight());
-
-                g2d.setColor(borderColor);
-                g2d.fillRect(0, 0, getWidth(), 1);
-
-                GradientPaint shadow = new GradientPaint(0, 1, new Color(0, 0, 0, 8), 0, 10, new Color(0, 0, 0, 0));
-                g2d.setPaint(shadow);
-                g2d.fillRect(0, 1, getWidth(), 10);
-                g2d.dispose();
-            }
-        };
-
-        panel.setLayout(new FlowLayout(FlowLayout.CENTER, 40, 0));
-        panel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
-
-        JButton homeButton = createNavButton("🏠", "Home", textSecondary, false);
-        JButton libraryButton = createNavButton("📚", "Libreria", textSecondary, false);
-        JButton recommendButton = createNavButton("⭐", "Scopri", textSecondary, false);
-        JButton profileButton = createNavButton("👤", "Profilo", textSecondary, false);
-
-        homeButton.addActionListener(e -> changePage("home"));
-
-        panel.add(homeButton);
-        panel.add(libraryButton);
-        panel.add(recommendButton);
-        panel.add(profileButton);
-
-        return panel;
-    }
-
-    private JButton createNavButton(String icon, String text, Color color, boolean active) {
-        JButton button = new JButton() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                if (active) {
-                    g2d.setColor(new Color(primaryColor.getRed(), primaryColor.getGreen(), primaryColor.getBlue(), 20));
-                    g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
-                }
-
-                g2d.dispose();
-                super.paintComponent(g);
-            }
-        };
-
-        button.setLayout(new BorderLayout(0, 5));
-        button.setBorder(BorderFactory.createEmptyBorder(12, 20, 12, 20));
-        button.setContentAreaFilled(false);
-        button.setFocusPainted(false);
-        button.setBorderPainted(false);
-
-        JLabel iconLabel = new JLabel(icon);
-        iconLabel.setFont(new Font("Apple Color Emoji", Font.PLAIN, 20));
-        iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
-
-        JLabel textLabel = new JLabel(text);
-        textLabel.setFont(new Font("SF Pro Text", Font.BOLD, 13));
-        textLabel.setForeground(color);
-        textLabel.setHorizontalAlignment(SwingConstants.CENTER);
-
-        button.add(iconLabel, BorderLayout.CENTER);
-        button.add(textLabel, BorderLayout.SOUTH);
-
-        button.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                if (!active) {
-                    textLabel.setForeground(primaryColor);
-                    button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                }
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (!active) {
-                    textLabel.setForeground(color);
-                }
-            }
-        });
-
-        return button;
     }
 }

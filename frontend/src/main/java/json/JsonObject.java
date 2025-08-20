@@ -15,6 +15,10 @@ public class JsonObject {
         objectNode.put(key, value);
     }
 
+    public void put(String key, int value) {
+        objectNode.put(key, value);
+    }
+
     public String toString() {
         return objectNode.toString();
     }
