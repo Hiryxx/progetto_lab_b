@@ -198,9 +198,17 @@ public class Server implements AutoCloseable {
 
         commandRegister.register("GET_LIBRARY_BOOKS", (Library library) -> {
             try {
-                PrepareQuery pq = LibraryBook.selectBy("*")
-                        .where("libraryId = ?")
-                        .join(Book.class, "books.id = librarybooks.bookid")
+                PrepareQuery pq = LibraryBook.selectBy("books.*, " +
+                                "STRING_AGG(DISTINCT authors.name, ', ') as authors, " +
+                                "STRING_AGG(DISTINCT categories.name, ', ') as categories")
+                        .join(Book.class, "books.id = librarybooks.bookId")
+                        .join(BookAuthor.class, "bookauthors.bookId = books.id")
+                        .join(Author.class, "authors.id = bookauthors.authorId")
+                        .join(BookCategory.class, "bookcategories.bookId = books.id")
+                        .join(Category.class, "categories.id = bookcategories.categoryId")
+                        .where("librarybooks.libraryId = ?")
+                        .groupBy("books.id")
+                        .limit(10)
                         .prepare(library.getId());
 
                 QueryResult result = pq.executeResult();
@@ -209,6 +217,26 @@ public class Server implements AutoCloseable {
                 return new ErrorResponse("Error listing books: " + e.getMessage());
             }
         }, Library.class);
+
+        commandRegister.register("GET_BOOKS", () -> {
+            try {
+                PrepareQuery pq = Book.selectBy("books.*, " +
+                                "STRING_AGG(DISTINCT authors.name, ', ') as authors, " +
+                                "STRING_AGG(DISTINCT categories.name, ', ') as categories")
+                        .join(BookCategory.class, "bookcategories.bookid = books.id")
+                        .join(BookAuthor.class, "bookauthors.bookid = books.id")
+                        .join(Author.class, "authors.id = bookauthors.authorid")
+                        .join(Category.class, "categories.id = bookcategories.categoryid")
+                        .groupBy("books.id")
+                        .limit(5)
+                        .prepare();
+
+                QueryResult result = pq.executeResult();
+                return new MultiResponse(result);
+            } catch (SQLException e) {
+                return new ErrorResponse("Error getting books: " + e.getMessage());
+            }
+        });
 
 
         commandRegister.register("ADD_BOOK", (LibraryBook libraryBook) -> {
@@ -270,6 +298,7 @@ public class Server implements AutoCloseable {
 
         commandRegister.register("TRY", SingleResponse::new);
 
+        commandRegister.setFreeCommand("GET_BOOKS");
         commandRegister.setFreeCommand("BOOK_INFO");
         commandRegister.setFreeCommand("REGISTER");
         commandRegister.setFreeCommand("LOGIN");

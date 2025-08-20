@@ -14,15 +14,15 @@ public class BookSuggestion extends Entity {
 
     @ForeignKey(references = Book.class)
     @Column(type = "SERIAL", nullable = false)
-    private int sourceBookId;
+    private int sourceBookid;
 
     @ForeignKey(references = Book.class)
     @Column(type = "SERIAL", nullable = false)
-    private int targetBookId;
+    private int targetBookid;
 
-    public BookSuggestion(int sourceBookId, int targetBookId) {
-        this.sourceBookId = sourceBookId;
-        this.targetBookId = targetBookId;
+    public BookSuggestion(int sourceBookid, int targetBookid) {
+        this.sourceBookid = sourceBookid;
+        this.targetBookid = targetBookid;
     }
 
 }

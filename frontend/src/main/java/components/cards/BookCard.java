@@ -1,6 +1,7 @@
 package components.cards;
 
 import classes.MainFrame;
+import data.BookData;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,6 +11,10 @@ import java.awt.event.MouseEvent;
 import static classes.styles.Colors.*;
 
 public class BookCard extends JPanel {
+
+    public BookCard(BookData book) {
+        this(book.getTitle(), book.getAuthors(), book.getCategories(), 4.5f - (2 * 0.3f) % 2);
+    }
     public BookCard(String title, String author, String genre, float rating) {
         this.setLayout(new BorderLayout(0, 10));
         this.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));

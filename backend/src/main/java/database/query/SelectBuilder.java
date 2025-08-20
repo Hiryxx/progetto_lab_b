@@ -117,7 +117,7 @@ public class SelectBuilder {
     public SelectBuilder join(Class<?extends Entity> from, String on) {
         String joinTable = DbUtil.getTableName(from);
 
-        joinClause = " JOIN " + joinTable + " ON " + on;
+        joinClause += " JOIN " + joinTable + " ON " + on;
         return this;
     }
 

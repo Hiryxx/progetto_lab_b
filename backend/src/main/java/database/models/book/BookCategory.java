@@ -14,14 +14,14 @@ public class BookCategory extends Entity {
 
     @ForeignKey(references = Book.class)
     @Column(type = "SERIAL", nullable = false)
-    private int bookId;
+    private int bookid;
 
     @ForeignKey(references = Category.class)
     @Column(type = "SERIAL", nullable = false)
-    private int categoryId;
+    private int categoryid;
 
-    public BookCategory(int bookId, int categoryId) {
-        this.bookId = bookId;
-        this.categoryId = categoryId;
+    public BookCategory(int bookid, int categoryid) {
+        this.bookid = bookid;
+        this.categoryid = categoryid;
     }
 }

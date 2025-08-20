@@ -11,21 +11,21 @@ import database.models.base.Entity;
 public class BookRating extends Entity {
     @Id(autoIncrement = true)
     @Column( type = "SERIAL")
-    private int ratingId;
+    private int ratingid;
 
     @ForeignKey(references = Book.class)
     @Column( type = "SERIAL", nullable = false)
-    private int bookId;
+    private int bookid;
 
     @ForeignKey(references = User.class, column = "cf")
     @Column(type = "CHAR(36)", nullable = false)
-    private String userCf;
+    private String usercf;
 
     // add stuff
 
-    public BookRating(int bookId, String userCf) {
-        this.bookId = bookId;
-        this.userCf = userCf;
+    public BookRating(int bookid, String usercf) {
+        this.bookid = bookid;
+        this.usercf = usercf;
     }
 
 }

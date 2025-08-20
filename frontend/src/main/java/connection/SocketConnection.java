@@ -66,6 +66,7 @@ public class SocketConnection implements AutoCloseable {
         try {
             while ((line = in.readLine()) != null) {
                 System.out.println("Received: " + line);
+                // TODO HANDLE BETTER
                 if (line.equalsIgnoreCase("STOP")) {
                     break;
                 }

@@ -3,6 +3,8 @@ package pages;
 import classes.Page;
 import components.cards.BookCard;
 import components.ModernScrollBarUI;
+import data.BookData;
+import state.BooksState;
 
 import javax.swing.*;
 import java.awt.*;
@@ -61,7 +63,12 @@ public class HomePage extends Page {
 
     @Override
     public void refresh() {
-
+        try {
+            BooksState.fetchBooks();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Errore durante il caricamento dei libri: " + e.getMessage(),
+                    "Errore", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private JPanel createTopPanel() {
@@ -218,12 +225,13 @@ public class HomePage extends Page {
     }
 
     private JPanel createFeaturedBooksPanel() {
+        // TODO UPDATE THIS AND REMOVE THIS SUPPLIER STUFF
         return createSectionPanel("✨ Libri in Evidenza", "Le migliori scelte per te", () -> {
             JPanel booksPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 0));
             booksPanel.setOpaque(false);
 
-            for (int i = 1; i <= 4; i++) {
-                JPanel bookWrapper = new BookCard("Libro in Evidenza " + i, "Autore " + i, "Genere " + i, 4.5f - (i * 0.3f) % 2);
+            for (BookData book : BooksState.books) {
+                JPanel bookWrapper = new BookCard(book);
                 booksPanel.add(bookWrapper);
             }
             return booksPanel;
