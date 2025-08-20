@@ -23,7 +23,14 @@ public class DbUtil {
                 ? tableAnnotation.name()
                 : entityClass.getSimpleName() + "s";
     }
-
+    /**
+     * Initializes the database table for the given entity class.
+     * This method generates a CREATE TABLE SQL query based on the entity's annotations.
+     *
+     * @param entityClass The entity class to initialize
+     * @return PrepareQuery containing the CREATE TABLE query
+     * @throws SQLException If an error occurs while generating the query
+     */
     public static PrepareQuery initTable(Class<? extends Entity> entityClass) throws SQLException {
         Table tableAnnotation = entityClass.getAnnotation(Table.class);
         String tableName = tableAnnotation != null && !tableAnnotation.name().isEmpty()
@@ -118,6 +125,7 @@ public class DbUtil {
      * @return SQL INSERT query
      * @throws IllegalAccessException If field access fails
      */
+
     public static PrepareQuery insertQuery(Entity entity) throws IllegalAccessException {
         Class<?> entityClass = entity.getClass();
 
@@ -138,7 +146,12 @@ public class DbUtil {
 
             field.setAccessible(true);
             Object value = field.get(entity);
-            if (value == null) continue; // Skip null values for optional fields
+
+            // Skip null values and default primitive values
+            if (value == null || isDefaultValue(value, field.getType())) {
+                field.setAccessible(false);
+                continue;
+            }
 
             String columnName = !column.name().isEmpty() ? column.name() : field.getName();
 
@@ -159,8 +172,30 @@ public class DbUtil {
 
         String query = "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + placeholders + ")";
 
-
         return new PrepareQuery(new Query(query), values);
+    }
+
+    /**
+     * Checks if a value is the default value for its type
+     *
+     * @param value The value to check
+     * @param type The field type
+     * @return true if the value is the default for its type
+     */
+    private static boolean isDefaultValue(Object value, Class<?> type) {
+        if (value == null) return true;
+
+        return switch (type.getName()) {
+            case "boolean" -> value.equals(false);
+            case "byte" -> value.equals((byte) 0);
+            case "short" -> value.equals((short) 0);
+            case "int" -> value.equals(0);
+            case "long" -> value.equals(0L);
+            case "float" -> value.equals(0.0f);
+            case "double" -> value.equals(0.0d);
+            case "char" -> value.equals('\u0000');
+            default -> false;
+        };
     }
 
     /**

@@ -9,7 +9,7 @@ public class Response {
         this.isError = isError;
     }
 
-    public String getResponse() {
+    public String getResponseText() {
         return response;
     }
 

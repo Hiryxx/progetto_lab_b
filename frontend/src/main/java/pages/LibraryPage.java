@@ -2,9 +2,13 @@ package pages;
 
 import classes.MainFrame;
 import classes.Page;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import components.ModernScrollBarUI;
+import connection.Response;
 import connection.SocketConnection;
 import data.LibraryData;
+import json.JsonObject;
+import json.JsonUtil;
 import state.LibraryDetail;
 import state.LibraryState;
 import state.UserState;
@@ -50,36 +54,40 @@ public class LibraryPage extends Page {
     }
 
     private void initializeLibraries() {
-        if (LibraryState.libraries.isEmpty()){
+        if (LibraryState.libraries.isEmpty()) {
             String userCf = UserState.cf;
 
             System.out.println("Requesting libraries for user: " + userCf);
-           SocketConnection sc =  MainFrame.getSocketConnection();
+            SocketConnection sc = MainFrame.getSocketConnection();
 
-           sc.send("GET_LIBRARIES;" + userCf + ";" + userCf);
+            sc.send("GET_LIBRARIES;" + userCf + ";" + userCf);
 
-           List<String> libraries = sc.receiveUntilStop();
+            List<String> libraries = sc.receiveUntilStop();
 
-              if (libraries.isEmpty()) {
+            if (libraries.isEmpty()) {
                 System.err.println("No libraries found for user: " + userCf);
                 // TODO: Show no libraries
                 return;
-              }
+            }
 
-           for (String libraryJson : libraries) {
-               if (libraryJson.startsWith("ERROR:")) {
-                   System.err.println("Error fetching libraries: " + libraryJson.substring(6));
-                   return;
-               } else {
-                   System.out.println("Received library data: " + libraryJson);
-                  /* LibraryData library = LibraryData.fromJson(libraryJson);
-                   if (library != null) {
-                       LibraryState.libraries.add(library);
-                   } else {
-                       System.err.println("Failed to parse library data: " + libraryJson);
-                   }*/
-               }
-           }
+            for (String libraryJson : libraries) {
+                if (libraryJson.startsWith("ERROR:")) {
+                    System.err.println("Error fetching libraries: " + libraryJson.substring(6));
+                    return;
+                } else {
+                    System.out.println("Received library data: " + libraryJson);
+                    LibraryData library = null;
+                    try {
+                        library = JsonUtil.fromString(libraryJson, LibraryData.class);
+                        System.out.println("Parsed library: " + library.getName());
+                    } catch (JsonProcessingException e) {
+                        System.out.println("Error parsing library JSON: " + e.getMessage());
+                    }
+                    if (library != null)
+                        LibraryState.libraries.add(library);
+
+                }
+            }
 
         }
     }
@@ -335,7 +343,6 @@ public class LibraryPage extends Page {
             }
 
 
-
         };
         card.addMouseWheelListener(e -> {
             // Don't consume the event, just pass it up
@@ -493,7 +500,23 @@ public class LibraryPage extends Page {
     }
 
     private void addNewLibrary(String name) {
+        SocketConnection sc = MainFrame.getSocketConnection();
+        String userCf = UserState.cf;
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.put("name", name);
+        jsonObject.put("userCf", userCf);
+        sc.send("CREATE_LIBRARY", jsonObject, userCf);
 
+        Response response = sc.receive();
+        if (response.isError()) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Errore durante la creazione della libreria: " + response.getResponseText().substring(6),
+                    "Errore",
+                    JOptionPane.ERROR_MESSAGE
+            );
+            return;
+        }
         refreshLibrariesGrid();
 
         JOptionPane.showMessageDialog(

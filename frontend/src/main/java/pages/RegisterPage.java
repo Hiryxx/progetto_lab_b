@@ -2,6 +2,7 @@ package pages;
 
 import classes.MainFrame;
 import classes.Page;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import components.buttons.AuthButton;
 import components.checks.PasswordCheck;
@@ -392,12 +393,19 @@ public class RegisterPage extends Page {
 
         Response response = MainFrame.getSocketConnection().receive();
         if (!response.isError()) {
-            UserState.login(userJson.toString());
+            try {
+                UserState.login(userJson.toString());
+            } catch (JsonProcessingException e) {
+                JOptionPane.showMessageDialog(this,
+                        "Errore durante la registrazione",
+                        "Errore di registrazione",
+                        JOptionPane.ERROR_MESSAGE);
+            }
             System.out.println("User registered successfully: " + fiscalCode);
             changePage("home");
         } else {
             JOptionPane.showMessageDialog(this,
-                    "Errore durante la registrazione: " + response.getResponse(),
+                    "Errore durante la registrazione: " + response.getResponseText(),
                     "Errore di registrazione",
                     JOptionPane.ERROR_MESSAGE);
         }

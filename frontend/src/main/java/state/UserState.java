@@ -1,5 +1,6 @@
 package state;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import json.JsonUtil;
 
@@ -10,7 +11,7 @@ public class UserState {
     public static String lastname = null;
     public static String email = null;
 
-    public static void login(String userJson) {
+    public static void login(String userJson) throws JsonProcessingException {
         isLoggedIn = true;
         JsonNode userNode = JsonUtil.fromString(userJson);
 

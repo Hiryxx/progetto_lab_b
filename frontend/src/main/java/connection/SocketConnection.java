@@ -36,10 +36,10 @@ public class SocketConnection implements AutoCloseable {
         out.println(formattedCommand);
     }
 
-    public void send(String command, JsonObject jsonObject, String userId) {
+    public void send(String command, JsonObject jsonObject, String userCf) {
         // Format is: <command>;?<json>;?<userId>
         String jsonString = jsonObject.toString();
-        String formattedCommand = String.format("%s;%s;%s", command, jsonString, userId);
+        String formattedCommand = String.format("%s;%s;%s", command, jsonString, userCf);
         out.println(formattedCommand);
     }
 
