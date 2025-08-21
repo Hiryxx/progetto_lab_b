@@ -26,4 +26,8 @@ public abstract class Page extends JPanel {
     protected void changePage(String page) {
         MainFrame.showPage(page);
     }
+
+    protected void goBack() {
+        MainFrame.goBack();
+    }
 }

@@ -7,16 +7,24 @@ import data.BookData;
 import state.BooksState;
 
 import javax.swing.*;
+import javax.swing.Timer;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.*;
+import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static classes.styles.Colors.*;
 
 public class HomePage extends Page {
     private JTextField searchField;
-
+    private JComboBox<String> yearFilter;
+    private JComboBox<String> authorFilter;
+    private JComboBox<String> categoryFilter;
+    private List<BookData> filteredBooks;
 
     public HomePage() {
         super();
@@ -28,11 +36,18 @@ public class HomePage extends Page {
         this.setBackground(backgroundColor);
         this.setLayout(new BorderLayout(0, 0));
 
-        // Barra superiore con ricerca
-        JPanel topPanel = createTopPanel();
-        this.add(topPanel, BorderLayout.NORTH);
+        JPanel topContainer = new JPanel();
+        topContainer.setLayout(new BorderLayout(0, 0));
+        topContainer.setBackground(backgroundColor);
 
-        // Contenuto principale
+        JPanel topPanel = createTopPanel();
+        topContainer.add(topPanel, BorderLayout.NORTH);
+
+        JPanel filterBar = createFilterBar();
+        topContainer.add(filterBar, BorderLayout.SOUTH);
+
+        this.add(topContainer, BorderLayout.NORTH);
+
         JPanel contentPanel = new JPanel();
         contentPanel.setBackground(backgroundColor);
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
@@ -40,38 +55,321 @@ public class HomePage extends Page {
 
         try {
             BooksState.fetchBooks();
+            filteredBooks = new ArrayList<>(BooksState.books);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Errore durante il caricamento dei libri: " + e.getMessage(),
                     "Errore", JOptionPane.ERROR_MESSAGE);
         }
 
-        // Prima sezione
         contentPanel.add(createHeroSection());
         contentPanel.add(Box.createRigidArea(new Dimension(0, 40)));
 
-        // Libri in evidenza
         contentPanel.add(createFeaturedBooksPanel());
         contentPanel.add(Box.createRigidArea(new Dimension(0, 30)));
 
-        // Browser categorie
-        contentPanel.add(createCategoriesPanel());
-        contentPanel.add(Box.createRigidArea(new Dimension(0, 40)));
 
-        // Libri recenti
-        contentPanel.add(createRecentBooksPanel());
-
-        // Colonna per scorrere
         JScrollPane scrollPane = createScrollPane(contentPanel);
         this.add(scrollPane, BorderLayout.CENTER);
-
-        // Menù di navigazione
-
     }
 
     @Override
     public void refresh() {
-
     }
+
+    private JPanel createFilterBar() {
+        JPanel filterBar = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                g2d.setColor(cardColor);
+                g2d.fillRect(0, 0, getWidth(), getHeight());
+
+                g2d.setColor(borderColor);
+                g2d.drawLine(0, 0, getWidth(), 0);
+
+                GradientPaint shadowGradient = new GradientPaint(
+                        0, getHeight() - 5, new Color(0, 0, 0, 10),
+                        0, getHeight(), new Color(0, 0, 0, 0)
+                );
+                g2d.setPaint(shadowGradient);
+                g2d.fillRect(0, getHeight() - 5, getWidth(), 5);
+
+                g2d.dispose();
+            }
+        };
+
+        filterBar.setLayout(new FlowLayout(FlowLayout.LEFT, 20, 15));
+        filterBar.setPreferredSize(new Dimension(0, 70));
+        filterBar.setBorder(BorderFactory.createEmptyBorder(0, 30, 0, 30));
+
+        JLabel filterLabel = new JLabel("Filtri:");
+        filterLabel.setFont(new Font("SF Pro Display", Font.BOLD, 16));
+        filterLabel.setForeground(textPrimary);
+        filterBar.add(filterLabel);
+
+        yearFilter = createStyledComboBox(getYearOptions());
+        filterBar.add(createFilterContainer("📅 Anno", yearFilter));
+
+        authorFilter = createStyledComboBox(getAuthorOptions());
+        filterBar.add(createFilterContainer("✍️ Autore", authorFilter));
+
+        categoryFilter = createStyledComboBox(getCategoryOptions());
+        filterBar.add(createFilterContainer("📚 Categoria", categoryFilter));
+
+        JButton resetButton = createResetButton();
+        filterBar.add(resetButton);
+
+        JButton applyButton = createApplyButton();
+        filterBar.add(applyButton);
+
+        return filterBar;
+    }
+
+    private JPanel createFilterContainer(String label, JComboBox<String> comboBox) {
+        JPanel container = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        container.setOpaque(false);
+
+        JLabel filterLabel = new JLabel(label);
+        filterLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
+        filterLabel.setForeground(textSecondary);
+
+        container.add(filterLabel);
+        container.add(comboBox);
+
+        return container;
+    }
+
+    private JComboBox<String> createStyledComboBox(String[] options) {
+        JComboBox<String> comboBox = new JComboBox<>(options) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                super.paintComponent(g);
+                g2d.dispose();
+            }
+        };
+
+        comboBox.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
+        comboBox.setForeground(textPrimary);
+        comboBox.setBackground(Color.WHITE);
+        comboBox.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(borderColor, 1, true),
+                BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
+        comboBox.setPreferredSize(new Dimension(150, 35));
+
+        comboBox.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value,
+                                                          int index, boolean isSelected, boolean cellHasFocus) {
+                JLabel label = (JLabel) super.getListCellRendererComponent(
+                        list, value, index, isSelected, cellHasFocus);
+
+                label.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+                label.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
+
+                if (isSelected) {
+                    label.setBackground(primaryColor);
+                    label.setForeground(Color.WHITE);
+                } else {
+                    label.setBackground(Color.WHITE);
+                    label.setForeground(textPrimary);
+                }
+
+                return label;
+            }
+        });
+
+        return comboBox;
+    }
+
+    private JButton createResetButton() {
+        JButton button = new JButton("🔄 Reset") {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                if (getModel().isPressed()) {
+                    g2d.setColor(new Color(240, 240, 240));
+                } else if (getModel().isRollover()) {
+                    g2d.setColor(new Color(245, 245, 245));
+                } else {
+                    g2d.setColor(Color.WHITE);
+                }
+
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+
+                g2d.setColor(borderColor);
+                g2d.setStroke(new BasicStroke(1));
+                g2d.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 12, 12);
+
+                g2d.dispose();
+                super.paintComponent(g);
+            }
+        };
+
+        button.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
+        button.setForeground(textSecondary);
+        button.setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 20));
+        button.setContentAreaFilled(false);
+        button.setFocusPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.setPreferredSize(new Dimension(100, 35));
+
+        button.addActionListener(e -> resetFilters());
+
+        return button;
+    }
+
+    private JButton createApplyButton() {
+        JButton button = new JButton("Applica Filtri") {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                if (getModel().isPressed()) {
+                    g2d.setColor(primaryHover);
+                } else if (getModel().isRollover()) {
+                    GradientPaint gradient = new GradientPaint(
+                            0, 0, gradientStart,
+                            getWidth(), 0, gradientEnd
+                    );
+                    g2d.setPaint(gradient);
+                } else {
+                    g2d.setColor(primaryColor);
+                }
+
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+                g2d.dispose();
+                super.paintComponent(g);
+            }
+        };
+
+        button.setFont(new Font("SF Pro Text", Font.BOLD, 14));
+        button.setForeground(Color.WHITE);
+        button.setBorder(BorderFactory.createEmptyBorder(8, 25, 8, 25));
+        button.setContentAreaFilled(false);
+        button.setFocusPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.setPreferredSize(new Dimension(150, 35));
+
+        button.addActionListener(e -> applyFilters());
+
+        return button;
+    }
+
+    private String[] getYearOptions() {
+        if (BooksState.books == null || BooksState.books.isEmpty()) {
+            return new String[]{"Tutti gli anni"};
+        }
+
+        Set<String> years = new TreeSet<>(Collections.reverseOrder());
+        years.add("Tutti gli anni");
+
+        for (BookData book : BooksState.books) {
+            if (book.getYear() > 0) {
+                years.add(String.valueOf(book.getYear()));
+            }
+        }
+
+        return years.toArray(new String[0]);
+    }
+
+    private String[] getAuthorOptions() {
+        if (BooksState.books == null || BooksState.books.isEmpty()) {
+            return new String[]{"Tutti gli autori"};
+        }
+
+        Set<String> authors = new TreeSet<>();
+        authors.add("Tutti gli autori");
+
+        for (BookData book : BooksState.books) {
+            if (book.getAuthors() != null && !book.getAuthors().isEmpty()) {
+                // Gestisce autori multipli separati da virgola
+                String[] bookAuthors = book.getAuthors().split(",");
+                for (String author : bookAuthors) {
+                    authors.add(author.trim());
+                }
+            }
+        }
+
+        return authors.toArray(new String[0]);
+    }
+
+    private String[] getCategoryOptions() {
+        if (BooksState.books == null || BooksState.books.isEmpty()) {
+            return new String[]{"Tutte le categorie"};
+        }
+
+        Set<String> categories = new TreeSet<>();
+        categories.add("Tutte le categorie");
+
+        for (BookData book : BooksState.books) {
+            if (book.getCategories() != null && !book.getCategories().isEmpty()) {
+                // Gestisce categorie multiple separate da virgola
+                String[] bookCategories = book.getCategories().split(",");
+                for (String category : bookCategories) {
+                    categories.add(category.trim());
+                }
+            }
+        }
+
+        return categories.toArray(new String[0]);
+    }
+
+    private void resetFilters() {
+        yearFilter.setSelectedIndex(0);
+        authorFilter.setSelectedIndex(0);
+        categoryFilter.setSelectedIndex(0);
+        filteredBooks = new ArrayList<>(BooksState.books);
+        refresh();
+    }
+
+    private void applyFilters() {
+        filteredBooks = BooksState.books.stream()
+                .filter(book -> filterByYear(book))
+                .filter(book -> filterByAuthor(book))
+                .filter(book -> filterByCategory(book))
+                .collect(Collectors.toList());
+
+        refresh();
+
+        JOptionPane.showMessageDialog(this,
+                "Trovati " + filteredBooks.size() + " libri con i filtri selezionati",
+                "Filtri Applicati",
+                JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private boolean filterByYear(BookData book) {
+        String selectedYear = (String) yearFilter.getSelectedItem();
+        if ("Tutti gli anni".equals(selectedYear)) {
+            return true;
+        }
+        return String.valueOf(book.getYear()).equals(selectedYear);
+    }
+
+    private boolean filterByAuthor(BookData book) {
+        String selectedAuthor = (String) authorFilter.getSelectedItem();
+        if ("Tutti gli autori".equals(selectedAuthor)) {
+            return true;
+        }
+        return book.getAuthors() != null && book.getAuthors().contains(selectedAuthor);
+    }
+
+    private boolean filterByCategory(BookData book) {
+        String selectedCategory = (String) categoryFilter.getSelectedItem();
+        if ("Tutte le categorie".equals(selectedCategory)) {
+            return true;
+        }
+        return book.getCategories() != null && book.getCategories().contains(selectedCategory);
+    }
+
 
     private JPanel createTopPanel() {
         JPanel panel = new JPanel() {
@@ -81,7 +379,6 @@ public class HomePage extends Page {
                 Graphics2D g2d = (Graphics2D) g.create();
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                // Sfondo
                 GradientPaint gradient = new GradientPaint(0, 0, gradientStart, getWidth(), 0, gradientEnd);
                 g2d.setPaint(gradient);
                 g2d.fillRect(0, 0, getWidth(), getHeight());
@@ -110,7 +407,6 @@ public class HomePage extends Page {
 
         panel.add(titlePanel, BorderLayout.WEST);
 
-        // Barra di ricerca
         JPanel searchPanel = createSearchPanel();
         panel.add(searchPanel, BorderLayout.EAST);
 
@@ -121,7 +417,6 @@ public class HomePage extends Page {
         JPanel searchPanel = new JPanel(new BorderLayout(0, 0));
         searchPanel.setOpaque(false);
 
-        // Spazione per la ricerca
         JPanel searchContainer = new JPanel(new BorderLayout(10, 0)) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -148,8 +443,18 @@ public class HomePage extends Page {
         searchField.setForeground(textPrimary);
         searchField.setText("Cerca libri, autori...");
         searchField.setForeground(textSecondary);
+        searchField.addActionListener( e ->{
 
-        // Placeholder barra di ricerca
+            if (searchField.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Per favore inserisci un termine di ricerca valido.",
+                        "Errore di ricerca", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            JOptionPane.showMessageDialog(this,
+                    "Invio ricercato: " + searchField.getText(),
+                    "AAA",
+                    JOptionPane.INFORMATION_MESSAGE);
+                } );
         searchField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 if (searchField.getText().equals("Cerca libri, autori...")) {
@@ -164,6 +469,7 @@ public class HomePage extends Page {
                     searchField.setText("Cerca libri, autori...");
                 }
             }
+
         });
 
         JButton searchButton = createIconButton("🔍");
@@ -182,13 +488,11 @@ public class HomePage extends Page {
                 Graphics2D g2d = (Graphics2D) g.create();
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                // Sfondo
                 GradientPaint gradient = new GradientPaint(0, 0, new Color(67, 56, 202, 20),
                         getWidth(), getHeight(), new Color(147, 51, 234, 20));
                 g2d.setPaint(gradient);
                 g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
 
-                // Bordo
                 g2d.setColor(new Color(139, 92, 246, 30));
                 g2d.setStroke(new BasicStroke(1));
                 g2d.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 20, 20);
@@ -227,12 +531,14 @@ public class HomePage extends Page {
     }
 
     private JPanel createFeaturedBooksPanel() {
-        // TODO UPDATE THIS AND REMOVE THIS SUPPLIER STUFF
         return createSectionPanel("✨ Libri in Evidenza", "Le migliori scelte per te", () -> {
             JPanel booksPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 0));
             booksPanel.setOpaque(false);
 
-            for (BookData book : BooksState.books) {
+            // TODO Usa i libri filtrati invece di tutti i libri
+            List<BookData> booksToShow = filteredBooks != null ? filteredBooks : BooksState.books;
+
+            for (BookData book : booksToShow) {
                 JPanel bookWrapper = new BookCard(book, 0f);
                 booksPanel.add(bookWrapper);
             }
@@ -240,51 +546,12 @@ public class HomePage extends Page {
         });
     }
 
-    private JPanel createCategoriesPanel() {
-        return createSectionPanel("📚 Sfoglia per Categoria", "Trova libri nei tuoi generi preferiti", () -> {
-            String[] categories = {"Narrativa", "Saggistica", "Scienza", "Storia",
-                    "Biografia", "Fantasy", "Mistero", "Self-Help"};
 
-            Color[] categoryColors = {
-                    new Color(236, 72, 153),  // Rosa
-                    new Color(168, 85, 247),  // Viola
-                    new Color(59, 130, 246),  // Blu
-                    new Color(16, 185, 129),  // Smeraldo
-                    new Color(245, 158, 11),  // Ambra
-                    new Color(139, 92, 246),  // Violetto
-                    new Color(34, 197, 94),   // Verde
-                    new Color(239, 68, 68)    // Rosso
-            };
-
-            JPanel categoriesPanel = new JPanel(new GridLayout(2, 4, 20, 20));
-            categoriesPanel.setOpaque(false);
-
-            for (int i = 0; i < categories.length; i++) {
-                JPanel categoryCard = createCategoryCard(categories[i], categoryColors[i]);
-                categoriesPanel.add(categoryCard);
-            }
-            return categoriesPanel;
-        });
-    }
-
-    private JPanel createRecentBooksPanel() {
-        return createSectionPanel("🕐 Aggiunti di Recente", "Nuovi arrivi nella nostra collezione", () -> {
-            JPanel booksPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 0));
-            booksPanel.setOpaque(false);
-
-            for (int i = 1; i <= 4; i++) {
-                //JPanel bookWrapper = new BookCard("Libro Recente " + i, "Autore " + i, "Genere " + ((i + 2) % 5 + 1), 4.0f + (i * 0.2f) % 1);
-                //booksPanel.add(bookWrapper);
-            }
-            return booksPanel;
-        });
-    }
 
     private JPanel createSectionPanel(String title, String subtitle, Supplier<JPanel> contentSupplier) {
         JPanel panel = new JPanel(new BorderLayout(0, 25));
         panel.setOpaque(false);
 
-        // Intestazione
         JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         headerPanel.setOpaque(false);
 
@@ -320,13 +587,11 @@ public class HomePage extends Page {
                 Graphics2D g2d = (Graphics2D) g.create();
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                // Sfondo
                 GradientPaint gradient = new GradientPaint(0, 0, color, getWidth(), getHeight(),
                         new Color(color.getRed(), color.getGreen(), color.getBlue(), 200));
                 g2d.setPaint(gradient);
                 g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 16, 16);
 
-                // Effetto ombra
                 g2d.setColor(new Color(0, 0, 0, 10));
                 g2d.fillRoundRect(2, 2, getWidth(), getHeight(), 16, 16);
 
@@ -344,7 +609,6 @@ public class HomePage extends Page {
 
         card.add(label, BorderLayout.CENTER);
 
-        // Effetti hover
         card.addMouseListener(new MouseAdapter() {
             private Timer hoverTimer;
 
@@ -378,16 +642,10 @@ public class HomePage extends Page {
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-        // Barra di scorrimento
         scrollPane.getVerticalScrollBar().setUI(new ModernScrollBarUI());
 
         return scrollPane;
     }
-
-
-
-
-
 
     private JButton createIconButton(String icon) {
         JButton button = new JButton(icon) {
@@ -427,16 +685,13 @@ public class HomePage extends Page {
                 Graphics2D g2d = (Graphics2D) g.create();
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                // Design libro
                 GradientPaint bookGradient = new GradientPaint(x, y, Color.WHITE, x, y + height, new Color(240, 240, 255));
                 g2d.setPaint(bookGradient);
                 g2d.fillRoundRect(x, y + height / 6, width * 4 / 5, height * 4 / 5, 8, 8);
 
-                // Dorso libro
                 g2d.setColor(accentColor);
                 g2d.fillRoundRect(x + width * 4 / 5, y + height / 6, width / 5, height * 4 / 5, 6, 6);
 
-                // Dettagli libro
                 g2d.setColor(new Color(200, 200, 220));
                 g2d.setStroke(new BasicStroke(1.5f));
                 for (int i = 1; i < 3; i++) {

@@ -19,9 +19,10 @@ public class MainFrame extends JFrame {
     private static JPanel contentPanel;
     private static CardLayout cardLayout;
     private static SocketConnection socketConnection;
-    private static String currentPage;
+    private static String currentPage = "home";
     private static Map<String, NavButton> navButtons = new HashMap<>();
     private static Map<String, Page> pages = new HashMap<>();
+    public static String lastPage = "home";
 
     private static JPanel bottomNavigationPanel;
 
@@ -70,13 +71,32 @@ public class MainFrame extends JFrame {
         pages.put(name, page);
     }
 
+
+    public static void goBack() {
+        if (!lastPage.equals(currentPage)) {
+            cardLayout.show(contentPanel, lastPage);
+            updateNavButtonStates();
+        } else {
+            System.out.println("No previous page to go back to.");
+        }
+    }
+
     public static void showPage(String name) {
         pages.get(name).refresh();
+
+        if (!currentPage.equals(lastPage)) {
+            lastPage = currentPage;
+        }
+
         //todo maybe found a better way
         if (name.equals("profile") || name.equals("login")){
             currentPage = "auth";
         } else
             currentPage = name;
+
+
+
+        System.out.println("LAST PAGE: " + lastPage);
 
         cardLayout.show(contentPanel, name);
         // todo add better repaint handling with revalidate

@@ -24,6 +24,7 @@ public class BookDetailsPage extends Page {
     private JLabel titleLabel = new JLabel();
     private JLabel authorLabel = new JLabel();
     private JLabel categoryLabel = new JLabel();
+    private JTextArea descriptionArea = new JTextArea();
 
     private InfoItem datePanel;
     private InfoItem genrePanel;
@@ -74,6 +75,7 @@ public class BookDetailsPage extends Page {
         categoryLabel.setText(bookData.getCategories().toUpperCase());
         datePanel.setLabelValue(String.valueOf(bookData.getYear()));
         genrePanel.setLabelValue(bookData.getCategories());
+        descriptionArea.setText(bookData.getDescription() != null ? bookData.getDescription() : "Nessuna descrizione disponibile.");
 
         // TODO ALSO CHECK IF IN LIBRARY
         if (UserState.isLoggedIn){
@@ -105,7 +107,6 @@ public class BookDetailsPage extends Page {
         panel.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
         panel.setPreferredSize(new Dimension(0, 80));
 
-        // Pulsante indietro
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         leftPanel.setOpaque(false);
 
@@ -225,7 +226,6 @@ public class BookDetailsPage extends Page {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(0, 0, 0, 0);
 
         // Categoria
         gbc.gridx = 0;
@@ -289,7 +289,7 @@ public class BookDetailsPage extends Page {
             descPanel.setLayout(new BoxLayout(descPanel, BoxLayout.Y_AXIS));
             descPanel.setOpaque(false);
 
-            JTextArea descriptionArea = new JTextArea(bookData.getDescription());
+
             descriptionArea.setFont(new Font("SF Pro Text", Font.PLAIN, 16));
             descriptionArea.setForeground(textPrimary);
             descriptionArea.setOpaque(false);
@@ -297,6 +297,7 @@ public class BookDetailsPage extends Page {
             descriptionArea.setLineWrap(true);
             descriptionArea.setWrapStyleWord(true);
             descriptionArea.setAlignmentX(Component.LEFT_ALIGNMENT);
+            descriptionArea.setLineWrap(true);
 
             descPanel.add(descriptionArea);
             return descPanel;
@@ -442,41 +443,12 @@ public class BookDetailsPage extends Page {
         button.setFocusPainted(false);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
+        // TODO FIX GO BACK
         button.addActionListener(e -> changePage("home"));
 
         return button;
     }
 
-    private JButton createHeaderIconButton(String icon) {
-        JButton button = new JButton(icon) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                if (getModel().isPressed()) {
-                    g2d.setColor(new Color(255, 255, 255, 30));
-                } else if (getModel().isRollover()) {
-                    g2d.setColor(new Color(255, 255, 255, 20));
-                } else {
-                    g2d.setColor(new Color(255, 255, 255, 10));
-                }
-
-                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
-                g2d.dispose();
-                super.paintComponent(g);
-            }
-        };
-
-        button.setForeground(Color.WHITE);
-        button.setFont(new Font("SF Pro Text", Font.PLAIN, 18));
-        button.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
-        button.setContentAreaFilled(false);
-        button.setFocusPainted(false);
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        return button;
-    }
 
     private JScrollPane createScrollPane(JPanel contentPanel) {
         JScrollPane scrollPane = new JScrollPane(contentPanel);
