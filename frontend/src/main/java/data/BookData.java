@@ -40,4 +40,15 @@ public class BookData {
     public String getTitle() {
         return title;
     }
+
+    @Override
+    public String toString() {
+        return "BookData{" +
+                "title='" + title + '\'' +
+                ", year=" + year +
+                ", description='" + description + '\'' +
+                ", authors='" + authors + '\'' +
+                ", categories='" + categories + '\'' +
+                '}';
+    }
 }

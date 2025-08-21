@@ -38,6 +38,13 @@ public class HomePage extends Page {
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.setBorder(BorderFactory.createEmptyBorder(0, 30, 30, 30));
 
+        try {
+            BooksState.fetchBooks();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Errore durante il caricamento dei libri: " + e.getMessage(),
+                    "Errore", JOptionPane.ERROR_MESSAGE);
+        }
+
         // Prima sezione
         contentPanel.add(createHeroSection());
         contentPanel.add(Box.createRigidArea(new Dimension(0, 40)));
@@ -63,12 +70,7 @@ public class HomePage extends Page {
 
     @Override
     public void refresh() {
-        try {
-            BooksState.fetchBooks();
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Errore durante il caricamento dei libri: " + e.getMessage(),
-                    "Errore", JOptionPane.ERROR_MESSAGE);
-        }
+
     }
 
     private JPanel createTopPanel() {
@@ -231,7 +233,7 @@ public class HomePage extends Page {
             booksPanel.setOpaque(false);
 
             for (BookData book : BooksState.books) {
-                JPanel bookWrapper = new BookCard(book);
+                JPanel bookWrapper = new BookCard(book, 0f);
                 booksPanel.add(bookWrapper);
             }
             return booksPanel;
@@ -271,8 +273,8 @@ public class HomePage extends Page {
             booksPanel.setOpaque(false);
 
             for (int i = 1; i <= 4; i++) {
-                JPanel bookWrapper = new BookCard("Libro Recente " + i, "Autore " + i, "Genere " + ((i + 2) % 5 + 1), 4.0f + (i * 0.2f) % 1);
-                booksPanel.add(bookWrapper);
+                //JPanel bookWrapper = new BookCard("Libro Recente " + i, "Autore " + i, "Genere " + ((i + 2) % 5 + 1), 4.0f + (i * 0.2f) % 1);
+                //booksPanel.add(bookWrapper);
             }
             return booksPanel;
         });

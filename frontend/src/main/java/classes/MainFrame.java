@@ -30,7 +30,7 @@ public class MainFrame extends JFrame {
         MainFrame.socketConnection = socketConnection;
 
         mainFrame.setTitle("Book Recommender");
-        mainFrame.setSize(1200, 900);
+        mainFrame.setSize(1300, 900);
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         cardLayout = new CardLayout();

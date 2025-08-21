@@ -4,6 +4,10 @@ import classes.MainFrame;
 import classes.Page;
 import components.ModernScrollBarUI;
 import components.buttons.LibraryBookButton;
+import components.panels.InfoItem;
+import data.BookData;
+import state.BooksState;
+import state.UserState;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,14 +18,15 @@ import java.util.function.Supplier;
 import static classes.styles.Colors.*;
 
 public class BookDetailsPage extends Page {
-    private String bookTitle = "Il Nome della Rosa";
-    private String bookAuthor = "Umberto Eco";
-    private String bookCategory = "Narrativa Storica";
-    private String bookDescription = "Un affascinante thriller medievale ambientato in un'abbazia benedettina nel 1327. Il frate francescano Guglielmo da Baskerville e il suo allievo Adso da Melk indagano su una serie di misteriose morti che scuotono la comunità monastica. Tra filosofia, teologia e investigazione, Eco ci conduce in un viaggio intellectuale attraverso il Medioevo, esplorando temi di conoscenza, fede e potere.";
-    private String publicationDate = "Settembre 1980";
-    private float bookRating = 4.7f;
-    private String bookGenre = "Thriller Storico";
-    private int totalReviews = 2847;
+    private BookData bookData = new BookData("", 0, "", "", "");
+    LibraryBookButton addLibraryButton = new LibraryBookButton("+ Aggiungi alla Libreria");
+
+    private JLabel titleLabel = new JLabel();
+    private JLabel authorLabel = new JLabel();
+    private JLabel categoryLabel = new JLabel();
+
+    private InfoItem datePanel;
+    private InfoItem genrePanel;
 
     public BookDetailsPage() {
         super();
@@ -62,7 +67,22 @@ public class BookDetailsPage extends Page {
     }
     @Override
     public void refresh() {
+        bookData = BooksState.getDetailBook();
+        System.out.println("BOOK DETAILS REFRESHED: " + bookData);
+        titleLabel.setText(bookData.getTitle());
+        authorLabel.setText("di " + bookData.getAuthors());
+        categoryLabel.setText(bookData.getCategories().toUpperCase());
+        datePanel.setLabelValue(String.valueOf(bookData.getYear()));
+        genrePanel.setLabelValue(bookData.getCategories());
 
+        // TODO ALSO CHECK IF IN LIBRARY
+        if (UserState.isLoggedIn){
+            addLibraryButton.setVisible(true);
+            //addLibraryButton.setBookData(bookData);
+        } else {
+            addLibraryButton.setVisible(false);
+        }
+        repaint();
     }
 
     private JPanel createHeaderPanel() {
@@ -92,24 +112,26 @@ public class BookDetailsPage extends Page {
         JButton backButton = createBackButton();
         leftPanel.add(backButton);
 
+
         // Titolo pagina
-        JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        JPanel centerPanel = new JPanel(new BorderLayout());
         centerPanel.setOpaque(false);
 
-        JLabel pageTitle = new JLabel("Dettagli Libro");
+        JLabel pageTitle = new JLabel("Dettagli Libro", SwingConstants.CENTER);
         pageTitle.setFont(new Font("SF Pro Display", Font.BOLD, 24));
         pageTitle.setForeground(Color.WHITE);
-        centerPanel.add(pageTitle);
+        centerPanel.add(pageTitle, BorderLayout.CENTER);
+
 
         // Azioni header
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         rightPanel.setOpaque(false);
 
-        JButton favoriteButton = createHeaderIconButton("♥");
+        /*JButton favoriteButton = createHeaderIconButton("♥");
         JButton shareButton = createHeaderIconButton("↗");
 
         rightPanel.add(favoriteButton);
-        rightPanel.add(shareButton);
+        rightPanel.add(shareButton);*/
 
         panel.add(leftPanel, BorderLayout.WEST);
         panel.add(centerPanel, BorderLayout.CENTER);
@@ -210,15 +232,12 @@ public class BookDetailsPage extends Page {
         gbc.gridy = 0;
         gbc.gridwidth = 2;
         gbc.insets = new Insets(0, 0, 8, 0);
-        JLabel categoryLabel = new JLabel(bookCategory.toUpperCase());
         categoryLabel.setFont(new Font("SF Pro Text", Font.BOLD, 12));
         categoryLabel.setForeground(primaryColor);
         infoPanel.add(categoryLabel, gbc);
 
-        // Titolo
         gbc.gridy = 1;
         gbc.insets = new Insets(0, 0, 8, 0);
-        JLabel titleLabel = new JLabel(bookTitle);
         titleLabel.setFont(new Font("SF Pro Display", Font.BOLD, 32));
         titleLabel.setForeground(textPrimary);
         infoPanel.add(titleLabel, gbc);
@@ -226,39 +245,34 @@ public class BookDetailsPage extends Page {
         // Autore
         gbc.gridy = 2;
         gbc.insets = new Insets(0, 0, 20, 0);
-        JLabel authorLabel = new JLabel("di " + bookAuthor);
         authorLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 18));
         authorLabel.setForeground(textSecondary);
         infoPanel.add(authorLabel, gbc);
-
-        // Rating
-        gbc.gridy = 3;
-        gbc.insets = new Insets(0, 0, 20, 0);
-        JPanel ratingPanel = createRatingPanel();
-        infoPanel.add(ratingPanel, gbc);
 
         // Data Pubblicazione e Genere
         gbc.gridwidth = 1;
         gbc.gridy = 4;
         gbc.insets = new Insets(0, 0, 10, 40);
-        JPanel datePanel = createInfoItem("📅", "Data Pubblicazione:", publicationDate);
+        datePanel = new InfoItem("📅", "Data Pubblicazione :", "");
         infoPanel.add(datePanel, gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 4;
         gbc.insets = new Insets(0, 0, 10, 0);
-        JPanel genrePanel = createInfoItem("🎭", "Genere:", bookGenre);
+        genrePanel = new InfoItem("🎭", "Categoria: ", "");
         infoPanel.add(genrePanel, gbc);
 
-        // Add to library button
         gbc.gridx = 0;
         gbc.gridy = 5;
         gbc.gridwidth = 2;
         gbc.insets = new Insets(20, 0, 0, 0);
         gbc.weighty = 0.0;
-        JButton addButton = new LibraryBookButton("+ Aggiungi alla Libreria");
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.WEST;
 
-        infoPanel.add(addButton, gbc);
+        addLibraryButton.setPreferredSize(new Dimension(250, 45));
+
+        infoPanel.add(addLibraryButton, gbc);
 
         // Spaziatore per spingere tutto in alto
         gbc.gridy = 5;
@@ -268,79 +282,6 @@ public class BookDetailsPage extends Page {
         return infoPanel;
     }
 
-    private JPanel createInfoItem(String icon, String label, String value) {
-        JPanel item = new JPanel();
-        item.setLayout(new BoxLayout(item, BoxLayout.Y_AXIS));
-        item.setOpaque(false);
-        item.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        // Header con icona e label
-        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        headerPanel.setOpaque(false);
-        headerPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        JLabel iconLabel = new JLabel(icon);
-        iconLabel.setFont(new Font("Apple Color Emoji", Font.PLAIN, 14));
-
-        JLabel labelText = new JLabel(label);
-        labelText.setFont(new Font("SF Pro Text", Font.PLAIN, 12));
-        labelText.setForeground(textSecondary);
-        labelText.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 0));
-
-        headerPanel.add(iconLabel);
-        headerPanel.add(labelText);
-
-        // Valore
-        JLabel valueLabel = new JLabel(value);
-        valueLabel.setFont(new Font("SF Pro Display", Font.BOLD, 14));
-        valueLabel.setForeground(textPrimary);
-        valueLabel.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
-        valueLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        item.add(headerPanel);
-        item.add(valueLabel);
-
-        return item;
-    }
-
-    private JPanel createRatingPanel() {
-        JPanel ratingPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        ratingPanel.setOpaque(false);
-
-        // Stelle
-        JPanel starsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0));
-        starsPanel.setOpaque(false);
-
-        for (int i = 1; i <= 5; i++) {
-            JLabel star = new JLabel("★");
-            star.setFont(new Font("Apple Color Emoji", Font.PLAIN, 20));
-
-            if (i <= bookRating) {
-                star.setForeground(Color.YELLOW);
-            } else {
-                star.setForeground(new Color(200, 200, 200));
-            }
-
-            starsPanel.add(star);
-        }
-
-        // Rating numerico
-        JLabel ratingValue = new JLabel(String.format("%.1f", bookRating));
-        ratingValue.setFont(new Font("SF Pro Display", Font.BOLD, 18));
-        ratingValue.setForeground(textPrimary);
-        ratingValue.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
-
-        // Numero recensioni
-        JLabel reviewsCount = new JLabel("(" + totalReviews + " recensioni)");
-        reviewsCount.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
-        reviewsCount.setForeground(textSecondary);
-
-        ratingPanel.add(starsPanel);
-        ratingPanel.add(ratingValue);
-        ratingPanel.add(reviewsCount);
-
-        return ratingPanel;
-    }
 
     private JPanel createDescriptionSection() {
         return createSectionCard("📝 Descrizione", () -> {
@@ -348,7 +289,7 @@ public class BookDetailsPage extends Page {
             descPanel.setLayout(new BoxLayout(descPanel, BoxLayout.Y_AXIS));
             descPanel.setOpaque(false);
 
-            JTextArea descriptionArea = new JTextArea(bookDescription);
+            JTextArea descriptionArea = new JTextArea(bookData.getDescription());
             descriptionArea.setFont(new Font("SF Pro Text", Font.PLAIN, 16));
             descriptionArea.setForeground(textPrimary);
             descriptionArea.setOpaque(false);
@@ -363,6 +304,7 @@ public class BookDetailsPage extends Page {
     }
 
     private JPanel createDetailsSection() {
+        // TODO MODIFY COMPLETELY
         return createSectionCard("ℹ️ Dettagli Aggiuntivi", () -> {
             JPanel detailsContainer = new JPanel(new BorderLayout());
             detailsContainer.setOpaque(false);
@@ -378,10 +320,10 @@ public class BookDetailsPage extends Page {
 
             // Prima riga
             gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0.5;
-            detailsGrid.add(createDetailItem("Valutazione Media", String.format("%.1f/5.0", bookRating), "⭐"), gbc);
+            detailsGrid.add(createDetailItem("Valutazione Media", String.format("%.1f/5.0", 2.0), "⭐"), gbc);
 
             gbc.gridx = 1; gbc.gridy = 0; gbc.insets = new Insets(0, 0, 20, 0);
-            detailsGrid.add(createDetailItem("Totale Recensioni", String.valueOf(totalReviews) + " recensioni", "💬"), gbc);
+            detailsGrid.add(createDetailItem("Totale Recensioni", String.valueOf(0) + " recensioni", "💬"), gbc);
 
             // Seconda riga
             gbc.gridx = 0; gbc.gridy = 1; gbc.insets = new Insets(0, 0, 20, 30);

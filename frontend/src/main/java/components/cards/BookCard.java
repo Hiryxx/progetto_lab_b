@@ -2,6 +2,7 @@ package components.cards;
 
 import classes.MainFrame;
 import data.BookData;
+import state.BooksState;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,11 +12,10 @@ import java.awt.event.MouseEvent;
 import static classes.styles.Colors.*;
 
 public class BookCard extends JPanel {
+    private BookData book;
 
-    public BookCard(BookData book) {
-        this(book.getTitle(), book.getAuthors(), book.getCategories(), 4.5f - (2 * 0.3f) % 2);
-    }
-    public BookCard(String title, String author, String genre, float rating) {
+    public BookCard(BookData book,  float rating) {
+        this.book = book;
         this.setLayout(new BorderLayout(0, 10));
         this.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         this.setPreferredSize(new Dimension(180, 260));
@@ -51,18 +51,18 @@ public class BookCard extends JPanel {
         infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
         infoPanel.setOpaque(false);
 
-        JLabel titleLabel = new JLabel(title);
+        JLabel titleLabel = new JLabel(book.getTitle());
         titleLabel.setFont(new Font("SF Pro Display", Font.BOLD, 14));
         titleLabel.setForeground(textPrimary);
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel authorLabel = new JLabel("di " + author);
+        JLabel authorLabel = new JLabel("di " + book.getAuthors());
         authorLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 12));
         authorLabel.setForeground(textSecondary);
         authorLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         authorLabel.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
 
-        JLabel genreLabel = new JLabel(genre);
+        JLabel genreLabel = new JLabel(book.getCategories());
         genreLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 11));
         genreLabel.setForeground(primaryColor);
         genreLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -95,9 +95,9 @@ public class BookCard extends JPanel {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                // Quando si clicca, cambia la pagina del MainFrame
+                BooksState.bookDetail = book;
                 MainFrame.showPage("bookDetails");
-                System.out.println("Cliccato sul libro: " + title); // Log di verifica
+                System.out.println("Cliccato sul libro: " + book.getTitle());
             }
         });
 

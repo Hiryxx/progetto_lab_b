@@ -11,6 +11,7 @@ import java.util.List;
 
 public class BooksState {
     public static ArrayList<BookData> books = new ArrayList<>();
+    public static BookData bookDetail = null;
 
     public static ArrayList<BookData> fetchLibraryBooks(String libraryId) throws Exception {
         SocketConnection sc = MainFrame.getSocketConnection();
@@ -58,5 +59,15 @@ public class BooksState {
             System.out.println("Book fetched: " + book.getTitle() + " by " + book.getAuthors());
         }
 
+    }
+
+    public static BookData getDetailBook() {
+        if (bookDetail != null) {
+            return bookDetail;
+        } else {
+            // get that book
+            System.out.println("No book detail available.");
+            return null;
+        }
     }
 }

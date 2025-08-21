@@ -7,6 +7,7 @@ import components.ModernScrollBarUI;
 import components.cards.BookCard;
 import components.panels.StatItem;
 import connection.SocketConnection;
+import data.BookData;
 import data.LibraryData;
 import json.JsonObject;
 import json.JsonUtil;
@@ -35,27 +36,7 @@ public class LibraryDetailPage extends Page {
     private StatItem reviewStat;
 
     // Data class for books
-    public static class BookData {
-        String title;
-        String author;
-        String genre;
-        float userRating; // User's personal rating (0 if not rated)
-        float avgRating;  // Average rating from all users
-        boolean hasReview;
-        boolean hasSuggestions;
-        int year;
 
-        public BookData(String title, String author, String genre, float userRating, float avgRating, boolean hasReview, boolean hasSuggestions, int year) {
-            this.title = title;
-            this.author = author;
-            this.genre = genre;
-            this.userRating = userRating;
-            this.avgRating = avgRating;
-            this.hasReview = hasReview;
-            this.hasSuggestions = hasSuggestions;
-            this.year = year;
-        }
-    }
 
     public LibraryDetailPage() {
         super();
@@ -85,7 +66,7 @@ public class LibraryDetailPage extends Page {
 
             try {
                 book = JsonUtil.fromString(bookJson, BookData.class);
-                System.out.println("Parsed book: " + book.title);
+                System.out.println("Parsed book: " + book.getTitle());
 
                 libraryBooks.add(book);
             } catch (JsonProcessingException e) {
@@ -118,7 +99,9 @@ public class LibraryDetailPage extends Page {
         booksContainer.setOpaque(false);
         booksContainer.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
 
+/*
         refreshBooksGrid();
+*/
 
         // Scroll pane for books
         JScrollPane scrollPane = createScrollPane(booksContainer);
@@ -132,7 +115,7 @@ public class LibraryDetailPage extends Page {
         titleLabel.setText("📚 " + LibraryDetailState.libraryName);
         initializeBooks();
 
-        refreshBooksGrid();
+    /*    refreshBooksGrid();*/
     }
 
     private JPanel createHeader() {
@@ -242,10 +225,10 @@ public class LibraryDetailPage extends Page {
 
 
     private void filterBooks() {
-        refreshBooksGrid();
+     /*   refreshBooksGrid();*/
     }
 
-    private void refreshBooksGrid() {
+   /* private void refreshBooksGrid() {
         booksContainer.removeAll();
 
         booksContainer.setLayout(new GridLayout(0, 1, 15, 15));
@@ -330,7 +313,7 @@ public class LibraryDetailPage extends Page {
 
         booksContainer.revalidate();
         booksContainer.repaint();
-    }
+    }*/
 
 
     private JScrollPane createScrollPane(JPanel contentPanel) {
