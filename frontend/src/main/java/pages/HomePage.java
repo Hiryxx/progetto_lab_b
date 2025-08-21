@@ -10,6 +10,7 @@ import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.*;
@@ -21,13 +22,20 @@ import static classes.styles.Colors.*;
 
 public class HomePage extends Page {
     private JTextField searchField;
-    private JComboBox<String> yearFilter;
+    private JTextField yearTextField;
     private JComboBox<String> authorFilter;
     private JComboBox<String> categoryFilter;
     private List<BookData> filteredBooks;
 
     public HomePage() {
         super();
+        this.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+
+                revalidate();
+                repaint();
+            }
+        });
         this.render();
     }
 
@@ -74,7 +82,13 @@ public class HomePage extends Page {
 
     @Override
     public void refresh() {
+        this.removeAll();
+        this.render();
+        this.revalidate();
+        this.repaint();
     }
+
+
 
     private JPanel createFilterBar() {
         JPanel filterBar = new JPanel() {
@@ -83,49 +97,130 @@ public class HomePage extends Page {
                 super.paintComponent(g);
                 Graphics2D g2d = (Graphics2D) g.create();
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
                 g2d.setColor(cardColor);
                 g2d.fillRect(0, 0, getWidth(), getHeight());
-
                 g2d.setColor(borderColor);
                 g2d.drawLine(0, 0, getWidth(), 0);
-
                 GradientPaint shadowGradient = new GradientPaint(
                         0, getHeight() - 5, new Color(0, 0, 0, 10),
                         0, getHeight(), new Color(0, 0, 0, 0)
                 );
                 g2d.setPaint(shadowGradient);
                 g2d.fillRect(0, getHeight() - 5, getWidth(), 5);
-
                 g2d.dispose();
             }
         };
 
-        filterBar.setLayout(new FlowLayout(FlowLayout.LEFT, 20, 15));
+        filterBar.setLayout(new GridBagLayout());
         filterBar.setPreferredSize(new Dimension(0, 70));
-        filterBar.setBorder(BorderFactory.createEmptyBorder(0, 30, 0, 30));
+        filterBar.setBorder(BorderFactory.createEmptyBorder(15, 30, 15, 30));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(0, 10, 0, 10);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridy = 0;
 
         JLabel filterLabel = new JLabel("Filtri:");
         filterLabel.setFont(new Font("SF Pro Display", Font.BOLD, 16));
         filterLabel.setForeground(textPrimary);
-        filterBar.add(filterLabel);
+        gbc.gridx = 0;
+        gbc.weightx = 0;
+        filterBar.add(filterLabel, gbc);
 
-        yearFilter = createStyledComboBox(getYearOptions());
-        filterBar.add(createFilterContainer("📅 Anno", yearFilter));
+        JPanel yearPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        yearPanel.setOpaque(false);
+        JLabel yearLabel = new JLabel("📅 Anno:");
+        yearLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
+        yearLabel.setForeground(textSecondary);
+        yearPanel.add(yearLabel);
+
+        yearTextField = createStyledTextField("es. 2024");
+        yearPanel.add(yearTextField);
+        gbc.gridx = 1;
+        gbc.weightx = 0.15;
+        filterBar.add(yearPanel, gbc);
 
         authorFilter = createStyledComboBox(getAuthorOptions());
-        filterBar.add(createFilterContainer("✍️ Autore", authorFilter));
+        gbc.gridx = 2;
+        gbc.weightx = 0.25;
+        filterBar.add(createFilterContainer("✍️ Autore", authorFilter), gbc);
 
         categoryFilter = createStyledComboBox(getCategoryOptions());
-        filterBar.add(createFilterContainer("📚 Categoria", categoryFilter));
+        gbc.gridx = 3;
+        gbc.weightx = 0.25;
+        filterBar.add(createFilterContainer("📚 Categoria", categoryFilter), gbc);
+
+        gbc.gridx = 4;
+        gbc.weightx = 1.0;
+        filterBar.add(Box.createHorizontalGlue(), gbc);
 
         JButton resetButton = createResetButton();
-        filterBar.add(resetButton);
+        gbc.gridx = 5;
+        gbc.weightx = 0;
+        filterBar.add(resetButton, gbc);
 
         JButton applyButton = createApplyButton();
-        filterBar.add(applyButton);
+        gbc.gridx = 6;
+        gbc.weightx = 0;
+        filterBar.add(applyButton, gbc);
 
         return filterBar;
+    }
+
+
+    private JTextField createStyledTextField(String placeholder) {
+        JTextField textField = new JTextField(10) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                g2d.setColor(Color.WHITE);
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+
+                g2d.setColor(borderColor);
+                g2d.setStroke(new BasicStroke(1));
+                g2d.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 8, 8);
+                g2d.dispose();
+
+                super.paintComponent(g);
+            }
+        };
+
+        textField.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
+        textField.setForeground(textSecondary);
+        textField.setBackground(new Color(0, 0, 0, 0));
+        textField.setOpaque(false);
+        textField.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+        textField.setPreferredSize(new Dimension(100, 35));
+
+        textField.setText(placeholder);
+        textField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                if (textField.getText().equals(placeholder)) {
+                    textField.setText("");
+                    textField.setForeground(textPrimary);
+                }
+            }
+
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                if (textField.getText().isEmpty()) {
+                    textField.setForeground(textSecondary);
+                    textField.setText(placeholder);
+                }
+            }
+        });
+
+        textField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                char c = evt.getKeyChar();
+                if (!Character.isDigit(c) && c != KeyEvent.VK_BACK_SPACE && c != KeyEvent.VK_DELETE) {
+                    evt.consume();
+                }
+            }
+        });
+
+        return textField;
     }
 
     private JPanel createFilterContainer(String label, JComboBox<String> comboBox) {
@@ -291,7 +386,6 @@ public class HomePage extends Page {
 
         for (BookData book : BooksState.books) {
             if (book.getAuthors() != null && !book.getAuthors().isEmpty()) {
-                // Gestisce autori multipli separati da virgola
                 String[] bookAuthors = book.getAuthors().split(",");
                 for (String author : bookAuthors) {
                     authors.add(author.trim());
@@ -312,7 +406,6 @@ public class HomePage extends Page {
 
         for (BookData book : BooksState.books) {
             if (book.getCategories() != null && !book.getCategories().isEmpty()) {
-                // Gestisce categorie multiple separate da virgola
                 String[] bookCategories = book.getCategories().split(",");
                 for (String category : bookCategories) {
                     categories.add(category.trim());
@@ -324,7 +417,8 @@ public class HomePage extends Page {
     }
 
     private void resetFilters() {
-        yearFilter.setSelectedIndex(0);
+        yearTextField.setText("es. 2024");
+        yearTextField.setForeground(textSecondary);
         authorFilter.setSelectedIndex(0);
         categoryFilter.setSelectedIndex(0);
         filteredBooks = new ArrayList<>(BooksState.books);
@@ -347,11 +441,17 @@ public class HomePage extends Page {
     }
 
     private boolean filterByYear(BookData book) {
-        String selectedYear = (String) yearFilter.getSelectedItem();
-        if ("Tutti gli anni".equals(selectedYear)) {
+        String yearText = yearTextField.getText();
+        if (yearText.equals("es. 2024") || yearText.isEmpty()) {
             return true;
         }
-        return String.valueOf(book.getYear()).equals(selectedYear);
+
+        try {
+            int year = Integer.parseInt(yearText);
+            return book.getYear() == year;
+        } catch (NumberFormatException e) {
+            return true; // If invalid input, show all
+        }
     }
 
     private boolean filterByAuthor(BookData book) {
@@ -390,7 +490,6 @@ public class HomePage extends Page {
         panel.setBorder(BorderFactory.createEmptyBorder(25, 30, 25, 30));
         panel.setPreferredSize(new Dimension(0, 90));
 
-        // Sezione del titolo
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         titlePanel.setOpaque(false);
 
@@ -531,17 +630,52 @@ public class HomePage extends Page {
     }
 
     private JPanel createFeaturedBooksPanel() {
-        return createSectionPanel("✨ Libri in Evidenza", "Le migliori scelte per te", () -> {
-            JPanel booksPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 0));
+        return createSectionPanel("🔍 Risultati Ricerca", "Libri trovati con i filtri applicati", () -> {
+
+            JPanel booksPanel = new JPanel(new GridBagLayout());
             booksPanel.setOpaque(false);
 
-            // TODO Usa i libri filtrati invece di tutti i libri
             List<BookData> booksToShow = filteredBooks != null ? filteredBooks : BooksState.books;
 
-            for (BookData book : booksToShow) {
-                JPanel bookWrapper = new BookCard(book, 0f);
-                booksPanel.add(bookWrapper);
+            if (booksToShow.isEmpty()) {
+                JLabel noResultsLabel = new JLabel("Nessun libro trovato con i filtri selezionati");
+                noResultsLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 16));
+                noResultsLabel.setForeground(textSecondary);
+                booksPanel.add(noResultsLabel);
+            } else {
+                GridBagConstraints gbc = new GridBagConstraints();
+                gbc.insets = new Insets(10, 10, 10, 10);
+                gbc.fill = GridBagConstraints.BOTH;
+
+                int cols = 4;
+                int row = 0;
+                int col = 0;
+
+                for (BookData book : booksToShow) {
+                    gbc.gridx = col;
+                    gbc.gridy = row;
+                    gbc.weightx = 1.0 / cols;
+                    gbc.weighty = 1.0;
+
+                    JPanel bookWrapper = new BookCard(book, 0f);
+                    booksPanel.add(bookWrapper, gbc);
+
+                    col++;
+                    if (col >= cols) {
+                        col = 0;
+                        row++;
+                    }
+                }
+
+                if (col > 0 && col < cols) {
+                    gbc.gridx = col;
+                    gbc.gridy = row;
+                    gbc.gridwidth = cols - col;
+                    gbc.weightx = (cols - col) * (1.0 / cols);
+                    booksPanel.add(Box.createHorizontalGlue(), gbc);
+                }
             }
+
             return booksPanel;
         });
     }
