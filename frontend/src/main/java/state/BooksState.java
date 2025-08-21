@@ -42,7 +42,7 @@ public class BooksState {
     public static void fetchBooks() throws Exception {
         SocketConnection sc = MainFrame.getSocketConnection();
 
-        sc.send("GET_BOOKS");
+        sc.send("GET_BOOKS;12");
 
         List<String> books = sc.receiveUntilStop();
 

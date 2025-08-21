@@ -88,4 +88,8 @@ public class JSONUtil {
 
         return json;
     }
+
+    public static ObjectMapper getMAPPER() {
+        return MAPPER;
+    }
 }

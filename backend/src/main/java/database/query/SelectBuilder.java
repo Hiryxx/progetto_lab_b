@@ -14,6 +14,7 @@ public class SelectBuilder {
     private final String queryParameters;
     private final String fromTable;
     private String whereClause = "";
+    private String havingClause = "";
     private String orderByClause = "";
     private String groupByClause = "";
     private String limitClause = "";
@@ -56,7 +57,7 @@ public class SelectBuilder {
      * @return the query
      */
     private Query build() {
-        String query = "SELECT " + queryParameters + " FROM " + fromTable + joinClause + whereClause + groupByClause + orderByClause + limitClause;
+        String query = "SELECT " + queryParameters + " FROM " + fromTable + joinClause + whereClause + groupByClause + havingClause + orderByClause + limitClause;
         // check if ok with pattern
         return new Query(query);
     }
@@ -69,6 +70,14 @@ public class SelectBuilder {
      */
     public SelectBuilder where(String clause) {
         whereClause = " WHERE " + clause;
+        return this;
+    }
+
+    public SelectBuilder having(String clause) {
+        if (groupByClause.isEmpty()) {
+            throw new IllegalStateException("HAVING clause can only be used after GROUP BY clause");
+        }
+        havingClause = " HAVING " + clause;
         return this;
     }
 
