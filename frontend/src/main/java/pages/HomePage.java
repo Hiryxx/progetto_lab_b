@@ -10,9 +10,8 @@ import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
 import java.util.function.Supplier;
@@ -237,6 +236,124 @@ public class HomePage extends Page {
         return container;
     }
 
+    private void setupAutoComplete(final JComboBox<String> comboBox, final String[] allItems) {
+        final JTextField textField = (JTextField) comboBox.getEditor().getEditorComponent();
+
+        final boolean[] isUpdating = {false};
+
+        final List<String> items = new ArrayList<>(Arrays.asList(allItems));
+
+        textField.addKeyListener(new java.awt.event.KeyAdapter() {
+            private Timer filterTimer = new Timer(300, e -> filterItems());
+
+            {
+                filterTimer.setRepeats(false);
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                // Don't filter on navigation keys
+                if (e.getKeyCode() == KeyEvent.VK_DOWN ||
+                        e.getKeyCode() == KeyEvent.VK_UP ||
+                        e.getKeyCode() == KeyEvent.VK_ENTER ||
+                        e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    return;
+                }
+
+                filterTimer.restart();
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+
+                    comboBox.hidePopup();
+                    filterTimer.stop();
+                } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+
+                    comboBox.hidePopup();
+                    textField.setText(items.get(0));
+                    filterTimer.stop();
+                } else if (e.getKeyCode() == KeyEvent.VK_DOWN && !comboBox.isPopupVisible()) {
+                    // Show all items when pressing down arrow
+                    if (isUpdating[0]) return;
+                    isUpdating[0] = true;
+                    comboBox.removeAllItems();
+                    for (String item : items) {
+                        comboBox.addItem(item);
+                    }
+                    comboBox.showPopup();
+                    isUpdating[0] = false;
+                }
+            }
+
+            private void filterItems() {
+                if (isUpdating[0]) return;
+
+                SwingUtilities.invokeLater(() -> {
+                    if (isUpdating[0]) return;
+                    isUpdating[0] = true;
+
+                    String input = textField.getText();
+                    String inputLower = input.toLowerCase();
+
+                    String currentText = input;
+
+                    List<String> filteredItems = new ArrayList<>();
+
+                    if (input.isEmpty()) {
+                        filteredItems.addAll(items);
+                    } else {
+                        if (items.getFirst().toLowerCase().contains(inputLower)) {
+                            filteredItems.add(items.getFirst());
+                        }
+
+                        for (int i = 1; i < items.size(); i++) {
+                            String item = items.get(i);
+                            if (item.toLowerCase().contains(inputLower)) {
+                                filteredItems.add(item);
+                            }
+                        }
+                    }
+
+                    comboBox.removeAllItems();
+                    for (String item : filteredItems) {
+                        comboBox.addItem(item);
+                    }
+
+                    textField.setText(currentText);
+
+                    if (!filteredItems.isEmpty() && !input.isEmpty()) {
+                        comboBox.showPopup();
+                    }
+
+                    isUpdating[0] = false;
+                });
+            }
+        });
+
+        textField.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                SwingUtilities.invokeLater(textField::selectAll);
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+
+            }
+        });
+
+        comboBox.addActionListener(e -> {
+            if (!isUpdating[0] && e.getActionCommand().equals("comboBoxChanged")) {
+                Object selected = comboBox.getSelectedItem();
+                if (selected != null && !selected.toString().isEmpty()) {
+                    textField.setText(selected.toString());
+                }
+            }
+        });
+    }
+
     private JComboBox<String> createStyledComboBox(String[] options) {
         JComboBox<String> comboBox = new JComboBox<>(options) {
             @Override
@@ -248,6 +365,10 @@ public class HomePage extends Page {
             }
         };
 
+        comboBox.setEditable(true);
+
+        setupAutoComplete(comboBox, options);
+
         comboBox.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
         comboBox.setForeground(textPrimary);
         comboBox.setBackground(Color.WHITE);
@@ -255,7 +376,7 @@ public class HomePage extends Page {
                 new LineBorder(borderColor, 1, true),
                 BorderFactory.createEmptyBorder(5, 10, 5, 10)
         ));
-        comboBox.setPreferredSize(new Dimension(150, 35));
+        comboBox.setPreferredSize(new Dimension(180, 35));
 
         comboBox.setRenderer(new DefaultListCellRenderer() {
             @Override
@@ -279,8 +400,14 @@ public class HomePage extends Page {
             }
         });
 
+        JTextField editor = (JTextField) comboBox.getEditor().getEditorComponent();
+        editor.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
+        editor.setForeground(textPrimary);
+        editor.setBorder(null);
+
         return comboBox;
     }
+
 
     private JButton createResetButton() {
         JButton button = new JButton("🔄 Reset") {
@@ -419,8 +546,15 @@ public class HomePage extends Page {
     private void resetFilters() {
         yearTextField.setText("es. 2024");
         yearTextField.setForeground(textSecondary);
-        authorFilter.setSelectedIndex(0);
-        categoryFilter.setSelectedIndex(0);
+
+        if (authorFilter.getItemCount() > 0) {
+            authorFilter.setSelectedIndex(0);
+        }
+
+        if (categoryFilter.getItemCount() > 0) {
+            categoryFilter.setSelectedIndex(0);
+        }
+
         filteredBooks = new ArrayList<>(BooksState.books);
         refresh();
     }
@@ -455,19 +589,27 @@ public class HomePage extends Page {
     }
 
     private boolean filterByAuthor(BookData book) {
-        String selectedAuthor = (String) authorFilter.getSelectedItem();
-        if ("Tutti gli autori".equals(selectedAuthor)) {
+        Object selectedItem = authorFilter.getEditor().getItem();
+        String selectedAuthor = selectedItem != null ? selectedItem.toString() : "";
+
+        if (selectedAuthor.isEmpty() || "Tutti gli autori".equals(selectedAuthor)) {
             return true;
         }
-        return book.getAuthors() != null && book.getAuthors().contains(selectedAuthor);
+
+        return book.getAuthors() != null &&
+                book.getAuthors().toLowerCase().contains(selectedAuthor.toLowerCase());
     }
 
     private boolean filterByCategory(BookData book) {
-        String selectedCategory = (String) categoryFilter.getSelectedItem();
-        if ("Tutte le categorie".equals(selectedCategory)) {
+        Object selectedItem = categoryFilter.getEditor().getItem();
+        String selectedCategory = selectedItem != null ? selectedItem.toString() : "";
+
+        if (selectedCategory.isEmpty() || "Tutte le categorie".equals(selectedCategory)) {
             return true;
         }
-        return book.getCategories() != null && book.getCategories().contains(selectedCategory);
+
+        return book.getCategories() != null &&
+                book.getCategories().toLowerCase().contains(selectedCategory.toLowerCase());
     }
 
 
@@ -540,8 +682,9 @@ public class HomePage extends Page {
         searchField.setBorder(null);
         searchField.setFont(new Font("SF Pro Text", Font.PLAIN, 16));
         searchField.setForeground(textPrimary);
-        searchField.setText("Cerca libri, autori...");
+        searchField.setText("Cerca libri...");
         searchField.setForeground(textSecondary);
+
         searchField.addActionListener( e ->{
 
             if (searchField.getText().isEmpty()) {
@@ -556,7 +699,7 @@ public class HomePage extends Page {
                 } );
         searchField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
-                if (searchField.getText().equals("Cerca libri, autori...")) {
+                if (searchField.getText().equals("Cerca libri...")) {
                     searchField.setText("");
                     searchField.setForeground(textPrimary);
                 }
@@ -565,7 +708,7 @@ public class HomePage extends Page {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 if (searchField.getText().isEmpty()) {
                     searchField.setForeground(textSecondary);
-                    searchField.setText("Cerca libri, autori...");
+                    searchField.setText("Cerca libri...");
                 }
             }
 
@@ -714,58 +857,7 @@ public class HomePage extends Page {
         return panel;
     }
 
-    private JPanel createCategoryCard(String category, Color color) {
-        JPanel card = new JPanel(new BorderLayout()) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                GradientPaint gradient = new GradientPaint(0, 0, color, getWidth(), getHeight(),
-                        new Color(color.getRed(), color.getGreen(), color.getBlue(), 200));
-                g2d.setPaint(gradient);
-                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 16, 16);
-
-                g2d.setColor(new Color(0, 0, 0, 10));
-                g2d.fillRoundRect(2, 2, getWidth(), getHeight(), 16, 16);
-
-                g2d.dispose();
-            }
-        };
-
-        card.setBorder(BorderFactory.createEmptyBorder(25, 20, 25, 20));
-        card.setPreferredSize(new Dimension(0, 120));
-
-        JLabel label = new JLabel(category);
-        label.setFont(new Font("SF Pro Display", Font.BOLD, 18));
-        label.setForeground(Color.WHITE);
-        label.setHorizontalAlignment(SwingConstants.CENTER);
-
-        card.add(label, BorderLayout.CENTER);
-
-        card.addMouseListener(new MouseAdapter() {
-            private Timer hoverTimer;
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                card.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-                if (hoverTimer != null) hoverTimer.stop();
-                hoverTimer = new Timer(10, evt -> {
-                    card.repaint();
-                });
-                hoverTimer.start();
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (hoverTimer != null) hoverTimer.stop();
-                card.repaint();
-            }
-        });
-
-        return card;
-    }
 
     private JScrollPane createScrollPane(JPanel contentPanel) {
         JScrollPane scrollPane = new JScrollPane(contentPanel);
