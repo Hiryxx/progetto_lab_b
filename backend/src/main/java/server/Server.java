@@ -369,6 +369,31 @@ public class Server implements AutoCloseable {
         }, BookSuggestion.class);
 
 
+        commandRegister.register("GET_CATEGORIES", () -> {
+            try {
+                PrepareQuery pq = Category.selectBy("*")
+                        .orderBy("name").prepare();
+
+                QueryResult result = pq.executeResult();
+                return new MultiResponse(result);
+            } catch (SQLException e) {
+                return new ErrorResponse("Error creating book suggestion: " + e.getMessage());
+            }
+        });
+
+        commandRegister.register("GET_AUTHORS", () -> {
+            try {
+                PrepareQuery pq = Author.selectBy("*")
+                        .orderBy("name").prepare();
+
+                QueryResult result = pq.executeResult();
+                return new MultiResponse(result);
+            } catch (SQLException e) {
+                return new ErrorResponse("Error creating book suggestion: " + e.getMessage());
+            }
+        });
+
+
         commandRegister.register("PING", () -> new SingleResponse("PONG"));
 
         commandRegister.register("TRY", SingleResponse::new);
@@ -377,6 +402,8 @@ public class Server implements AutoCloseable {
         commandRegister.setFreeCommand("BOOK_INFO");
         commandRegister.setFreeCommand("REGISTER");
         commandRegister.setFreeCommand("LOGIN");
+        commandRegister.setFreeCommand("GET_CATEGORIES");
+        commandRegister.setFreeCommand("GET_AUTHORS");
     }
 
     /**

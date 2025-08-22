@@ -4,6 +4,7 @@ import classes.Page;
 import components.cards.BookCard;
 import components.ModernScrollBarUI;
 import data.BookData;
+import data.FilterData;
 import state.BooksState;
 
 import javax.swing.*;
@@ -22,15 +23,21 @@ import static classes.styles.Colors.*;
 public class HomePage extends Page {
     private JTextField searchField;
     private JTextField yearTextField;
-    private JComboBox<String> authorFilter;
-    private JComboBox<String> categoryFilter;
+    private JComboBox<FilterData> authorFilter;
+    private JComboBox<FilterData> categoryFilter;
     private List<BookData> filteredBooks;
 
     public HomePage() {
         super();
+
+        // TODO REMOVE AFTER CORRECT STREAM IMPLEMENTATION
+        Thread.startVirtualThread(() -> {
+            BooksState.fetchCategories();
+            BooksState.fetchAuthors();
+        });
+
         this.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent evt) {
-
                 revalidate();
                 repaint();
             }
@@ -88,7 +95,6 @@ public class HomePage extends Page {
     }
 
 
-
     private JPanel createFilterBar() {
         JPanel filterBar = new JPanel() {
             @Override
@@ -139,12 +145,12 @@ public class HomePage extends Page {
         gbc.weightx = 0.15;
         filterBar.add(yearPanel, gbc);
 
-        authorFilter = createStyledComboBox(getAuthorOptions());
+        authorFilter = createStyledComboBox(BooksState.authors);
         gbc.gridx = 2;
         gbc.weightx = 0.25;
         filterBar.add(createFilterContainer("✍️ Autore", authorFilter), gbc);
 
-        categoryFilter = createStyledComboBox(getCategoryOptions());
+        categoryFilter = createStyledComboBox(BooksState.categories);
         gbc.gridx = 3;
         gbc.weightx = 0.25;
         filterBar.add(createFilterContainer("📚 Categoria", categoryFilter), gbc);
@@ -222,7 +228,7 @@ public class HomePage extends Page {
         return textField;
     }
 
-    private JPanel createFilterContainer(String label, JComboBox<String> comboBox) {
+    private JPanel createFilterContainer(String label, JComboBox<FilterData> comboBox) {
         JPanel container = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         container.setOpaque(false);
 
@@ -236,12 +242,10 @@ public class HomePage extends Page {
         return container;
     }
 
-    private void setupAutoComplete(final JComboBox<String> comboBox, final String[] allItems) {
+    private void setupAutoComplete(final JComboBox<FilterData> comboBox, final FilterData[] allItems) {
         final JTextField textField = (JTextField) comboBox.getEditor().getEditorComponent();
 
         final boolean[] isUpdating = {false};
-
-        final List<String> items = new ArrayList<>(Arrays.asList(allItems));
 
         textField.addKeyListener(new java.awt.event.KeyAdapter() {
             private Timer filterTimer = new Timer(300, e -> filterItems());
@@ -272,14 +276,14 @@ public class HomePage extends Page {
                 } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
 
                     comboBox.hidePopup();
-                    textField.setText(items.get(0));
+                    textField.setText(allItems[0].toString());
                     filterTimer.stop();
                 } else if (e.getKeyCode() == KeyEvent.VK_DOWN && !comboBox.isPopupVisible()) {
                     // Show all items when pressing down arrow
                     if (isUpdating[0]) return;
                     isUpdating[0] = true;
                     comboBox.removeAllItems();
-                    for (String item : items) {
+                    for (FilterData item : allItems) {
                         comboBox.addItem(item);
                     }
                     comboBox.showPopup();
@@ -299,25 +303,25 @@ public class HomePage extends Page {
 
                     String currentText = input;
 
-                    List<String> filteredItems = new ArrayList<>();
+                    List<FilterData> filteredItems = new ArrayList<>();
 
                     if (input.isEmpty()) {
-                        filteredItems.addAll(items);
+                        filteredItems.addAll(List.of(allItems));
                     } else {
-                        if (items.getFirst().toLowerCase().contains(inputLower)) {
-                            filteredItems.add(items.getFirst());
+                        if (allItems[0].toString().toLowerCase().contains(inputLower)) {
+                            filteredItems.add(allItems[0]);
                         }
 
-                        for (int i = 1; i < items.size(); i++) {
-                            String item = items.get(i);
-                            if (item.toLowerCase().contains(inputLower)) {
+                        for (int i = 1; i < allItems.length; i++) {
+                            FilterData item = allItems[i];
+                            if (item.toString().toLowerCase().contains(inputLower)) {
                                 filteredItems.add(item);
                             }
                         }
                     }
 
                     comboBox.removeAllItems();
-                    for (String item : filteredItems) {
+                    for (FilterData item : filteredItems) {
                         comboBox.addItem(item);
                     }
 
@@ -354,8 +358,8 @@ public class HomePage extends Page {
         });
     }
 
-    private JComboBox<String> createStyledComboBox(String[] options) {
-        JComboBox<String> comboBox = new JComboBox<>(options) {
+    private JComboBox<FilterData> createStyledComboBox(FilterData[] options) {
+        JComboBox<FilterData> comboBox = new JComboBox<>(options) {
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2d = (Graphics2D) g.create();
@@ -503,45 +507,6 @@ public class HomePage extends Page {
         return years.toArray(new String[0]);
     }
 
-    private String[] getAuthorOptions() {
-        if (BooksState.books == null || BooksState.books.isEmpty()) {
-            return new String[]{"Tutti gli autori"};
-        }
-
-        Set<String> authors = new TreeSet<>();
-        authors.add("Tutti gli autori");
-
-        for (BookData book : BooksState.books) {
-            if (book.getAuthors() != null && !book.getAuthors().isEmpty()) {
-                String[] bookAuthors = book.getAuthors().split(",");
-                for (String author : bookAuthors) {
-                    authors.add(author.trim());
-                }
-            }
-        }
-
-        return authors.toArray(new String[0]);
-    }
-
-    private String[] getCategoryOptions() {
-        if (BooksState.books == null || BooksState.books.isEmpty()) {
-            return new String[]{"Tutte le categorie"};
-        }
-
-        Set<String> categories = new TreeSet<>();
-        categories.add("Tutte le categorie");
-
-        for (BookData book : BooksState.books) {
-            if (book.getCategories() != null && !book.getCategories().isEmpty()) {
-                String[] bookCategories = book.getCategories().split(",");
-                for (String category : bookCategories) {
-                    categories.add(category.trim());
-                }
-            }
-        }
-
-        return categories.toArray(new String[0]);
-    }
 
     private void resetFilters() {
         yearTextField.setText("es. 2024");
@@ -685,7 +650,7 @@ public class HomePage extends Page {
         searchField.setText("Cerca libri...");
         searchField.setForeground(textSecondary);
 
-        searchField.addActionListener( e ->{
+        searchField.addActionListener(e -> {
 
             if (searchField.getText().isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Per favore inserisci un termine di ricerca valido.",
@@ -696,7 +661,7 @@ public class HomePage extends Page {
                     "Invio ricercato: " + searchField.getText(),
                     "AAA",
                     JOptionPane.INFORMATION_MESSAGE);
-                } );
+        });
         searchField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 if (searchField.getText().equals("Cerca libri...")) {
@@ -824,7 +789,6 @@ public class HomePage extends Page {
     }
 
 
-
     private JPanel createSectionPanel(String title, String subtitle, Supplier<JPanel> contentSupplier) {
         JPanel panel = new JPanel(new BorderLayout(0, 25));
         panel.setOpaque(false);
@@ -856,7 +820,6 @@ public class HomePage extends Page {
 
         return panel;
     }
-
 
 
     private JScrollPane createScrollPane(JPanel contentPanel) {

@@ -1,8 +1,11 @@
 package state;
 
 import classes.MainFrame;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import connection.SocketConnection;
 import data.BookData;
+import data.FilterData;
 import json.JsonObject;
 import json.JsonUtil;
 
@@ -12,6 +15,8 @@ import java.util.List;
 public class BooksState {
     public static ArrayList<BookData> books = new ArrayList<>();
     public static BookData bookDetail = null;
+    public static FilterData[] categories = null;
+    public static FilterData[] authors = null;
 
     public static ArrayList<BookData> fetchLibraryBooks(String libraryId) throws Exception {
         SocketConnection sc = MainFrame.getSocketConnection();
@@ -70,4 +75,70 @@ public class BooksState {
             return null;
         }
     }
+
+
+    public static void fetchCategories() {
+        if (categories != null) {
+            return;
+        }
+        SocketConnection sc = MainFrame.getSocketConnection();
+
+        sc.send("GET_CATEGORIES");
+
+        List<String> cats = sc.receiveUntilStop();
+
+        if (cats == null || cats.isEmpty()) {
+            System.out.println("No categories found.");
+            return;
+        }
+
+        categories = new FilterData[cats.size()];
+
+        for (int i = 0; i < cats.size(); i++) {
+            String jsonCategory = cats.get(i);
+            FilterData filter;
+            try {
+                FilterData filterData = JsonUtil.fromString(jsonCategory, FilterData.class);
+                filter = filterData;
+            } catch (JsonProcessingException e) {
+                System.out.println("Error parsing category JSON: " + jsonCategory);
+                continue;
+            }
+            categories[i] = filter;
+        }
+
+    }
+
+    public static void fetchAuthors() {
+        if (authors != null) {
+            return;
+        }
+        SocketConnection sc = MainFrame.getSocketConnection();
+
+        sc.send("GET_AUTHORS");
+
+        List<String> aut = sc.receiveUntilStop();
+
+        if (aut == null || aut.isEmpty()) {
+            System.out.println("No authors found.");
+            return;
+        }
+
+        authors = new FilterData[aut.size()];
+
+        for (int i = 0; i < aut.size(); i++) {
+            String jsonCategory = aut.get(i);
+            FilterData filter;
+            try {
+                FilterData filterData = JsonUtil.fromString(jsonCategory, FilterData.class);
+                filter = filterData;
+            } catch (JsonProcessingException e) {
+                System.out.println("Error parsing category JSON: " + jsonCategory);
+                continue;
+            }
+            authors[i] = filter;
+        }
+
+    }
+
 }
