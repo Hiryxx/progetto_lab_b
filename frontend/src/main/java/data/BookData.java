@@ -1,6 +1,7 @@
 package data;
 
 public class BookData {
+    private int id;
     private String title;
     private int year;
     private String description;
@@ -50,5 +51,13 @@ public class BookData {
                 ", authors='" + authors + '\'' +
                 ", categories='" + categories + '\'' +
                 '}';
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }

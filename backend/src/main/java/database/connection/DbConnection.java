@@ -5,7 +5,6 @@ import database.query.QueryResult;
 
 import java.sql.*;
 
-// TODO Rename class. DBSession? DBConnectionManager? DBService?
 public class DbConnection {
 
     /***

@@ -167,7 +167,7 @@ public class DbUtil {
             columns.append(columnName);
 
             // Format value based on type
-            String formattedValue = formatValue(value);
+            Object formattedValue = formatValue(value);
             values.add(formattedValue);
             placeholders.append("?");
 
@@ -310,12 +310,13 @@ public class DbUtil {
      * @param value The value to format
      * @return Formatted value for SQL
      */
-    private static String formatValue(Object value) {
+    private static Object formatValue(Object value) {
         return switch (value) {
             case null -> "NULL";
             case String s -> "'" + s.replace("'", "''") + "'";
             case java.util.Date date -> "'" + new java.sql.Timestamp(date.getTime()) + "'";
             case Boolean b -> b ? "1" : "0";
+            case Integer i -> i;
             default -> value.toString();
         };
     }

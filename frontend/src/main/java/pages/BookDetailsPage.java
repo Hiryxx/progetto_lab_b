@@ -5,11 +5,15 @@ import classes.Page;
 import components.ModernScrollBarUI;
 import components.buttons.LibraryBookButton;
 import components.panels.InfoItem;
+import connection.Response;
 import data.BookData;
+import data.LibraryData;
 import state.BooksState;
+import state.LibraryState;
 import state.UserState;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -19,7 +23,7 @@ import static classes.styles.Colors.*;
 
 public class BookDetailsPage extends Page {
     private BookData bookData = new BookData("", 0, "", "", "");
-    LibraryBookButton addLibraryButton = new LibraryBookButton("+ Aggiungi alla Libreria");
+    private LibraryBookButton addLibraryButton = new LibraryBookButton("+ Aggiungi alla Libreria");
 
     private JLabel titleLabel = new JLabel();
     private JLabel authorLabel = new JLabel();
@@ -95,7 +99,6 @@ public class BookDetailsPage extends Page {
                 Graphics2D g2d = (Graphics2D) g.create();
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                // Sfondo gradiente
                 GradientPaint gradient = new GradientPaint(0, 0, gradientStart, getWidth(), 0, gradientEnd);
                 g2d.setPaint(gradient);
                 g2d.fillRect(0, 0, getWidth(), getHeight());
@@ -114,7 +117,6 @@ public class BookDetailsPage extends Page {
         leftPanel.add(backButton);
 
 
-        // Titolo pagina
         JPanel centerPanel = new JPanel(new BorderLayout());
         centerPanel.setOpaque(false);
 
@@ -148,14 +150,12 @@ public class BookDetailsPage extends Page {
                 Graphics2D g2d = (Graphics2D) g.create();
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                // Sfondo card
                 g2d.setColor(new Color(0, 0, 0, 4));
                 g2d.fillRoundRect(2, 2, getWidth() - 2, getHeight() - 2, 20, 20);
 
                 g2d.setColor(cardColor);
                 g2d.fillRoundRect(0, 0, getWidth() - 2, getHeight() - 2, 20, 20);
 
-                // Bordo sottile
                 g2d.setColor(borderColor);
                 g2d.setStroke(new BasicStroke(1f));
                 g2d.drawRoundRect(0, 0, getWidth() - 3, getHeight() - 3, 20, 20);
@@ -167,10 +167,8 @@ public class BookDetailsPage extends Page {
         mainSection.setLayout(new BorderLayout(30, 0));
         mainSection.setBorder(BorderFactory.createEmptyBorder(40, 40, 40, 40));
 
-        // Copertina libro
         JPanel coverPanel = createBookCover();
 
-        // Informazioni libro
         JPanel infoPanel = createBookInfoPanel();
 
         mainSection.add(coverPanel, BorderLayout.WEST);
@@ -242,14 +240,12 @@ public class BookDetailsPage extends Page {
         titleLabel.setForeground(textPrimary);
         infoPanel.add(titleLabel, gbc);
 
-        // Autore
         gbc.gridy = 2;
         gbc.insets = new Insets(0, 0, 20, 0);
         authorLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 18));
         authorLabel.setForeground(textSecondary);
         infoPanel.add(authorLabel, gbc);
 
-        // Data Pubblicazione e Genere
         gbc.gridwidth = 1;
         gbc.gridy = 4;
         gbc.insets = new Insets(0, 0, 10, 40);
@@ -271,6 +267,166 @@ public class BookDetailsPage extends Page {
         gbc.anchor = GridBagConstraints.WEST;
 
         addLibraryButton.setPreferredSize(new Dimension(250, 45));
+        addLibraryButton.addActionListener(e -> {
+            if (UserState.isLoggedIn) {
+
+                JPopupMenu libraryPopup = new JPopupMenu() {
+                    @Override
+                    protected void paintComponent(Graphics g) {
+                        Graphics2D g2d = (Graphics2D) g.create();
+                        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                        // Background with rounded corners
+                        g2d.setColor(cardColor);
+                        g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+
+                        g2d.dispose();
+                    }
+                };
+
+                libraryPopup.setBorder(BorderFactory.createCompoundBorder(
+                        new LineBorder(borderColor, 1),
+                        BorderFactory.createEmptyBorder(8, 0, 8, 0)
+                ));
+                libraryPopup.setBackground(cardColor);
+
+                LibraryState.fetchLibraries();
+
+
+                JLabel headerLabel = new JLabel("  Seleziona una libreria");
+                headerLabel.setFont(new Font("SF Pro Text", Font.BOLD, 14));
+                headerLabel.setForeground(textSecondary);
+                headerLabel.setBorder(BorderFactory.createEmptyBorder(4, 12, 8, 12));
+                libraryPopup.add(headerLabel);
+                libraryPopup.addSeparator();
+
+                for (LibraryData lib:  LibraryState.libraries) {
+                    final String libName = lib.getName();
+                    final int libId = lib.getId();
+
+                    JMenuItem libraryItem = new JMenuItem(libName) {
+                        @Override
+                        protected void paintComponent(Graphics g) {
+                            if (getModel().isArmed()) {
+                                Graphics2D g2d = (Graphics2D) g.create();
+                                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                                g2d.setColor(new Color(primaryColor.getRed(), primaryColor.getGreen(), primaryColor.getBlue(), 20));
+                                g2d.fillRect(0, 0, getWidth(), getHeight());
+                                g2d.dispose();
+                            }
+                            super.paintComponent(g);
+                        }
+                    };
+
+                    libraryItem.setFont(new Font("SF Pro Text", Font.PLAIN, 15));
+                    libraryItem.setForeground(textPrimary);
+                    libraryItem.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+                    libraryItem.setBackground(cardColor);
+                    libraryItem.setOpaque(true);
+
+                    // Add icon
+                    libraryItem.setIcon(new Icon() {
+                        @Override
+                        public void paintIcon(Component c, Graphics g, int x, int y) {
+                            Graphics2D g2d = (Graphics2D) g.create();
+                            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                            g2d.setColor(primaryColor);
+                            g2d.fillRoundRect(x, y + 2, 12, 12, 4, 4);
+                            g2d.setColor(Color.WHITE);
+                            g2d.setFont(new Font("SF Pro Text", Font.BOLD, 8));
+                            g2d.drawString("L", x + 4, y + 10);
+                            g2d.dispose();
+                        }
+
+                        @Override
+                        public int getIconWidth() { return 16; }
+
+                        @Override
+                        public int getIconHeight() { return 16; }
+                    });
+
+                    libraryItem.addActionListener(evt -> {
+                        // Add book to selected library
+                        Response response = LibraryState.addBookToLibrary(bookData, libId);
+                        if (response.isError()) {
+                            JOptionPane.showMessageDialog(
+                                    BookDetailsPage.this,
+                                    "Errore nell'aggiunta del libro: " + response.getResponseText(),
+                                    "Errore",
+                                    JOptionPane.ERROR_MESSAGE
+                            );
+                            libraryPopup.setVisible(false);
+                            return;
+                        }
+
+                        addLibraryButton.setText("✓ Aggiunto a " + libName);
+                        addLibraryButton.setEnabled(false);
+                        libraryPopup.setVisible(false);
+
+
+                        JOptionPane.showMessageDialog(
+                                BookDetailsPage.this,
+                                "Libro aggiunto a \"" + libName + "\"",
+                                "Successo",
+                                JOptionPane.INFORMATION_MESSAGE
+                        );
+                    });
+
+                    libraryPopup.add(libraryItem);
+                }
+
+                libraryPopup.addSeparator();
+
+                JMenuItem createNewItem = new JMenuItem("+ Crea nuova libreria") {
+                    @Override
+                    protected void paintComponent(Graphics g) {
+                        if (getModel().isArmed()) {
+                            Graphics2D g2d = (Graphics2D) g.create();
+                            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                            g2d.setColor(new Color(accentColor.getRed(), accentColor.getGreen(), accentColor.getBlue(), 20));
+                            g2d.fillRect(0, 0, getWidth(), getHeight());
+                            g2d.dispose();
+                        }
+                        super.paintComponent(g);
+                    }
+                };
+
+                createNewItem.setFont(new Font("SF Pro Text", Font.BOLD, 15));
+                createNewItem.setForeground(accentColor);
+                createNewItem.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+                createNewItem.setBackground(cardColor);
+                createNewItem.setOpaque(true);
+
+                createNewItem.addActionListener(evt -> {
+                    String newLibraryName = JOptionPane.showInputDialog(
+                            BookDetailsPage.this,
+                            "Nome della nuova libreria:",
+                            "Crea nuova libreria",
+                            JOptionPane.PLAIN_MESSAGE
+                    );
+
+                    if (newLibraryName != null && !newLibraryName.trim().isEmpty()) {
+                        // TODO: Create library and add book
+                        // LibraryState.createLibraryAndAddBook(newLibraryName, bookData);
+                        addLibraryButton.setText("✓ Aggiunto a " + newLibraryName);
+                        addLibraryButton.setEnabled(false);
+                        libraryPopup.setVisible(false);
+                    }
+                });
+
+                libraryPopup.add(createNewItem);
+
+                libraryPopup.show(addLibraryButton, 0, addLibraryButton.getHeight() + 5);
+
+            } else {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Devi essere loggato per aggiungere libri alla tua libreria.",
+                        "Non sei loggato",
+                        JOptionPane.WARNING_MESSAGE
+                );
+            }
+        });
 
         infoPanel.add(addLibraryButton, gbc);
 

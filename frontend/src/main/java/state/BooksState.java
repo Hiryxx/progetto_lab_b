@@ -50,12 +50,13 @@ public class BooksState {
 
         List<String> books = sc.receiveUntilStop();
 
+        BooksState.books.clear();
+
         if (books == null || books.isEmpty()) {
             System.out.println("No books found in the library.");
             return;
         }
 
-        BooksState.books.clear();
         for (String bookJson : books) {
             BookData book = JsonUtil.fromString(bookJson, BookData.class);
             BooksState.books.add(book);
@@ -130,13 +131,13 @@ public class BooksState {
         authors[0] = new FilterData(-1, "Tutti gli autori");
 
         for (int i = 1; i < aut.size(); i++) {
-            String jsonCategory = aut.get(i);
+            String jsonAuthor = aut.get(i);
             FilterData filter;
             try {
-                FilterData filterData = JsonUtil.fromString(jsonCategory, FilterData.class);
+                FilterData filterData = JsonUtil.fromString(jsonAuthor, FilterData.class);
                 filter = filterData;
             } catch (JsonProcessingException e) {
-                System.out.println("Error parsing category JSON: " + jsonCategory);
+                System.out.println("Error parsing category JSON: " + jsonAuthor);
                 continue;
             }
             authors[i] = filter;
@@ -165,12 +166,13 @@ public class BooksState {
 
         List<String> books = sc.receiveUntilStop();
 
+        BooksState.books.clear();
         if (books == null || books.isEmpty()) {
             System.out.println("No books found in the library.");
+
             return;
         }
 
-        BooksState.books.clear();
         for (String bookJson : books) {
             BookData book = JsonUtil.fromString(bookJson, BookData.class);
             BooksState.books.add(book);

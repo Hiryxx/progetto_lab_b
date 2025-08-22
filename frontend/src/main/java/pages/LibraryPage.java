@@ -56,34 +56,7 @@ public class LibraryPage extends Page {
 
     private void initializeLibraries() {
         if (LibraryState.libraries.isEmpty()) {
-            String userCf = UserState.cf;
-
-            System.out.println("Requesting libraries for user: " + userCf);
-            SocketConnection sc = MainFrame.getSocketConnection();
-
-            sc.send("GET_LIBRARIES;" + userCf + ";" + userCf);
-
-            List<String> libraries = sc.receiveUntilStop();
-
-            for (String libraryJson : libraries) {
-                if (libraryJson.startsWith("ERROR:")) {
-                    System.err.println("Error fetching libraries: " + libraryJson.substring(6));
-                    return;
-                } else {
-                    System.out.println("Received library data: " + libraryJson);
-                    LibraryData library = null;
-                    try {
-                        library = JsonUtil.fromString(libraryJson, LibraryData.class);
-                        System.out.println("Parsed library: " + library.getName());
-                        System.out.println("Created at : " + library.getCreatedAt());
-                    } catch (JsonProcessingException e) {
-                        System.out.println("Error parsing library JSON: " + e.getMessage());
-                    }
-                    if (library != null)
-                        LibraryState.libraries.add(library);
-
-                }
-            }
+            LibraryState.fetchLibraries();
             refreshLibrariesGrid();
         }
 

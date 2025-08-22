@@ -34,8 +34,11 @@ public class HomePage extends Page {
         super();
 
         // TODO REMOVE AFTER CORRECT STREAM IMPLEMENTATION
-        Thread.startVirtualThread(BooksState::fetchCategories);
-        Thread.startVirtualThread(BooksState::fetchAuthors);
+    /*    Thread.startVirtualThread(BooksState::fetchCategories);
+        Thread.startVirtualThread(BooksState::fetchAuthors);*/
+
+        BooksState.fetchCategories();
+        BooksState.fetchAuthors();
 
         this.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent evt) {
@@ -341,6 +344,7 @@ public class HomePage extends Page {
 
                         for (int i = 1; i < allItems.length; i++) {
                             FilterData item = allItems[i];
+                            if (item == null) continue;
                             if (item.toString().toLowerCase().contains(inputLower)) {
                                 filteredItems.add(item);
                             }
@@ -530,11 +534,13 @@ public class HomePage extends Page {
             categoryFilter.setSelectedIndex(0);
         }
 
-        filteredBooks = new ArrayList<>(BooksState.books);
-        updateBooksPanel();
+        applyFilters();
     }
 
     private void applyFilters() {
+        /*for (FilterData item : BooksState.authors) {
+            System.out.println("aaaa!!! Author: " + item);
+        }*/
         String yearText = yearTextField.getText();
         FilterData selectedAuthor = (FilterData) authorFilter.getEditor().getItem();
         FilterData selectedCategory = (FilterData) categoryFilter.getEditor().getItem();
@@ -559,10 +565,6 @@ public class HomePage extends Page {
 
         updateBooksPanel();
 
-        JOptionPane.showMessageDialog(this,
-                "Trovati " + filteredBooks.size() + " libri con i filtri selezionati",
-                "Filtri Applicati",
-                JOptionPane.INFORMATION_MESSAGE);
     }
 
 
