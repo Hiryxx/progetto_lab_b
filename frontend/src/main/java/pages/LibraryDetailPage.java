@@ -8,7 +8,6 @@ import components.cards.BookCard;
 import components.panels.StatItem;
 import connection.SocketConnection;
 import data.BookData;
-import data.LibraryData;
 import json.JsonObject;
 import json.JsonUtil;
 import state.LibraryDetailState;
@@ -99,9 +98,7 @@ public class LibraryDetailPage extends Page {
         booksContainer.setOpaque(false);
         booksContainer.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
 
-/*
         refreshBooksGrid();
-*/
 
         // Scroll pane for books
         JScrollPane scrollPane = createScrollPane(booksContainer);
@@ -115,7 +112,7 @@ public class LibraryDetailPage extends Page {
         titleLabel.setText("📚 " + LibraryDetailState.libraryName);
         initializeBooks();
 
-    /*    refreshBooksGrid();*/
+       refreshBooksGrid();
     }
 
     private JPanel createHeader() {
@@ -224,11 +221,7 @@ public class LibraryDetailPage extends Page {
     }
 
 
-    private void filterBooks() {
-     /*   refreshBooksGrid();*/
-    }
-
-   /* private void refreshBooksGrid() {
+    private void refreshBooksGrid() {
         booksContainer.removeAll();
 
         booksContainer.setLayout(new GridLayout(0, 1, 15, 15));
@@ -253,67 +246,15 @@ public class LibraryDetailPage extends Page {
         });
         if (libraryBooks != null){
 
-        // Filter books based on current filter
-        List<BookData> filteredBooks = new ArrayList<>();
-
-        for (BookData book : libraryBooks) {
-            boolean include = false;
-
-            switch (currentFilter) {
-                case "all":
-                    include = true;
-                    break;
-                case "rated":
-                    include = book.userRating > 0;
-                    break;
-                case "not_rated":
-                    include = book.userRating == 0;
-                    break;
-                case "with_review":
-                    include = book.hasReview;
-                    break;
-            }
-
-            // Apply search filter if needed
-            if (include && searchField != null && !searchField.getText().isEmpty()
-                    && !searchField.getText().equals("Cerca nella libreria...")) {
-                String searchText = searchField.getText().toLowerCase();
-                include = book.title.toLowerCase().contains(searchText) ||
-                        book.author.toLowerCase().contains(searchText);
-            }
-
-            if (include) {
-                filteredBooks.add(book);
-            }
-        }
-
         // Add book cards
-        for (BookData book : filteredBooks) {
-            JPanel bookCard = new BookCard(book.title, book.author, book.genre, book.userRating > 0 ? book.userRating : book.avgRating);
+        for (BookData book : libraryBooks) {
+            JPanel bookCard = new BookCard(book, 1);
             booksContainer.add(bookCard);
         }
-        // TODO THIS PROBABLY DOES NOT WORK
-        if (filteredBooks.isEmpty()) {
-            JLabel emptyLabel = new JLabel("Nessun libro trovato");
-            emptyLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 18));
-            emptyLabel.setForeground(textSecondary);
-            emptyLabel.setHorizontalAlignment(SwingConstants.CENTER);
-            booksContainer.add(emptyLabel);
-        }
-            ratedCount = (int) libraryBooks.stream().filter(b -> b.userRating > 0).count();
-            ratedStat.setLabelText("Valutati");
-            ratedStat.setValueText(String.valueOf(ratedCount));
-
-
-            reviewCount = (int) libraryBooks.stream().filter(b -> b.hasReview).count();
-            reviewStat.setLabelText("Recensiti");
-            reviewStat.setValueText(String.valueOf(reviewCount));
-        }
-
 
         booksContainer.revalidate();
         booksContainer.repaint();
-    }*/
+    }}
 
 
     private JScrollPane createScrollPane(JPanel contentPanel) {
