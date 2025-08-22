@@ -3,8 +3,8 @@ package data;
 public class BookFilterRequest {
     private String title;
     private Integer year;
-    private String author;
-    private String category;
+    private int authorId;
+    private int categoryId;
     private Integer limit;
 
     public BookFilterRequest() {
@@ -12,13 +12,18 @@ public class BookFilterRequest {
 
     public String getTitle() { return title; }
     public Integer getYear() { return year; }
-    public String getAuthor() { return author; }
-    public String getCategory() { return category; }
+
+    public int getAuthorId() {
+        return authorId;
+    }
+
+    public int getCategoryId() {
+        return categoryId;
+    }
+
     public Integer getLimit() { return limit; }
 
     public void setTitle(String title) { this.title = title; }
     public void setYear(Integer year) { this.year = year; }
-    public void setAuthor(String author) { this.author = author; }
-    public void setCategory(String category) { this.category = category; }
     public void setLimit(Integer limit) { this.limit = limit; }
 }

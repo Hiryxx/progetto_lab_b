@@ -254,46 +254,35 @@ public class Server implements AutoCloseable {
                         .join(Author.class, "authors.id = bookauthors.authorid")
                         .join(Category.class, "categories.id = bookcategories.categoryid");
 
-                // WHERE clause
                 List<Object> parameters = new ArrayList<>();
                 List<String> conditions = new ArrayList<>();
 
-                // Title filter (case-insensitive LIKE search)
                 if (filters.getTitle() != null && !filters.getTitle().isEmpty()) {
                     conditions.add("LOWER(books.title) LIKE LOWER(?)");
                     parameters.add("%" + filters.getTitle() + "%");
                 }
 
-                // Year filter (exact match)
                 if (filters.getYear() != null && filters.getYear() > 0) {
                     conditions.add("books.year = ?");
                     parameters.add(filters.getYear());
                 }
 
-                // Add WHERE clause if there are conditions
+                if (filters.getAuthorId() >= 0) {
+                    conditions.add("bookauthors.authorid = ?");
+                    parameters.add(filters.getAuthorId());
+                }
+
+                if (filters.getCategoryId() >= 0) {
+                    conditions.add("bookcategories.categoryid = ?");
+                    parameters.add(filters.getCategoryId());
+                }
+
                 if (!conditions.isEmpty()) {
                     String whereClause = String.join(" AND ", conditions);
                     queryBuilder.where(whereClause);
                 }
 
                 queryBuilder.groupBy("books.id");
-
-                List<String> havingConditions = new ArrayList<>();
-
-                if (filters.getAuthor() != null && !filters.getAuthor().isEmpty()) {
-                    havingConditions.add("LOWER(STRING_AGG(DISTINCT authors.name, ', ')) LIKE LOWER(?)");
-                    parameters.add("%" + filters.getAuthor() + "%");
-                }
-
-                if (filters.getCategory() != null && !filters.getCategory().isEmpty()) {
-                    havingConditions.add("LOWER(STRING_AGG(DISTINCT categories.name, ', ')) LIKE LOWER(?)");
-                    parameters.add("%" + filters.getCategory() + "%");
-                }
-
-                if (!havingConditions.isEmpty()) {
-                    String havingClause = String.join(" AND ", havingConditions);
-                    queryBuilder.having(havingClause);
-                }
 
                 int limit = filters.getLimit() != null && filters.getLimit() > 0 ? filters.getLimit() : 20;
                 queryBuilder.limit(limit);
@@ -307,6 +296,7 @@ public class Server implements AutoCloseable {
 
                 QueryResult result = pq.executeResult();
                 return new MultiResponse(result);
+
             } catch (SQLException e) {
                 return new ErrorResponse("Error getting filtered books: " + e.getMessage());
             } catch (Exception e) {
@@ -399,6 +389,7 @@ public class Server implements AutoCloseable {
         commandRegister.register("TRY", SingleResponse::new);
 
         commandRegister.setFreeCommand("GET_BOOKS");
+        commandRegister.setFreeCommand("GET_FILTERED_BOOKS");
         commandRegister.setFreeCommand("BOOK_INFO");
         commandRegister.setFreeCommand("REGISTER");
         commandRegister.setFreeCommand("LOGIN");

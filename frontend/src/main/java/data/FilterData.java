@@ -1,18 +1,22 @@
 package data;
 
 public class FilterData {
-    private String id;
+    private int id;
     private String name;
 
     public FilterData(){
 
+    }
+    public FilterData(int id, String name) {
+        this.id = id;
+        this.name = name;
     }
 
     public String getName() {
         return name;
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 

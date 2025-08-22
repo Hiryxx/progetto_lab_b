@@ -1,6 +1,7 @@
 package pages;
 
 import classes.Page;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import components.cards.BookCard;
 import components.ModernScrollBarUI;
 import data.BookData;
@@ -16,7 +17,6 @@ import java.awt.event.KeyEvent;
 import java.util.*;
 import java.util.List;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import static classes.styles.Colors.*;
 
@@ -27,14 +27,15 @@ public class HomePage extends Page {
     private JComboBox<FilterData> categoryFilter;
     private List<BookData> filteredBooks;
 
+    private JPanel booksContainer;
+    private JScrollPane mainScrollPane;
+
     public HomePage() {
         super();
 
         // TODO REMOVE AFTER CORRECT STREAM IMPLEMENTATION
-        Thread.startVirtualThread(() -> {
-            BooksState.fetchCategories();
-            BooksState.fetchAuthors();
-        });
+        Thread.startVirtualThread(BooksState::fetchCategories);
+        Thread.startVirtualThread(BooksState::fetchAuthors);
 
         this.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent evt) {
@@ -67,31 +68,57 @@ public class HomePage extends Page {
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.setBorder(BorderFactory.createEmptyBorder(0, 30, 30, 30));
 
-        try {
-            BooksState.fetchBooks();
-            filteredBooks = new ArrayList<>(BooksState.books);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Errore durante il caricamento dei libri: " + e.getMessage(),
-                    "Errore", JOptionPane.ERROR_MESSAGE);
+        if (BooksState.books == null || BooksState.books.isEmpty()) {
+            try {
+                BooksState.fetchBooks();
+                filteredBooks = new ArrayList<>(BooksState.books);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Errore durante il caricamento dei libri: " + e.getMessage(),
+                        "Errore", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            // Use existing books if already loaded
+            if (filteredBooks == null) {
+                filteredBooks = new ArrayList<>(BooksState.books);
+            }
         }
 
         contentPanel.add(createHeroSection());
         contentPanel.add(Box.createRigidArea(new Dimension(0, 40)));
 
-        contentPanel.add(createFeaturedBooksPanel());
+        booksContainer = new JPanel();
+        booksContainer.setLayout(new BorderLayout());
+        booksContainer.setOpaque(false);
+        booksContainer.add(createFeaturedBooksPanel());
+        contentPanel.add(booksContainer);
         contentPanel.add(Box.createRigidArea(new Dimension(0, 30)));
 
-
-        JScrollPane scrollPane = createScrollPane(contentPanel);
-        this.add(scrollPane, BorderLayout.CENTER);
+        mainScrollPane = createScrollPane(contentPanel);
+        this.add(mainScrollPane, BorderLayout.CENTER);
     }
 
     @Override
     public void refresh() {
-        this.removeAll();
-        this.render();
-        this.revalidate();
-        this.repaint();
+        updateBooksPanel();
+    }
+
+
+    private void updateBooksPanel() {
+        if (booksContainer != null) {
+            booksContainer.removeAll();
+
+            booksContainer.add(createFeaturedBooksPanel());
+
+            booksContainer.revalidate();
+            booksContainer.repaint();
+
+            // show top results
+            if (mainScrollPane != null) {
+                SwingUtilities.invokeLater(() -> {
+                    mainScrollPane.getVerticalScrollBar().setValue(0);
+                });
+            }
+        }
     }
 
 
@@ -490,23 +517,6 @@ public class HomePage extends Page {
         return button;
     }
 
-    private String[] getYearOptions() {
-        if (BooksState.books == null || BooksState.books.isEmpty()) {
-            return new String[]{"Tutti gli anni"};
-        }
-
-        Set<String> years = new TreeSet<>(Collections.reverseOrder());
-        years.add("Tutti gli anni");
-
-        for (BookData book : BooksState.books) {
-            if (book.getYear() > 0) {
-                years.add(String.valueOf(book.getYear()));
-            }
-        }
-
-        return years.toArray(new String[0]);
-    }
-
 
     private void resetFilters() {
         yearTextField.setText("es. 2024");
@@ -521,60 +531,38 @@ public class HomePage extends Page {
         }
 
         filteredBooks = new ArrayList<>(BooksState.books);
-        refresh();
+        updateBooksPanel();
     }
 
     private void applyFilters() {
-        filteredBooks = BooksState.books.stream()
-                .filter(book -> filterByYear(book))
-                .filter(book -> filterByAuthor(book))
-                .filter(book -> filterByCategory(book))
-                .collect(Collectors.toList());
+        String yearText = yearTextField.getText();
+        FilterData selectedAuthor = (FilterData) authorFilter.getEditor().getItem();
+        FilterData selectedCategory = (FilterData) categoryFilter.getEditor().getItem();
 
-        refresh();
+        String textTitle = searchField.getText();
+
+        if (textTitle.equals("Cerca libri...") || textTitle.isEmpty()) {
+            textTitle = null;
+        }
+
+
+        try {
+            BooksState.fetchFilteredBooks(textTitle, Objects.equals(yearText, "es. 2024") ? null : yearText, selectedAuthor.getId(), selectedCategory.getId());
+            filteredBooks = BooksState.books;
+        } catch (JsonProcessingException e) {
+            System.out.println("Error fetching filtered books: " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Errore durante il filtraggio dei libri: " + e.getMessage(),
+                    "Errore", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+
+        updateBooksPanel();
 
         JOptionPane.showMessageDialog(this,
                 "Trovati " + filteredBooks.size() + " libri con i filtri selezionati",
                 "Filtri Applicati",
                 JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    private boolean filterByYear(BookData book) {
-        String yearText = yearTextField.getText();
-        if (yearText.equals("es. 2024") || yearText.isEmpty()) {
-            return true;
-        }
-
-        try {
-            int year = Integer.parseInt(yearText);
-            return book.getYear() == year;
-        } catch (NumberFormatException e) {
-            return true; // If invalid input, show all
-        }
-    }
-
-    private boolean filterByAuthor(BookData book) {
-        Object selectedItem = authorFilter.getEditor().getItem();
-        String selectedAuthor = selectedItem != null ? selectedItem.toString() : "";
-
-        if (selectedAuthor.isEmpty() || "Tutti gli autori".equals(selectedAuthor)) {
-            return true;
-        }
-
-        return book.getAuthors() != null &&
-                book.getAuthors().toLowerCase().contains(selectedAuthor.toLowerCase());
-    }
-
-    private boolean filterByCategory(BookData book) {
-        Object selectedItem = categoryFilter.getEditor().getItem();
-        String selectedCategory = selectedItem != null ? selectedItem.toString() : "";
-
-        if (selectedCategory.isEmpty() || "Tutte le categorie".equals(selectedCategory)) {
-            return true;
-        }
-
-        return book.getCategories() != null &&
-                book.getCategories().toLowerCase().contains(selectedCategory.toLowerCase());
     }
 
 
@@ -657,10 +645,7 @@ public class HomePage extends Page {
                         "Errore di ricerca", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            JOptionPane.showMessageDialog(this,
-                    "Invio ricercato: " + searchField.getText(),
-                    "AAA",
-                    JOptionPane.INFORMATION_MESSAGE);
+            applyFilters();
         });
         searchField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
