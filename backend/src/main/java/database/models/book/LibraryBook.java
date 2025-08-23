@@ -30,4 +30,11 @@ public class LibraryBook extends Entity {
         return new SelectBuilder(queryParameter, LibraryBook.class);
     }
 
+    public int getBookid() {
+        return bookid;
+    }
+
+    public int getLibraryid() {
+        return libraryid;
+    }
 }

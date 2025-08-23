@@ -8,6 +8,7 @@ public class BookData {
 
     private String authors;
     private String categories;
+    private boolean isInLibrary;
     //...
 
     public BookData(){

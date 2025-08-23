@@ -9,6 +9,7 @@ import connection.Response;
 import data.BookData;
 import data.LibraryData;
 import state.BooksState;
+import state.LibraryDetailState;
 import state.LibraryState;
 import state.UserState;
 
@@ -73,6 +74,9 @@ public class BookDetailsPage extends Page {
     @Override
     public void refresh() {
         bookData = BooksState.getDetailBook();
+
+        boolean isInLibrary = LibraryDetailState.isBookInLibrary(bookData.getId());
+
         System.out.println("BOOK DETAILS REFRESHED: " + bookData);
         titleLabel.setText(bookData.getTitle());
         authorLabel.setText("di " + bookData.getAuthors());
@@ -83,7 +87,17 @@ public class BookDetailsPage extends Page {
 
         // TODO ALSO CHECK IF IN LIBRARY
         if (UserState.isLoggedIn){
+            System.out.println("User is logged in, showing add to library button.");
             addLibraryButton.setVisible(true);
+            if (isInLibrary) {
+                System.out.println("Book is already in library, disabling add button.");
+                addLibraryButton.setText("✓ Già in Libreria");
+                addLibraryButton.setEnabled(false);
+            } else {
+                addLibraryButton.setText("+ Aggiungi alla Libreria");
+                addLibraryButton.setEnabled(true);
+                System.out.println("Book is not in library, enabling add button." + isInLibrary);
+            }
             //addLibraryButton.setBookData(bookData);
         } else {
             addLibraryButton.setVisible(false);
@@ -276,7 +290,6 @@ public class BookDetailsPage extends Page {
                         Graphics2D g2d = (Graphics2D) g.create();
                         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                        // Background with rounded corners
                         g2d.setColor(cardColor);
                         g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
 

@@ -35,7 +35,6 @@ public class SocketConnection {
      */
     public void send(Sendable response) throws IOException {
         switch (response){
-            // todo imrpove single respone handling with json out
             case SingleResponse singleResponse -> {
                 out.println(singleResponse.object());
                 out.flush();

@@ -304,6 +304,36 @@ public class Server implements AutoCloseable {
             }
         });
 
+
+        commandRegister.register("IS_BOOK_IN_LIBRARY", (String input) -> {
+            try {
+                String[] parts = input.split(",", 2);
+                if (parts.length != 2) {
+                    return new ErrorResponse("Invalid input format. Expected: bookId,userCf");
+                }
+
+                int bookId = Integer.parseInt(parts[0].trim());
+                String userCf = parts[1].trim();
+
+                PrepareQuery pq = LibraryBook.selectBy("1")
+                        .join(Library.class, "libraries.id = librarybooks.libraryId")
+                        .where("librarybooks.bookId = ? AND libraries.usercf = ?")
+                        .prepare(bookId, userCf);
+
+                try (QueryResult result = pq.executeResult()) {
+                    if (result.iterator().hasNext()) {
+                        return new SingleResponse("true");
+                    } else {
+                        return new SingleResponse("false");
+                    }
+                }
+            } catch (NumberFormatException e) {
+                return new ErrorResponse("Invalid bookId format. Must be a number.");
+            } catch (Exception e) {
+                return new ErrorResponse("Error checking book in library: " + e.getMessage());
+            }
+        });
+
         commandRegister.register("ADD_BOOK", (LibraryBook libraryBook) -> {
             try {
                 libraryBook.create();

@@ -17,7 +17,7 @@ public class Library extends Entity {
     private String name;
 
     @ForeignKey(references = User.class, column = "cf")
-    @Column( type = "CHAR(36)", nullable = false)
+    @Column( type = "CHAR(16)", nullable = false)
     private String usercf;
 
     @Column(type = "TIMESTAMP", nullable = false, defaultValue = "current_timestamp")
