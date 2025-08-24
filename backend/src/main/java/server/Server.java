@@ -413,6 +413,45 @@ public class Server implements AutoCloseable {
             }
         });
 
+        commandRegister.register("GET_BOOK_SUGGESTIONS", (Book book) -> {
+            try {
+                PrepareQuery pq = BookSuggestion.selectBy("books.*, " +
+                                "STRING_AGG(DISTINCT authors.name, ', ') as authors, " +
+                                "STRING_AGG(DISTINCT categories.name, ', ') as categories, " +
+                                "COUNT(booksuggestions.id) as suggestion_count")
+                        .join(Book.class, "books.id = booksuggestions.targetbookid")
+                        .join(BookAuthor.class, "bookauthors.bookid = books.id")
+                        .join(Author.class, "authors.id = bookauthors.authorid")
+                        .join(BookCategory.class, "bookcategories.bookid = books.id")
+                        .join(Category.class, "categories.id = bookcategories.categoryid")
+                        .where("booksuggestions.sourcebookid = ?")
+                        .groupBy("books.id")
+                        .orderBy("suggestion_count DESC")
+                        .limit(5)
+                        .prepare(book.getId());
+
+                QueryResult result = pq.executeResult();
+                return new MultiResponse(result);
+            } catch (SQLException e) {
+                return new ErrorResponse("Error getting book suggestions: " + e.getMessage());
+            }
+        }, Book.class);
+
+        commandRegister.register("GET_BOOK_RATINGS", (Book book) -> {
+            try {
+                PrepareQuery pq = BookRating.selectBy("bookratings.*, users.email as user_email")
+                        .join(User.class, "users.cf = bookratings.usercf")
+                        .where("bookratings.bookid = ?")
+                        .orderBy("bookratings.votofinale DESC")
+                        .prepare(book.getId());
+
+                QueryResult result = pq.executeResult();
+                return new MultiResponse(result);
+            } catch (SQLException e) {
+                return new ErrorResponse("Error getting book ratings: " + e.getMessage());
+            }
+        }, Book.class);
+
 
         commandRegister.register("PING", () -> new SingleResponse("PONG"));
 
@@ -425,6 +464,9 @@ public class Server implements AutoCloseable {
         commandRegister.setFreeCommand("LOGIN");
         commandRegister.setFreeCommand("GET_CATEGORIES");
         commandRegister.setFreeCommand("GET_AUTHORS");
+
+        commandRegister.setFreeCommand("GET_BOOK_SUGGESTIONS");
+        commandRegister.setFreeCommand("GET_BOOK_RATINGS");
     }
 
     /**

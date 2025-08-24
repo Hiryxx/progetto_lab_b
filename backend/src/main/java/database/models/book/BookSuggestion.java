@@ -5,6 +5,7 @@ import database.models.base.annotations.Column;
 import database.models.base.annotations.ForeignKey;
 import database.models.base.annotations.Id;
 import database.models.base.annotations.Table;
+import database.query.SelectBuilder;
 
 @Table(name = "booksuggestions")
 public class BookSuggestion extends Entity {
@@ -25,4 +26,7 @@ public class BookSuggestion extends Entity {
         this.targetBookid = targetBookid;
     }
 
+    public static SelectBuilder selectBy(String queryParameter) {
+        return new SelectBuilder(queryParameter, BookSuggestion.class);
+    }
 }
