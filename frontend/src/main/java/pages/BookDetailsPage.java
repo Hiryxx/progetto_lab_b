@@ -7,6 +7,7 @@ import components.buttons.LibraryBookButton;
 import components.panels.InfoItem;
 import connection.Response;
 import data.BookData;
+import data.BookRatingData;
 import data.LibraryData;
 import state.BooksState;
 import state.LibraryDetailState;
@@ -18,13 +19,15 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.function.Supplier;
 
 import static classes.styles.Colors.*;
 
 public class BookDetailsPage extends Page {
     private BookData bookData = new BookData("", 0, "", "", "");
     private LibraryBookButton addLibraryButton = new LibraryBookButton("+ Aggiungi alla Libreria");
+    private boolean isBookInLibrary = false;
+    private boolean isBookRated = false;
+    private boolean isBookSuggested = false;
 
     private JLabel titleLabel = new JLabel();
     private JLabel authorLabel = new JLabel();
@@ -33,6 +36,11 @@ public class BookDetailsPage extends Page {
 
     private InfoItem datePanel;
     private InfoItem genrePanel;
+
+    private JPanel ratingsPanel;
+    private JPanel suggestionsPanel;
+    private JButton addRatingButton;
+    private JButton suggestBooksButton;
 
     public BookDetailsPage() {
         super();
@@ -71,11 +79,13 @@ public class BookDetailsPage extends Page {
         this.add(scrollPane, BorderLayout.CENTER);
 
     }
+
     @Override
     public void refresh() {
         bookData = BooksState.getDetailBook();
 
-        boolean isInLibrary = LibraryDetailState.isBookInLibrary(bookData.getId());
+        isBookInLibrary = LibraryDetailState.isBookInLibrary(bookData.getId());
+
 
         System.out.println("BOOK DETAILS REFRESHED: " + bookData);
         titleLabel.setText(bookData.getTitle());
@@ -85,24 +95,132 @@ public class BookDetailsPage extends Page {
         genrePanel.setLabelValue(bookData.getCategories());
         descriptionArea.setText(bookData.getDescription() != null ? bookData.getDescription() : "Nessuna descrizione disponibile.");
 
-        // TODO ALSO CHECK IF IN LIBRARY
-        if (UserState.isLoggedIn){
+        if (UserState.isLoggedIn) {
             System.out.println("User is logged in, showing add to library button.");
             addLibraryButton.setVisible(true);
-            if (isInLibrary) {
+
+            isBookRated = LibraryDetailState.isbBookRated(bookData.getId());
+            isBookSuggested = LibraryDetailState.isBookSuggested(bookData.getId());
+
+            if (isBookInLibrary) {
                 System.out.println("Book is already in library, disabling add button.");
                 addLibraryButton.setText("✓ Già in Libreria");
                 addLibraryButton.setEnabled(false);
             } else {
                 addLibraryButton.setText("+ Aggiungi alla Libreria");
                 addLibraryButton.setEnabled(true);
-                System.out.println("Book is not in library, enabling add button." + isInLibrary);
+                System.out.println("Book is not in library, enabling add button." + isBookInLibrary);
             }
-            //addLibraryButton.setBookData(bookData);
         } else {
             addLibraryButton.setVisible(false);
         }
+
+
+            boolean showRatingButtons = UserState.isLoggedIn && isBookInLibrary;
+            addRatingButton.setVisible(showRatingButtons);
+            if (isBookRated){
+                addRatingButton.setText("✓ Hai già valutato questo libro");
+                addRatingButton.setEnabled(false);
+            } else {
+                addRatingButton.setText("⭐ Aggiungi Valutazione");
+                addRatingButton.setEnabled(true);
+            }
+
+
+        if (suggestBooksButton != null) {
+            boolean showSuggestButtons = UserState.isLoggedIn && isBookInLibrary;
+            suggestBooksButton.setVisible(showSuggestButtons);
+            if (isBookSuggested){
+                suggestBooksButton.setText("✓ Hai già suggerito libri per questo libro");
+                suggestBooksButton.setEnabled(false);
+            } else {
+                suggestBooksButton.setText("📚 Suggerisci Libri");
+                suggestBooksButton.setEnabled(true);
+            }
+        }
+
+        updateRatingsPanel();
+
+        updateSuggestionsPanel();
+
+        revalidate();
         repaint();
+    }
+
+    private void updateRatingsPanel() {
+
+        ratingsPanel.removeAll();
+
+        // Title
+        JLabel ratingsTitle = new JLabel("Valutazioni Utenti");
+        ratingsTitle.setFont(new Font("SF Pro Display", Font.BOLD, 18));
+        ratingsTitle.setForeground(textPrimary);
+        ratingsTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+        ratingsPanel.add(ratingsTitle);
+        ratingsPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+
+        BookRatingData ratings = BooksState.getBookRatings(bookData.getId());
+
+        if (ratings == null) {
+            JLabel noRatingsLabel = new JLabel("Nessuna valutazione disponibile per questo libro");
+            noRatingsLabel.setFont(new Font("SF Pro Text", Font.ITALIC, 14));
+            noRatingsLabel.setForeground(textSecondary);
+            noRatingsLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+            ratingsPanel.add(noRatingsLabel);
+        } else {
+            // Update with actual ratings data
+            String[] categories = {"Stile", "Contenuto", "Gradevolezza", "Originalità", "Edizione", "Voto Finale"};
+            double[] averages = {ratings.stile, ratings.contenuto,ratings.gradevolezza, ratings.originalita,ratings.edizione,ratings.votofinale};
+            int totalReviews = ratings.rating_count;
+
+            JLabel reviewsCountLabel = new JLabel("Basato su " + totalReviews + " recensione/i");
+            reviewsCountLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 12));
+            reviewsCountLabel.setForeground(textSecondary);
+            reviewsCountLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+            ratingsPanel.add(reviewsCountLabel);
+            ratingsPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+
+            for (int i = 0; i < categories.length; i++) {
+                ratingsPanel.add(createRatingBar(categories[i], averages[i]));
+                if (i < categories.length - 1) {
+                    ratingsPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+                }
+            }
+        }
+
+        ratingsPanel.revalidate();
+        ratingsPanel.repaint();
+    }
+
+    private void updateSuggestionsPanel() {
+        suggestionsPanel.removeAll();
+
+        // Title
+        JLabel suggestionsTitle = new JLabel("Libri Consigliati dagli Utenti");
+        suggestionsTitle.setFont(new Font("SF Pro Display", Font.BOLD, 18));
+        suggestionsTitle.setForeground(textPrimary);
+        suggestionsTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+        suggestionsPanel.add(suggestionsTitle);
+        suggestionsPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+
+        java.util.List<BookData> suggestions = BooksState.getBookSuggestions(bookData.getId());
+
+        if (suggestions.isEmpty()) {
+            JLabel noSuggestionsLabel = new JLabel("Nessun libro consigliato dagli utenti");
+            noSuggestionsLabel.setFont(new Font("SF Pro Text", Font.ITALIC, 14));
+            noSuggestionsLabel.setForeground(textSecondary);
+            noSuggestionsLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+            suggestionsPanel.add(noSuggestionsLabel);
+        } else {
+
+            for (BookData book : suggestions) {
+                suggestionsPanel.add(createSuggestedBookItem(book.getTitle(), book.getAuthors(), 2));
+                suggestionsPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+            }
+        }
+
+        suggestionsPanel.revalidate();
+        suggestionsPanel.repaint();
     }
 
     private JPanel createHeaderPanel() {
@@ -313,7 +431,7 @@ public class BookDetailsPage extends Page {
                 libraryPopup.add(headerLabel);
                 libraryPopup.addSeparator();
 
-                for (LibraryData lib:  LibraryState.libraries) {
+                for (LibraryData lib : LibraryState.libraries) {
                     final String libName = lib.getName();
                     final int libId = lib.getId();
 
@@ -352,10 +470,14 @@ public class BookDetailsPage extends Page {
                         }
 
                         @Override
-                        public int getIconWidth() { return 16; }
+                        public int getIconWidth() {
+                            return 16;
+                        }
 
                         @Override
-                        public int getIconHeight() { return 16; }
+                        public int getIconHeight() {
+                            return 16;
+                        }
                     });
 
                     libraryItem.addActionListener(evt -> {
@@ -374,6 +496,8 @@ public class BookDetailsPage extends Page {
 
                         addLibraryButton.setText("✓ Aggiunto a " + libName);
                         addLibraryButton.setEnabled(false);
+
+                        isBookInLibrary = true;
                         libraryPopup.setVisible(false);
 
 
@@ -431,6 +555,8 @@ public class BookDetailsPage extends Page {
 
                 libraryPopup.show(addLibraryButton, 0, addLibraryButton.getHeight() + 5);
 
+                refresh();
+
             } else {
                 JOptionPane.showMessageDialog(
                         this,
@@ -443,7 +569,6 @@ public class BookDetailsPage extends Page {
 
         infoPanel.add(addLibraryButton, gbc);
 
-        // Spaziatore per spingere tutto in alto
         gbc.gridy = 5;
         gbc.weighty = 1.0;
         infoPanel.add(Box.createVerticalGlue(), gbc);
@@ -474,76 +599,278 @@ public class BookDetailsPage extends Page {
     }
 
     private JPanel createDetailsSection() {
-        // TODO MODIFY COMPLETELY
-        return createSectionCard("ℹ️ Dettagli Aggiuntivi", () -> {
-            JPanel detailsContainer = new JPanel(new BorderLayout());
-            detailsContainer.setOpaque(false);
+        return createSectionCard("📊 Valutazioni e Consigli", () -> {
+            JPanel mainContainer = new JPanel();
+            mainContainer.setLayout(new BoxLayout(mainContainer, BoxLayout.Y_AXIS));
+            mainContainer.setOpaque(false);
 
-            // Grid organizzata per i dettagli
-            JPanel detailsGrid = new JPanel(new GridBagLayout());
-            detailsGrid.setOpaque(false);
+            // Ratings section
+            ratingsPanel = createRatingsPanel();
+            mainContainer.add(ratingsPanel);
 
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.anchor = GridBagConstraints.WEST;
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.insets = new Insets(0, 0, 20, 30);
+            // Add rating button
+            mainContainer.add(Box.createRigidArea(new Dimension(0, 20)));
 
-            // Prima riga
-            gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0.5;
-            detailsGrid.add(createDetailItem("Valutazione Media", String.format("%.1f/5.0", 2.0), "⭐"), gbc);
+            addRatingButton = new JButton("⭐ Aggiungi Valutazione");
+            addRatingButton.setFont(new Font("SF Pro Text", Font.BOLD, 14));
+            addRatingButton.setForeground(Color.BLACK);
+            addRatingButton.setBackground(primaryColor);
+            addRatingButton.setBorderPainted(false);
+            addRatingButton.setFocusPainted(false);
+            addRatingButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            addRatingButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+            addRatingButton.setMaximumSize(new Dimension(250, 35));
 
-            gbc.gridx = 1; gbc.gridy = 0; gbc.insets = new Insets(0, 0, 20, 0);
-            detailsGrid.add(createDetailItem("Totale Recensioni", String.valueOf(0) + " recensioni", "💬"), gbc);
+            // Check visibility based on current state
+            boolean canRateAndSuggest = UserState.isLoggedIn && isBookInLibrary;
+            addRatingButton.setVisible(canRateAndSuggest);
 
-            // Seconda riga
-            gbc.gridx = 0; gbc.gridy = 1; gbc.insets = new Insets(0, 0, 20, 30);
-            detailsGrid.add(createDetailItem("Casa Editrice", "Bompiani", "🏢"), gbc);
+            addRatingButton.addActionListener(e -> showRatingDialog());
+            mainContainer.add(addRatingButton);
 
-            gbc.gridx = 1; gbc.gridy = 1; gbc.insets = new Insets(0, 0, 20, 0);
-            detailsGrid.add(createDetailItem("Pagine", "624 pagine", "📄"), gbc);
+            // Separator
+            mainContainer.add(Box.createRigidArea(new Dimension(0, 30)));
+            JSeparator separator = new JSeparator();
+            separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
+            mainContainer.add(separator);
+            mainContainer.add(Box.createRigidArea(new Dimension(0, 20)));
 
-            // Terza riga
-            gbc.gridx = 0; gbc.gridy = 2; gbc.insets = new Insets(0, 0, 0, 30);
-            detailsGrid.add(createDetailItem("Lingua", "Italiano", "🌍"), gbc);
+            // Suggestions section
+            suggestionsPanel = createSuggestionsPanel();
+            mainContainer.add(suggestionsPanel);
 
-            gbc.gridx = 1; gbc.gridy = 2; gbc.insets = new Insets(0, 0, 0, 0);
-            detailsGrid.add(createDetailItem("ISBN", "978-8845292613", "🔖"), gbc);
+            // Suggest books button
+            mainContainer.add(Box.createRigidArea(new Dimension(0, 20)));
 
-            detailsContainer.add(detailsGrid, BorderLayout.CENTER);
-            return detailsContainer;
+            suggestBooksButton = new JButton("📚 Suggerisci Libri");
+            suggestBooksButton.setFont(new Font("SF Pro Text", Font.BOLD, 14));
+            suggestBooksButton.setForeground(Color.BLACK);
+            suggestBooksButton.setBackground(accentColor);
+            suggestBooksButton.setBorderPainted(false);
+            suggestBooksButton.setFocusPainted(false);
+            suggestBooksButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            suggestBooksButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+            suggestBooksButton.setMaximumSize(new Dimension(200, 35));
+
+            // Check visibility based on current state
+            suggestBooksButton.setVisible(canRateAndSuggest);
+
+            suggestBooksButton.addActionListener(e -> showSuggestBooksDialog());
+            mainContainer.add(suggestBooksButton);
+
+            return mainContainer;
         });
     }
 
-    private JPanel createDetailItem(String label, String value, String icon) {
-        JPanel item = new JPanel(new BorderLayout());
-        item.setOpaque(false);
-        item.setPreferredSize(new Dimension(200, 60));
 
-        // Panel superiore con icona e label
-        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        headerPanel.setOpaque(false);
+    private JPanel createRatingsPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setOpaque(false);
 
-        JLabel iconLabel = new JLabel(icon);
-        iconLabel.setFont(new Font("Apple Color Emoji", Font.PLAIN, 16));
+        // Title
+        JLabel ratingsTitle = new JLabel("Valutazioni Utenti");
+        ratingsTitle.setFont(new Font("SF Pro Display", Font.BOLD, 18));
+        ratingsTitle.setForeground(textPrimary);
+        ratingsTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(ratingsTitle);
+        panel.add(Box.createRigidArea(new Dimension(0, 15)));
 
-        JLabel labelText = new JLabel(label);
-        labelText.setFont(new Font("SF Pro Text", Font.BOLD, 12));
-        labelText.setForeground(textSecondary);
-        labelText.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
+        return panel;
+    }
 
-        headerPanel.add(iconLabel);
-        headerPanel.add(labelText);
+    private JPanel createRatingBar(String category, double average) {
+        JPanel barPanel = new JPanel(new BorderLayout(10, 0));
+        barPanel.setOpaque(false);
+        barPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
 
-        // Valore principale
-        JLabel valueLabel = new JLabel(value);
-        valueLabel.setFont(new Font("SF Pro Display", Font.BOLD, 16));
-        valueLabel.setForeground(textPrimary);
-        valueLabel.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
+        JLabel categoryLabel = new JLabel(category);
+        categoryLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
+        categoryLabel.setForeground(textPrimary);
+        categoryLabel.setPreferredSize(new Dimension(100, 20));
 
-        item.add(headerPanel, BorderLayout.NORTH);
-        item.add(valueLabel, BorderLayout.CENTER);
+        JPanel progressContainer = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        return item;
+                // Background
+                g2d.setColor(new Color(200, 200, 200, 50));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+
+                // Fill based on average
+                int fillWidth = (int) ((average / 5.0) * getWidth());
+                GradientPaint gradient = new GradientPaint(0, 0, primaryColor, fillWidth, 0, accentColor);
+                g2d.setPaint(gradient);
+                g2d.fillRoundRect(0, 0, fillWidth, getHeight(), 10, 10);
+
+                g2d.dispose();
+            }
+        };
+        progressContainer.setPreferredSize(new Dimension(200, 20));
+
+        JLabel avgLabel = new JLabel(String.format("%.1f/5.0", average));
+        avgLabel.setFont(new Font("SF Pro Text", Font.BOLD, 14));
+        avgLabel.setForeground(textPrimary);
+        avgLabel.setPreferredSize(new Dimension(50, 20));
+
+        barPanel.add(categoryLabel, BorderLayout.WEST);
+        barPanel.add(progressContainer, BorderLayout.CENTER);
+        barPanel.add(avgLabel, BorderLayout.EAST);
+
+        return barPanel;
+    }
+
+    private JPanel createSuggestionsPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setOpaque(false);
+
+        JLabel suggestionsTitle = new JLabel("Libri Consigliati dagli Utenti");
+        suggestionsTitle.setFont(new Font("SF Pro Display", Font.BOLD, 18));
+        suggestionsTitle.setForeground(textPrimary);
+        suggestionsTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(suggestionsTitle);
+        panel.add(Box.createRigidArea(new Dimension(0, 15)));
+
+
+        return panel;
+    }
+
+    private JPanel createSuggestedBookItem(String title, String author, int suggestionCount) {
+        JPanel itemPanel = new JPanel(new BorderLayout(10, 0));
+        itemPanel.setOpaque(false);
+        itemPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(borderColor, 1),
+                BorderFactory.createEmptyBorder(10, 15, 10, 15)
+        ));
+        itemPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
+
+        JPanel infoPanel = new JPanel();
+        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
+        infoPanel.setOpaque(false);
+
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(new Font("SF Pro Text", Font.BOLD, 14));
+        titleLabel.setForeground(textPrimary);
+
+        JLabel authorLabel = new JLabel(author);
+        authorLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 12));
+        authorLabel.setForeground(textSecondary);
+
+        infoPanel.add(titleLabel);
+        infoPanel.add(authorLabel);
+
+        JLabel countLabel = new JLabel(suggestionCount + " utenti");
+        countLabel.setFont(new Font("SF Pro Text", Font.BOLD, 12));
+        countLabel.setForeground(primaryColor);
+
+        itemPanel.add(infoPanel, BorderLayout.CENTER);
+        itemPanel.add(countLabel, BorderLayout.EAST);
+
+        // Make clickable
+        itemPanel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        itemPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Navigate to book details (implement based on your navigation)
+                // BooksState.searchBookByTitle(title);
+            }
+        });
+
+        return itemPanel;
+    }
+
+    private void showRatingDialog() {
+        // Create rating dialog
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Valuta Libro", true);
+        dialog.setLayout(new BorderLayout());
+        int dialogWidth = (int) (MainFrame.mainFrame.getWidth() * 0.8);
+        int dialogHeight = (int) (MainFrame.mainFrame.getHeight() * 0.7);
+        dialog.setSize(Math.max(dialogWidth, 400), Math.max(dialogHeight, 500));
+        dialog.setLocationRelativeTo(this);
+
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        String[] categories = {"Stile", "Contenuto", "Gradevolezza", "Originalità", "Edizione"};
+        JSlider[] sliders = new JSlider[categories.length];
+
+        for (int i = 0; i < categories.length; i++) {
+            JLabel label = new JLabel(categories[i]);
+            label.setFont(new Font("SF Pro Text", Font.BOLD, 14));
+            contentPanel.add(label);
+
+            sliders[i] = new JSlider(1, 5, 3);
+            sliders[i].setMajorTickSpacing(1);
+            sliders[i].setPaintTicks(true);
+            sliders[i].setPaintLabels(true);
+            sliders[i].setSnapToTicks(true);
+            contentPanel.add(sliders[i]);
+            contentPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        }
+
+        JLabel commentLabel = new JLabel("Recensione (opzionale, max 256 caratteri):");
+        commentLabel.setFont(new Font("SF Pro Text", Font.BOLD, 14));
+        contentPanel.add(commentLabel);
+
+        JTextArea commentArea = new JTextArea(4, 40);
+        commentArea.setLineWrap(true);
+        commentArea.setWrapStyleWord(true);
+        JScrollPane scrollPane = new JScrollPane(commentArea);
+        contentPanel.add(scrollPane);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton cancelButton = new JButton("Annulla");
+        JButton saveButton = new JButton("Salva Valutazione");
+
+        cancelButton.addActionListener(e -> dialog.dispose());
+        saveButton.addActionListener(e -> {
+            BookRatingData ratingData = new BookRatingData();
+
+            ratingData.bookid = bookData.getId();
+            ratingData.stile = sliders[0].getValue();
+            ratingData.contenuto = sliders[1].getValue();
+            ratingData.gradevolezza = sliders[2].getValue();
+            ratingData.originalita = sliders[3].getValue();
+            ratingData.edizione = sliders[4].getValue();
+            ratingData.recensione = commentArea.getText().length() > 256 ? commentArea.getText().substring(0, 256) : commentArea.getText();
+
+            BooksState.saveBookRating(ratingData);
+            dialog.dispose();
+            JOptionPane.showMessageDialog(this, "Valutazione salvata con successo!");
+        });
+
+        buttonPanel.add(cancelButton);
+        buttonPanel.add(saveButton);
+
+        dialog.add(new JScrollPane(contentPanel), BorderLayout.CENTER);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+        dialog.setVisible(true);
+    }
+
+    private void showSuggestBooksDialog() {
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Suggerisci Libri", true);
+        dialog.setLayout(new BorderLayout());
+        dialog.setSize(500, 400);
+        dialog.setLocationRelativeTo(this);
+
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        JLabel instructionLabel = new JLabel("Seleziona fino a 3 libri dalla tua libreria da consigliare:");
+        instructionLabel.setFont(new Font("SF Pro Text", Font.BOLD, 14));
+        contentPanel.add(instructionLabel);
+        contentPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+
+       // todo implement data retrieval
+
+        dialog.add(new JScrollPane(contentPanel), BorderLayout.CENTER);
+        dialog.setVisible(true);
     }
 
     private JPanel createSectionCard(String title, java.util.function.Supplier<JPanel> contentSupplier) {

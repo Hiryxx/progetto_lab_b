@@ -368,27 +368,6 @@ public class Server implements AutoCloseable {
             }
         }, Book.class);
 
-        // TODO add useful fields
-        commandRegister.register("ADD_RATING", (BookRating bookRating) -> {
-            try {
-                bookRating.create();
-                return new SingleResponse("Book rating added successfully");
-            } catch (IllegalAccessException | SQLException e) {
-                return new ErrorResponse("Error creating book rating: " + e.getMessage());
-            }
-        }, BookRating.class);
-
-
-        commandRegister.register("ADD_SUGGESTION", (BookSuggestion bookSuggestion) -> {
-            try {
-                bookSuggestion.create();
-                return new SingleResponse("Book suggestion added successfully");
-            } catch (IllegalAccessException | SQLException e) {
-                return new ErrorResponse("Error creating book suggestion: " + e.getMessage());
-            }
-        }, BookSuggestion.class);
-
-
         commandRegister.register("GET_CATEGORIES", () -> {
             try {
                 PrepareQuery pq = Category.selectBy("*")
@@ -437,20 +416,106 @@ public class Server implements AutoCloseable {
             }
         }, Book.class);
 
-        commandRegister.register("GET_BOOK_RATINGS", (Book book) -> {
+        // todo improve
+        commandRegister.register("GET_BOOK_RATINGS", (BookRating book) -> {
             try {
-                PrepareQuery pq = BookRating.selectBy("bookratings.*, users.email as user_email")
-                        .join(User.class, "users.cf = bookratings.usercf")
+                PrepareQuery pq = BookRating.selectBy("AVG(bookratings.stile) as stile, " +
+                                "AVG(bookratings.contenuto) as contenuto, " +
+                                "AVG(bookratings.gradevolezza) as gradevolezza, " +
+                                "AVG(bookratings.originalita) as originalita, " +
+                                "AVG(bookratings.edizione) as edizione, " +
+                                "AVG(bookratings.votofinale) as votofinale, " +
+                                "COUNT(*) as rating_count")
                         .where("bookratings.bookid = ?")
-                        .orderBy("bookratings.votofinale DESC")
-                        .prepare(book.getId());
+                        .prepare(book.getBookid());
 
                 QueryResult result = pq.executeResult();
-                return new MultiResponse(result);
+                var iterator = result.iterator();
+
+                if (iterator.hasNext()) {
+                    ResultSet rs = iterator.next();
+                    return new JsonResponse(rs);
+                } else {
+                    return new ErrorResponse("No ratings found for this book");
+                }
             } catch (SQLException e) {
                 return new ErrorResponse("Error getting book ratings: " + e.getMessage());
             }
-        }, Book.class);
+        }, BookRating.class);
+
+        commandRegister.register("SAVE_BOOK_RATING", (BookRating bookRating) -> {
+            try {
+                int stile = bookRating.getStile();
+                int contenuto = bookRating.getContenuto();
+                int gradevolezza = bookRating.getGradevolezza();
+                int originalita = bookRating.getOriginalita();
+                int edizione = bookRating.getEdizione();
+
+                double finalScore = (stile + contenuto + gradevolezza + originalita + edizione) / 5.0;
+                bookRating.setVotofinale((int) Math.round(finalScore));
+
+                bookRating.create();
+                return new SingleResponse("Book rating saved successfully with final score: " + bookRating.getVotofinale());
+            } catch (IllegalAccessException | SQLException e) {
+                return new ErrorResponse("Error saving book rating: " + e.getMessage());
+            }
+        }, BookRating.class);
+
+        commandRegister.register("IS_BOOK_RATED", (String input) -> {
+            try {
+                String[] parts = input.split(",", 2);
+                if (parts.length != 2) {
+                    return new ErrorResponse("Invalid input format. Expected: bookId,userCf");
+                }
+
+                int bookId = Integer.parseInt(parts[0].trim());
+                String userCf = parts[1].trim();
+
+                PrepareQuery pq = BookRating.selectBy("1")
+                        .where("bookid = ? AND usercf = ?")
+                        .prepare(bookId, userCf);
+
+                try (QueryResult result = pq.executeResult()) {
+                    if (result.iterator().hasNext()) {
+                        return new SingleResponse("true");
+                    } else {
+                        return new SingleResponse("false");
+                    }
+                }
+            } catch (NumberFormatException e) {
+                return new ErrorResponse("Invalid bookId format. Must be a number.");
+            } catch (Exception e) {
+                return new ErrorResponse("Error checking book rating: " + e.getMessage());
+            }
+        });
+
+        commandRegister.register("IS_BOOK_SUGGESTED", (String input) -> {
+            try {
+                String[] parts = input.split(",", 2);
+                if (parts.length != 2) {
+                    return new ErrorResponse("Invalid input format. Expected: bookId,userCf");
+                }
+
+                int bookId = Integer.parseInt(parts[0].trim());
+                String userCf = parts[1].trim();
+
+                PrepareQuery pq = BookSuggestion.selectBy("1")
+                        .where("targetbookid = ? AND usercf = ?")
+                        .prepare(bookId, userCf);
+
+                try (QueryResult result = pq.executeResult()) {
+                    if (result.iterator().hasNext()) {
+                        return new SingleResponse("true");
+                    } else {
+                        return new SingleResponse("false");
+                    }
+                }
+            } catch (NumberFormatException e) {
+                return new ErrorResponse("Invalid bookId format. Must be a number.");
+            } catch (Exception e) {
+                return new ErrorResponse("Error checking book suggestion: " + e.getMessage());
+            }
+        });
 
 
         commandRegister.register("PING", () -> new SingleResponse("PONG"));

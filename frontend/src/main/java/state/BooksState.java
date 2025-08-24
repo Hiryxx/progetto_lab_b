@@ -2,8 +2,10 @@ package state;
 
 import classes.MainFrame;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import connection.Response;
 import connection.SocketConnection;
 import data.BookData;
+import data.BookRatingData;
 import data.FilterData;
 import json.JsonObject;
 import json.JsonUtil;
@@ -150,7 +152,7 @@ public class BooksState {
         JsonObject request = new JsonObject();
         int year;
         try {
-             year = Integer.parseInt(yearText);
+            year = Integer.parseInt(yearText);
         } catch (NumberFormatException e) {
             year = -1;
         }
@@ -181,4 +183,91 @@ public class BooksState {
         }
     }
 
+    public static List<BookData> getBookSuggestions(int bookId) {
+        SocketConnection sc = MainFrame.getSocketConnection();
+        JsonObject request = new JsonObject();
+        request.put("bookid", bookId);
+
+        sc.send("GET_BOOK_SUGGESTIONS", request);
+
+        List<String> books = sc.receiveUntilStop();
+
+        List<BookData> suggestions = new ArrayList<>();
+
+        if (books == null || books.isEmpty()) {
+            System.out.println("No book suggestions found.");
+            return suggestions;
+        }
+
+        for (String bookJson : books) {
+            BookData book;
+            try {
+                book = JsonUtil.fromString(bookJson, BookData.class);
+            } catch (JsonProcessingException e) {
+                System.out.println("Error parsing book suggestion JSON: " + bookJson);
+                continue;
+            }
+            suggestions.add(book);
+
+            System.out.println("Book suggestion fetched: " + book.getTitle() + " by " + book.getAuthors());
+        }
+
+        return suggestions;
+
+    }
+
+    public static void saveBookRating(BookRatingData rating) {
+        SocketConnection sc = MainFrame.getSocketConnection();
+        JsonObject request = new JsonObject();
+
+        request.put("bookid", rating.bookid);
+        request.put("contenuto", rating.contenuto);
+        request.put("edizione", rating.edizione);
+        request.put("originalita", rating.originalita);
+        request.put("gradevolezza", rating.gradevolezza);
+        request.put("recensione", rating.recensione);
+        request.put("stile", rating.stile);
+        request.put("votofinale", rating.votofinale);
+        request.put("usercf", UserState.cf);
+
+        sc.send("SAVE_BOOK_RATING", request, UserState.cf);
+
+        Response response = sc.receive();
+        if (response.isError()) {
+            System.out.println("Error setting book rating: " + response.getResponseText().substring(6));
+        } else {
+            System.out.println("Book rating set successfully for book ID: " + rating.bookid);
+        }
+
+    }
+
+
+    public static BookRatingData getBookRatings(int bookId) {
+        SocketConnection sc = MainFrame.getSocketConnection();
+        JsonObject request = new JsonObject();
+        request.put("bookid", bookId);
+
+        sc.send("GET_BOOK_RATINGS", request);
+
+        Response response = sc.receive();
+        if (response.isError()) {
+            System.out.println("Error fetching book ratings: " + response.getResponseText().substring(6));
+            return null;
+        } else {
+            String responseText = response.getResponseText();
+            System.out.println("RATING response: " + responseText);
+            try {
+                BookRatingData rating = JsonUtil.fromString(responseText, BookRatingData.class);
+                if (rating.rating_count == 0) {
+                    System.out.println("No ratings found for book ID: " + bookId);
+                    return null;
+                }
+                System.out.println("Book ratings fetched successfully for book ID: " + bookId);
+                return rating;
+            } catch (JsonProcessingException e) {
+                System.out.println("Error parsing book ratings JSON: " + responseText);
+                return null;
+            }
+        }
+    }
 }

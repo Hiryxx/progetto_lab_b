@@ -23,4 +23,32 @@ public class LibraryDetailState {
 
         return response.getResponseText().equalsIgnoreCase("true");
     }
+
+    public static boolean isbBookRated(int bookId) {
+        SocketConnection sc = MainFrame.getSocketConnection();
+
+        sc.send("IS_BOOK_RATED"+ ";" + bookId  + "," + UserState.cf +  ";" + UserState.cf);
+        Response response = sc.receive();
+
+        if (response.isError()) {
+            System.err.println("Error checking if book is rated: " + response.getResponseText());
+            return false;
+        }
+
+        return response.getResponseText().equalsIgnoreCase("true");
+    }
+
+    public static boolean isBookSuggested(int bookId) {
+        SocketConnection sc = MainFrame.getSocketConnection();
+
+        sc.send("IS_BOOK_SUGGESTED"+ ";" + bookId  + "," + UserState.cf +  ";" + UserState.cf);
+        Response response = sc.receive();
+
+        if (response.isError()) {
+            System.err.println("Error checking if book is suggested: " + response.getResponseText());
+            return false;
+        }
+
+        return response.getResponseText().equalsIgnoreCase("true");
+    }
 }

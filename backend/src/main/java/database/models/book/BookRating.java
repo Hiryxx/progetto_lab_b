@@ -88,6 +88,11 @@ public class BookRating extends Entity {
         return bookid;
     }
 
+
+    public void setVotofinale(int votofinale) {
+        this.votofinale = votofinale;
+    }
+
     public static SelectBuilder selectBy(String queryParameter) {
         return new SelectBuilder(queryParameter, BookRating.class);
     }

@@ -1,5 +1,6 @@
 package database.models.book;
 
+import database.models.User;
 import database.models.base.Entity;
 import database.models.base.annotations.Column;
 import database.models.base.annotations.ForeignKey;
@@ -15,15 +16,20 @@ public class BookSuggestion extends Entity {
 
     @ForeignKey(references = Book.class)
     @Column(type = "SERIAL", nullable = false)
-    private int sourceBookid;
+    private int sourcebookid;
 
     @ForeignKey(references = Book.class)
     @Column(type = "SERIAL", nullable = false)
-    private int targetBookid;
+    private int targetbookid;
 
-    public BookSuggestion(int sourceBookid, int targetBookid) {
-        this.sourceBookid = sourceBookid;
-        this.targetBookid = targetBookid;
+    @ForeignKey(references = User.class, column = "cf")
+    @Column(type = "VARCHAR(16)", nullable = false)
+    private String usercf;
+
+    public BookSuggestion(int sourcebookid, int targetbookid, String usercf) {
+        this.sourcebookid = sourcebookid;
+        this.targetbookid = targetbookid;
+        this.usercf = usercf;
     }
 
     public static SelectBuilder selectBy(String queryParameter) {
