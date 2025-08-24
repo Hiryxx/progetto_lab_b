@@ -24,20 +24,6 @@ public class Main {
         }
     }
 
-    private static void tryServer() throws Exception {
-        try (Server server = new Server()) {
-            server.setup();
-            DbUtil.init(User.class);
-            String json = "{\"cf\":\"12345678901234567890123456789013\",\"name\":\"John Doe\",\"email\":\"franco.raossi@gmail.com\",\"password\":\"password\"}";
-            CommandRegister commandRegister = server.getRouter();
-            Optional<String> jsonOpt = Optional.of(json);
-            commandRegister.execute("CREATE_USER", jsonOpt);
-
-            Optional<String> nothing = Optional.empty();
-            commandRegister.execute("PING", nothing);
-
-        }
-    }
 
    /* private static void tryDb() throws SQLException, IllegalAccessException {
         Scanner in = new Scanner(System.in);

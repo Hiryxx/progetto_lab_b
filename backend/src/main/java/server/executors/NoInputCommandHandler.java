@@ -1,5 +1,7 @@
 package server.executors;
 
+import server.connection.request.NoInputRequest;
+import server.connection.request.Request;
 import server.connection.response.Sendable;
 
 import java.util.Optional;
@@ -21,8 +23,12 @@ public class NoInputCommandHandler implements Executable {
      *
      * @throws Exception If the action throws an exception.
      */
-    public Sendable execute(Optional<String> args) throws Exception {
-        assert args.isEmpty();
+    public Sendable execute(Request request) throws Exception {
         return action.get();
+    }
+
+    @Override
+    public Request parseRequest(String command, Optional<String> args) {
+        return new NoInputRequest();
     }
 }

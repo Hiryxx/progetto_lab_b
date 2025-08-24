@@ -1,6 +1,8 @@
 package server.executors;
 
 import database.models.base.Entity;
+import server.connection.request.EntityRequest;
+import server.connection.request.Request;
 import server.connection.response.Sendable;
 import utils.JSONUtil;
 
@@ -14,10 +16,10 @@ import java.util.function.Function;
  * @param <T> The type of entity this handler will work with.
  */
 public class CommandHandler<T extends Entity> implements Executable {
-    private final Function<T, Sendable> action;
+    private final Function<EntityRequest<T>, Sendable> action;
     private final Class<T> entityType;
 
-    public CommandHandler(Function<T, Sendable> action, Class<T> entityType) {
+    public CommandHandler(Function<EntityRequest<T>, Sendable> action, Class<T> entityType) {
         this.action = action;
         this.entityType = entityType;
     }
@@ -25,15 +27,16 @@ public class CommandHandler<T extends Entity> implements Executable {
     /**
      * Executes the action on the entity parsed from the given JSON string.
      *
-     * @param args The JSON string representing the entity.
+     * @param request The JSON string representing the entity.
      * @throws Exception If parsing fails or if the action throws an exception.
      */
-    public Sendable execute(Optional<String> args) throws Exception {
-        if (args.isEmpty()) {
-            throw new IllegalArgumentException("No arguments provided");
-        }
+    public Sendable execute(Request request) throws Exception {
+        return action.apply((EntityRequest<T>) request);
+    }
 
+    @Override
+    public Request parseRequest(String command, Optional<String> args) throws Exception {
         T entity = (T) JSONUtil.parse(args.get(), entityType);
-        return action.apply(entity);
+        return new EntityRequest<>(entity);
     }
 }

@@ -13,7 +13,7 @@ public class LibraryDetailState {
     public static boolean isBookInLibrary(int bookId) {
         SocketConnection sc = MainFrame.getSocketConnection();
 
-        sc.send("IS_BOOK_IN_LIBRARY"+ ";" + bookId  + "," + UserState.cf +  ";" + UserState.cf);
+        sc.send("IS_BOOK_IN_LIBRARY"+ ";" + bookId +  ";" + UserState.cf);
         Response response = sc.receive();
 
         if (response.isError()) {
@@ -27,7 +27,7 @@ public class LibraryDetailState {
     public static boolean isbBookRated(int bookId) {
         SocketConnection sc = MainFrame.getSocketConnection();
 
-        sc.send("IS_BOOK_RATED"+ ";" + bookId  + "," + UserState.cf +  ";" + UserState.cf);
+        sc.send("IS_BOOK_RATED"+ ";" + bookId  + ";" + UserState.cf);
         Response response = sc.receive();
 
         if (response.isError()) {
@@ -41,7 +41,7 @@ public class LibraryDetailState {
     public static boolean isBookSuggested(int bookId) {
         SocketConnection sc = MainFrame.getSocketConnection();
 
-        sc.send("IS_BOOK_SUGGESTED"+ ";" + bookId  + "," + UserState.cf +  ";" + UserState.cf);
+        sc.send("IS_BOOK_SUGGESTED"+ ";" + bookId  +  ";" + UserState.cf);
         Response response = sc.receive();
 
         if (response.isError()) {

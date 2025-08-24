@@ -1,6 +1,5 @@
 package server;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import data.BookFilterRequest;
 import database.models.Author;
 import database.models.Category;
@@ -12,6 +11,9 @@ import database.query.Query;
 import database.query.QueryResult;
 import database.query.SelectBuilder;
 import server.connection.SocketConnection;
+import server.connection.request.EntityRequest;
+import server.connection.request.Request;
+import server.connection.request.StringRequest;
 import server.connection.response.*;
 import server.router.CommandRegister;
 import utils.DbUtil;
@@ -25,7 +27,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * The Server class handles incoming client connections and processes commands.
@@ -128,7 +129,8 @@ public class Server implements AutoCloseable {
      * Register the server commands
      */
     private void registerCommands() {
-        commandRegister.register("REGISTER", (User user) -> {
+        commandRegister.register("REGISTER", (EntityRequest<User> request) -> {
+            User user = request.getEntity();
             try {
                 String unhashedPassword = user.getPassword();
                 String hashedPassword = HashUtils.hash(unhashedPassword);
@@ -141,7 +143,10 @@ public class Server implements AutoCloseable {
             }
         }, User.class);
 
-        commandRegister.register("LOGIN", (User user) -> {
+        commandRegister.register("LOGIN", (EntityRequest<User> request) -> {
+
+            User user = request.getEntity();
+
             String hashedPassword = HashUtils.hash(user.getPassword());
             user.setPassword(hashedPassword);
 
@@ -164,7 +169,8 @@ public class Server implements AutoCloseable {
 
         }, User.class);
 
-        commandRegister.register("CREATE_LIBRARY", (Library library) -> {
+        commandRegister.register("CREATE_LIBRARY", (EntityRequest<Library> request) -> {
+            Library library = request.getEntity();
             try {
                 library.create();
 
@@ -184,8 +190,8 @@ public class Server implements AutoCloseable {
             }
         }, Library.class);
 
-
-        commandRegister.register("GET_LIBRARIES", (String userCf) -> {
+        commandRegister.register("GET_LIBRARIES", (StringRequest request) -> {
+            String userCf = request.getUserCf();
             try {
                 PrepareQuery pq = Library.selectBy("*")
                         .where("userCf = ?")
@@ -199,7 +205,8 @@ public class Server implements AutoCloseable {
         });
 
 
-        commandRegister.register("GET_LIBRARY_BOOKS", (Library library) -> {
+        commandRegister.register("GET_LIBRARY_BOOKS", (EntityRequest<Library> request) -> {
+            Library library = request.getEntity();
             try {
                 PrepareQuery pq = LibraryBook.selectBy("books.*, " +
                                 "STRING_AGG(DISTINCT authors.name, ', ') as authors, " +
@@ -221,7 +228,8 @@ public class Server implements AutoCloseable {
             }
         }, Library.class);
 
-        commandRegister.register("GET_BOOKS", (String limitInput) -> {
+        commandRegister.register("GET_BOOKS", (StringRequest request) -> {
+            String limitInput = request.getArgument();
             try {
                 int limit = limitInput != null ? Integer.parseInt(limitInput) : 20;
                 PrepareQuery pq = Book.selectBy("books.*, " +
@@ -242,7 +250,8 @@ public class Server implements AutoCloseable {
             }
         });
 
-        commandRegister.register("GET_FILTERED_BOOKS", (String filterJson) -> {
+        commandRegister.register("GET_FILTERED_BOOKS", (StringRequest request) -> {
+            String filterJson = request.getArgument();
             try {
                 BookFilterRequest filters = JSONUtil.getMAPPER().readValue(filterJson, BookFilterRequest.class);
 
@@ -305,15 +314,10 @@ public class Server implements AutoCloseable {
         });
 
 
-        commandRegister.register("IS_BOOK_IN_LIBRARY", (String input) -> {
+        commandRegister.register("IS_BOOK_IN_LIBRARY", (StringRequest request) -> {
             try {
-                String[] parts = input.split(",", 2);
-                if (parts.length != 2) {
-                    return new ErrorResponse("Invalid input format. Expected: bookId,userCf");
-                }
-
-                int bookId = Integer.parseInt(parts[0].trim());
-                String userCf = parts[1].trim();
+                int bookId = Integer.parseInt(request.getArgument());
+                String userCf = request.getUserCf();
 
                 PrepareQuery pq = LibraryBook.selectBy("1")
                         .join(Library.class, "libraries.id = librarybooks.libraryId")
@@ -334,7 +338,8 @@ public class Server implements AutoCloseable {
             }
         });
 
-        commandRegister.register("ADD_BOOK", (LibraryBook libraryBook) -> {
+        commandRegister.register("ADD_BOOK", (EntityRequest<LibraryBook> request) -> {
+            LibraryBook libraryBook = request.getEntity();
             try {
                 libraryBook.create();
                 return new SingleResponse("Book added successfully");
@@ -344,7 +349,8 @@ public class Server implements AutoCloseable {
         }, LibraryBook.class);
 
 
-        commandRegister.register("REMOVE_BOOK", (LibraryBook libraryBook) -> {
+        commandRegister.register("REMOVE_BOOK", (EntityRequest<LibraryBook> request) -> {
+            LibraryBook libraryBook = request.getEntity();
             try {
                 libraryBook.delete();
                 return new SingleResponse("Book removed successfully");
@@ -354,7 +360,8 @@ public class Server implements AutoCloseable {
         }, LibraryBook.class);
 
 
-        commandRegister.register("BOOK_INFO", (Book book) -> {
+        commandRegister.register("BOOK_INFO", (EntityRequest<Book> request) -> {
+            Book book = request.getEntity();
             try {
                 PrepareQuery pq = Book.selectBy("*")
                         .where("id = ?")
@@ -392,7 +399,8 @@ public class Server implements AutoCloseable {
             }
         });
 
-        commandRegister.register("GET_BOOK_SUGGESTIONS", (Book book) -> {
+        commandRegister.register("GET_BOOK_SUGGESTIONS", (EntityRequest<Book> request) -> {
+            Book book = request.getEntity();
             try {
                 PrepareQuery pq = BookSuggestion.selectBy("books.*, " +
                                 "STRING_AGG(DISTINCT authors.name, ', ') as authors, " +
@@ -417,7 +425,8 @@ public class Server implements AutoCloseable {
         }, Book.class);
 
         // todo improve
-        commandRegister.register("GET_BOOK_RATINGS", (BookRating book) -> {
+        commandRegister.register("GET_BOOK_RATINGS", (EntityRequest<BookRating> request) -> {
+            BookRating book = request.getEntity();
             try {
                 PrepareQuery pq = BookRating.selectBy("AVG(bookratings.stile) as stile, " +
                                 "AVG(bookratings.contenuto) as contenuto, " +
@@ -443,7 +452,8 @@ public class Server implements AutoCloseable {
             }
         }, BookRating.class);
 
-        commandRegister.register("SAVE_BOOK_RATING", (BookRating bookRating) -> {
+        commandRegister.register("SAVE_BOOK_RATING", (EntityRequest<BookRating> request) -> {
+            BookRating bookRating = request.getEntity();
             try {
                 int stile = bookRating.getStile();
                 int contenuto = bookRating.getContenuto();
@@ -461,15 +471,10 @@ public class Server implements AutoCloseable {
             }
         }, BookRating.class);
 
-        commandRegister.register("IS_BOOK_RATED", (String input) -> {
+        commandRegister.register("IS_BOOK_RATED", (StringRequest request) -> {
             try {
-                String[] parts = input.split(",", 2);
-                if (parts.length != 2) {
-                    return new ErrorResponse("Invalid input format. Expected: bookId,userCf");
-                }
-
-                int bookId = Integer.parseInt(parts[0].trim());
-                String userCf = parts[1].trim();
+                int bookId = Integer.parseInt(request.getArgument());
+                String userCf = request.getUserCf();
 
                 PrepareQuery pq = BookRating.selectBy("1")
                         .where("bookid = ? AND usercf = ?")
@@ -489,15 +494,10 @@ public class Server implements AutoCloseable {
             }
         });
 
-        commandRegister.register("IS_BOOK_SUGGESTED", (String input) -> {
+        commandRegister.register("IS_BOOK_SUGGESTED", (StringRequest request) -> {
             try {
-                String[] parts = input.split(",", 2);
-                if (parts.length != 2) {
-                    return new ErrorResponse("Invalid input format. Expected: bookId,userCf");
-                }
-
-                int bookId = Integer.parseInt(parts[0].trim());
-                String userCf = parts[1].trim();
+                int bookId = Integer.parseInt(request.getArgument());
+                String userCf = request.getUserCf();
 
                 PrepareQuery pq = BookSuggestion.selectBy("1")
                         .where("targetbookid = ? AND usercf = ?")
@@ -517,10 +517,6 @@ public class Server implements AutoCloseable {
             }
         });
 
-
-        commandRegister.register("PING", () -> new SingleResponse("PONG"));
-
-        commandRegister.register("TRY", SingleResponse::new);
 
         commandRegister.setFreeCommand("GET_BOOKS");
         commandRegister.setFreeCommand("GET_FILTERED_BOOKS");
@@ -573,27 +569,17 @@ public class Server implements AutoCloseable {
                 try {
                     // parts are command;?json;?userId
                     String[] parts = inputLine.split(";", 3);
-                    if (parts.length < 1) {
-                        // TODO specific method for sending error message
-                        connection.getOut().println("Error: Invalid command format. You need to provide a command.");
-                        continue;
-                    }
-
-                    String command = parts[0].toUpperCase();
-                    // Check if it has a json argument
-                    Optional<String> args = parts.length > 1 ? Optional.of(parts[1]) : Optional.empty();
-
-                    String userId = parts.length > 2 ? parts[2] : null;
-
-                    // Simple way to "authenticate" the user
-                    if (!commandRegister.isFreeCommand(command) && userId == null) {
-                        Sendable errorResponse = new ErrorResponse("You need to provide a userId for this command.");
+                    Request request;
+                    try{
+                        request = commandRegister.parseRequest(parts);
+                    } catch (Exception e) {
+                        System.err.println("Error parsing request: " + e.getMessage());
+                        Sendable errorResponse = new ErrorResponse("Error parsing request: " + e.getMessage());
                         connection.send(errorResponse);
                         continue;
                     }
-                    System.out.println("Processing command: " + command + " with args: " + args.orElse("None"));
 
-                    Sendable result = commandRegister.execute(command, args);
+                    Sendable result = commandRegister.execute(request);
                     System.out.println("SENDING DATA");
                     connection.send(result);
                 } catch (Exception e) {
@@ -601,8 +587,6 @@ public class Server implements AutoCloseable {
                     Sendable errorResponse = new ErrorResponse("Error processing command: " + e.getMessage());
                     connection.send(errorResponse);
                 }
-                /*System.out.println("SENDING STOP MESSAGE");
-                connection.sendStopMessage();*/
             }
         } catch (IOException e) {
             if (connection.getSocket().isClosed()) {
@@ -618,13 +602,6 @@ public class Server implements AutoCloseable {
                 System.err.println("Error closing client socket: " + e.getMessage());
             }
         }
-    }
-
-    /**
-     * Returns the CommandRegister instance.
-     */
-    public CommandRegister getRouter() {
-        return commandRegister;
     }
 
     /**

@@ -23,7 +23,7 @@ public class LibraryState {
         System.out.println("Requesting libraries for user: " + userCf);
         SocketConnection sc = MainFrame.getSocketConnection();
 
-        sc.send("GET_LIBRARIES;" + userCf + ";" + userCf);
+        sc.send("GET_LIBRARIES; " + " ;" + userCf);
 
         List<String> libraries = sc.receiveUntilStop();
 

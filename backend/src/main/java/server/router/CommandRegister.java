@@ -1,6 +1,9 @@
 package server.router;
 
 import database.models.base.Entity;
+import server.connection.request.EntityRequest;
+import server.connection.request.Request;
+import server.connection.request.StringRequest;
 import server.connection.response.Sendable;
 import server.executors.CommandHandler;
 import server.executors.Executable;
@@ -30,7 +33,7 @@ public class CommandRegister {
      * @param action The action to execute when the command is called
      * @param entityType The type of the entity to be passed to the action
      */
-    public <T extends Entity> void register(String command, Function<T, Sendable> action, Class<T> entityType) {
+    public <T extends Entity> void register(String command, Function<EntityRequest<T>, Sendable> action, Class<T> entityType) {
         commands.put(command, new CommandHandler<>(action, entityType));
     }
 
@@ -39,7 +42,7 @@ public class CommandRegister {
      * @param command The command to register
      * @param action The action to execute when the command is called
      */
-    public void register(String command, Function<String, Sendable> action) {
+    public void register(String command, Function<StringRequest, Sendable> action) {
         commands.put(command, new StringCommandHandler(action));
     }
 
@@ -53,16 +56,32 @@ public class CommandRegister {
     }
 
     /***
-     Execute a command with the given arguments
-     * @param command The command to execute
-     * @param args The arguments to pass to the command (optional)
+     Parse a request from the given parts
+     * @param parts The parts of the request
+     * @return The parsed request
+     * @throws Exception if the command is not found or if the arguments are invalid
      */
-    public Sendable execute(String command, Optional<String> args) throws Exception {
-        Executable executable = commands.get(command);
-        if (executable == null) {
-            throw new RouterNotFoundException("Command not found: " + command);
+    public Request parseRequest(String[] parts) throws Exception {
+        if (parts.length < 1) {
+            throw new InvalidArgs("Error: Invalid command format. You need to provide a command.");
         }
-        return executable.execute(args);
+
+        String command = parts[0].toUpperCase();
+        // Checks if it has a json argument
+        Optional<String> args = parts.length > 1 ? Optional.of(parts[1]) : Optional.empty();
+
+        String userCf = parts.length > 2 ? parts[2] : null;
+
+        if (!isFreeCommand(command) && userCf == null) {
+            throw new InvalidArgs("You need to provide a userCf for this command.");
+        }
+
+        Executable executable = commands.get(command);
+        Request request = executable.parseRequest(command, args);
+        request.setCommand(command);
+
+        request.setUserCf(userCf);
+        return request;
     }
 
     /***
@@ -89,6 +108,24 @@ public class CommandRegister {
             throw new IllegalArgumentException("Command cannot be null or empty");
         }
         return freeCommands.contains(command);
+    }
+
+    /***
+     Execute a command with the given arguments
+     * @param request The request containing the command and its arguments
+     * @return The response from the command execution
+     */
+    public Sendable execute(Request request) {
+        String command = request.getCommand();
+        Executable executable = commands.get(command);
+        if (executable == null) {
+            throw new RuntimeException("Command not found: " + command);
+        }
+        try {
+            return executable.execute(request);
+        } catch (Exception e) {
+            throw new RuntimeException("Error executing command: " + command, e);
+        }
     }
 }
 

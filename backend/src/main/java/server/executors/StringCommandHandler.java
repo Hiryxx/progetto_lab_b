@@ -1,5 +1,7 @@
 package server.executors;
 
+import server.connection.request.Request;
+import server.connection.request.StringRequest;
 import server.connection.response.Sendable;
 
 import java.util.Optional;
@@ -10,24 +12,29 @@ import java.util.function.Function;
  * It implements the Executable interface.
  */
 public class StringCommandHandler implements Executable {
-    private final Function<String, Sendable> action;
+    private final Function<StringRequest, Sendable> action;
 
-    public StringCommandHandler(Function<String, Sendable> action) {
+    public StringCommandHandler(Function<StringRequest, Sendable> action) {
         this.action = action;
     }
 
     /**
      * Executes the action with the provided optional string arguments.
      *
-     * @param args The arguments to pass to the action
+     * @param request The request to pass to the action
      * @return The result of the action
      * @throws Exception if an error occurs during execution
      */
     @Override
-    public Sendable execute(Optional<String> args) throws Exception {
+    public Sendable execute(Request request) throws Exception {
+        return action.apply((StringRequest) request);
+    }
+
+    @Override
+    public Request parseRequest(String command, Optional<String> args)  {
         if (args.isEmpty()) {
             throw new IllegalArgumentException("No arguments provided");
         }
-        return action.apply(args.get());
+        return new StringRequest(args.get());
     }
 }
