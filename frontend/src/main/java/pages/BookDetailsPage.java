@@ -19,6 +19,8 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 import static classes.styles.Colors.*;
 
@@ -203,7 +205,7 @@ public class BookDetailsPage extends Page {
         suggestionsPanel.add(suggestionsTitle);
         suggestionsPanel.add(Box.createRigidArea(new Dimension(0, 15)));
 
-        java.util.List<BookData> suggestions = BooksState.getBookSuggestions(bookData.getId());
+        List<BookData> suggestions = BooksState.getBookSuggestions(bookData.getId());
 
         if (suggestions.isEmpty()) {
             JLabel noSuggestionsLabel = new JLabel("Nessun libro consigliato dagli utenti");
@@ -257,16 +259,8 @@ public class BookDetailsPage extends Page {
         pageTitle.setForeground(Color.WHITE);
         centerPanel.add(pageTitle, BorderLayout.CENTER);
 
-
-        // Azioni header
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         rightPanel.setOpaque(false);
-
-        /*JButton favoriteButton = createHeaderIconButton("♥");
-        JButton shareButton = createHeaderIconButton("↗");
-
-        rightPanel.add(favoriteButton);
-        rightPanel.add(shareButton);*/
 
         panel.add(leftPanel, BorderLayout.WEST);
         panel.add(centerPanel, BorderLayout.CENTER);
@@ -855,7 +849,7 @@ public class BookDetailsPage extends Page {
     private void showSuggestBooksDialog() {
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Suggerisci Libri", true);
         dialog.setLayout(new BorderLayout());
-        dialog.setSize(500, 400);
+        dialog.setSize(800, 600);
         dialog.setLocationRelativeTo(this);
 
         JPanel contentPanel = new JPanel();
@@ -867,11 +861,177 @@ public class BookDetailsPage extends Page {
         contentPanel.add(instructionLabel);
         contentPanel.add(Box.createRigidArea(new Dimension(0, 15)));
 
-       // todo implement data retrieval
+        List<BookData> userRecBooks = LibraryState.getRecommendableBooks(BooksState.bookDetail.getId());
+
+        JPanel booksPanel = new JPanel();
+        booksPanel.setLayout(new BoxLayout(booksPanel, BoxLayout.Y_AXIS));
+        booksPanel.setBackground(backgroundColor);
+
+        // Create a list to store selected books
+        List<BookData> selectedBooks = new ArrayList<>();
+
+        for (BookData book : userRecBooks) {
+            // Create a custom panel class for selection
+            class SelectableBookPanel extends JPanel {
+                private boolean isSelected = false;
+
+                public SelectableBookPanel() {
+                    super(new BorderLayout(15, 0));
+                }
+
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    Graphics2D g2d = (Graphics2D) g.create();
+                    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                    if (isSelected) {
+                        g2d.setColor(new Color(primaryColor.getRed(), primaryColor.getGreen(), primaryColor.getBlue(), 20));
+                        g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+                        g2d.setColor(primaryColor);
+                        g2d.setStroke(new BasicStroke(2f));
+                        g2d.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, 12, 12);
+                    } else {
+                        g2d.setColor(cardColor);
+                        g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+                        g2d.setColor(borderColor);
+                        g2d.setStroke(new BasicStroke(1f));
+                        g2d.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 12, 12);
+                    }
+                    g2d.dispose();
+                }
+
+                public void setSelected(boolean selected) {
+                    this.isSelected = selected;
+                    repaint();
+                }
+
+                public boolean isSelected() {
+                    return isSelected;
+                }
+            }
+
+            // Create the selectable panel
+            SelectableBookPanel bookItem = new SelectableBookPanel();
+            bookItem.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+            bookItem.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            bookItem.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
+            bookItem.setOpaque(false); // Make it transparent so our custom painting shows
+
+            // Book icon
+            JLabel iconLabel = new JLabel("📚");
+            iconLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 24));
+            iconLabel.setPreferredSize(new Dimension(40, 40));
+
+            // Book info
+            JPanel infoPanel = new JPanel();
+            infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
+            infoPanel.setOpaque(false);
+
+            JLabel titleLabel = new JLabel(book.getTitle());
+            titleLabel.setFont(new Font("SF Pro Text", Font.BOLD, 16));
+            titleLabel.setForeground(textPrimary);
+
+            JLabel authorLabel = new JLabel("di " + book.getAuthors());
+            authorLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
+            authorLabel.setForeground(textSecondary);
+
+            infoPanel.add(titleLabel);
+            infoPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+            infoPanel.add(authorLabel);
+
+            JLabel checkLabel = new JLabel("○");
+            checkLabel.setFont(new Font("SF Pro Text", Font.BOLD, 20));
+            checkLabel.setForeground(textSecondary);
+
+            bookItem.add(iconLabel, BorderLayout.WEST);
+            bookItem.add(infoPanel, BorderLayout.CENTER);
+            bookItem.add(checkLabel, BorderLayout.EAST);
+
+            bookItem.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (bookItem.isSelected()) {
+                        selectedBooks.remove(book);
+                        bookItem.setSelected(false);
+                        checkLabel.setText("○");
+                        checkLabel.setForeground(textSecondary);
+                    } else if (selectedBooks.size() < 3) {
+                        selectedBooks.add(book);
+                        bookItem.setSelected(true);
+                        checkLabel.setText("●");
+                        checkLabel.setForeground(primaryColor);
+                    } else {
+                        // Max reached
+                        JOptionPane.showMessageDialog(dialog,
+                                "Puoi selezionare al massimo 3 libri",
+                                "Limite raggiunto",
+                                JOptionPane.WARNING_MESSAGE);
+                    }
+                }
+            });
+
+            booksPanel.add(bookItem);
+            booksPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        }
+
+        JScrollPane booksScrollPane = new JScrollPane(booksPanel);
+        booksScrollPane.setBorder(null);
+        booksScrollPane.setBackground(backgroundColor);
+        booksScrollPane.getVerticalScrollBar().setUI(new ModernScrollBarUI());
+        contentPanel.add(booksScrollPane);
+
+        // Buttons
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        buttonPanel.setBackground(backgroundColor);
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
+
+        JButton cancelButton = new JButton("Annulla");
+        cancelButton.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
+        cancelButton.setForeground(textSecondary);
+        cancelButton.setBackground(cardColor);
+        cancelButton.setBorderPainted(false);
+        cancelButton.setFocusPainted(false);
+        cancelButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        cancelButton.setPreferredSize(new Dimension(100, 35));
+
+        JButton suggestButton = new JButton("Suggerisci");
+        suggestButton.setFont(new Font("SF Pro Text", Font.BOLD, 14));
+        suggestButton.setBackground(primaryColor);
+        suggestButton.setBorderPainted(false);
+        suggestButton.setFocusPainted(false);
+        suggestButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        suggestButton.setPreferredSize(new Dimension(120, 35));
+
+        cancelButton.addActionListener(e -> dialog.dispose());
+        suggestButton.addActionListener(e -> {
+            if (selectedBooks.isEmpty()) {
+                JOptionPane.showMessageDialog(dialog,
+                        "Seleziona almeno un libro da consigliare",
+                        "Nessun libro selezionato",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            BooksState.suggestBooks(bookData.getId(), selectedBooks);
+            dialog.dispose();
+            JOptionPane.showMessageDialog(this,
+                    "Suggerimenti salvati con successo!",
+                    "Successo",
+                    JOptionPane.INFORMATION_MESSAGE);
+            refresh();
+        });
+
+        buttonPanel.add(cancelButton);
+        buttonPanel.add(suggestButton);
 
         dialog.add(new JScrollPane(contentPanel), BorderLayout.CENTER);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
         dialog.setVisible(true);
     }
+
+
+
 
     private JPanel createSectionCard(String title, java.util.function.Supplier<JPanel> contentSupplier) {
         JPanel card = new JPanel() {

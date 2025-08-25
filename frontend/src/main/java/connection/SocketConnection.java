@@ -66,7 +66,6 @@ public class SocketConnection implements AutoCloseable {
         try {
             while ((line = in.readLine()) != null) {
                 System.out.println("Received: " + line);
-                // TODO HANDLE BETTER
                 if (line.equalsIgnoreCase("STOP")) {
                     break;
                 }
@@ -75,6 +74,30 @@ public class SocketConnection implements AutoCloseable {
                    break;
                 }
                 messages.add(line);
+            }
+        } catch (IOException e) {
+            System.err.println("Error reading from socket: " + e.getMessage());
+            return messages; // Return what we have so far
+        }
+        return messages;
+    }
+
+    public <T> List<T> receiveUntilStop(Class<T> clazz) {
+        String line;
+        List<T> messages = new ArrayList<>();
+        System.out.println("Receiving messages...");
+        try {
+            while ((line = in.readLine()) != null) {
+                System.out.println("Received: " + line);
+                if (line.equalsIgnoreCase("STOP")) {
+                    break;
+                }
+                if (line.startsWith("ERROR:")) {
+                    System.err.println("Error received from server: " + line);
+                    break;
+                }
+                T parsed = json.JsonUtil.fromString(line, clazz);
+                messages.add(parsed);
             }
         } catch (IOException e) {
             System.err.println("Error reading from socket: " + e.getMessage());

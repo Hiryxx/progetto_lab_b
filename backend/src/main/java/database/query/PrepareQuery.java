@@ -44,6 +44,7 @@ public class PrepareQuery {
                 }
                 yield strValue;
             }
+            case Integer intValue -> intValue;
             default -> startingValue;
         };
     }

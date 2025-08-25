@@ -63,4 +63,20 @@ public class LibraryState {
        return sc.receive();
 
     }
+
+    public static List<BookData> getRecommendableBooks(int bookId) {
+        SocketConnection sc = MainFrame.getSocketConnection();
+        JsonObject request = new JsonObject();
+        request.put("bookid", bookId);
+
+        sc.send("GET_RECOMMENDABLE_BOOKS", request, UserState.cf);
+
+        List<BookData> recommendableBooks = sc.receiveUntilStop(BookData.class);
+
+        if (recommendableBooks == null || recommendableBooks.isEmpty()) {
+            System.out.println("No recommendable books found.");
+        }
+
+        return recommendableBooks;
+    }
 }

@@ -186,31 +186,11 @@ public class BooksState {
     public static List<BookData> getBookSuggestions(int bookId) {
         SocketConnection sc = MainFrame.getSocketConnection();
         JsonObject request = new JsonObject();
-        request.put("bookid", bookId);
+        request.put("id", bookId);
 
         sc.send("GET_BOOK_SUGGESTIONS", request);
 
-        List<String> books = sc.receiveUntilStop();
-
-        List<BookData> suggestions = new ArrayList<>();
-
-        if (books == null || books.isEmpty()) {
-            System.out.println("No book suggestions found.");
-            return suggestions;
-        }
-
-        for (String bookJson : books) {
-            BookData book;
-            try {
-                book = JsonUtil.fromString(bookJson, BookData.class);
-            } catch (JsonProcessingException e) {
-                System.out.println("Error parsing book suggestion JSON: " + bookJson);
-                continue;
-            }
-            suggestions.add(book);
-
-            System.out.println("Book suggestion fetched: " + book.getTitle() + " by " + book.getAuthors());
-        }
+        List<BookData> suggestions = sc.receiveUntilStop(BookData.class);
 
         return suggestions;
 
@@ -268,6 +248,25 @@ public class BooksState {
                 System.out.println("Error parsing book ratings JSON: " + responseText);
                 return null;
             }
+        }
+    }
+
+    public static void suggestBooks(int id, List<BookData> selectedBooks) {
+        SocketConnection sc = MainFrame.getSocketConnection();
+
+        String bookIds =  selectedBooks.stream()
+                .map(book -> String.valueOf(book.getId()))
+                .reduce((id1, id2) -> id1 + "," + id2)
+                .orElse("");
+        System.out.println("Suggesting books with IDs: " + bookIds + " for book ID: " + id);
+
+        sc.send("SUGGEST_BOOK;" + id + "," + bookIds + ";" + UserState.cf);
+
+        Response response = sc.receive();
+        if (response.isError()) {
+            System.out.println("Error suggesting books: " + response.getResponseText().substring(6));
+        } else {
+            System.out.println("Books suggested successfully for book ID: " + id);
         }
     }
 }

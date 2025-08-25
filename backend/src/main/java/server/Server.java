@@ -402,11 +402,11 @@ public class Server implements AutoCloseable {
         commandRegister.register("GET_BOOK_SUGGESTIONS", (EntityRequest<Book> request) -> {
             Book book = request.getEntity();
             try {
-                PrepareQuery pq = BookSuggestion.selectBy("books.*, " +
+                PrepareQuery pq = Book.selectBy("books.*, " +
                                 "STRING_AGG(DISTINCT authors.name, ', ') as authors, " +
                                 "STRING_AGG(DISTINCT categories.name, ', ') as categories, " +
                                 "COUNT(booksuggestions.id) as suggestion_count")
-                        .join(Book.class, "books.id = booksuggestions.targetbookid")
+                        .join(BookSuggestion.class, "booksuggestions.targetbookid = books.id")
                         .join(BookAuthor.class, "bookauthors.bookid = books.id")
                         .join(Author.class, "authors.id = bookauthors.authorid")
                         .join(BookCategory.class, "bookcategories.bookid = books.id")
@@ -514,6 +514,63 @@ public class Server implements AutoCloseable {
                 return new ErrorResponse("Invalid bookId format. Must be a number.");
             } catch (Exception e) {
                 return new ErrorResponse("Error checking book suggestion: " + e.getMessage());
+            }
+        });
+
+        commandRegister.register("GET_RECOMMENDABLE_BOOKS", (EntityRequest<Book> request) -> {
+            Book book = request.getEntity();
+            String userCf = request.getUserCf();
+
+            try {
+                PrepareQuery pq = Book.selectBy("DISTINCT books.*, " +
+                                "STRING_AGG(DISTINCT authors.name, ', ') as authors, " +
+                                "STRING_AGG(DISTINCT categories.name, ', ') as categories")
+                        .join(LibraryBook.class, "librarybooks.bookid = books.id")
+                        .join(Library.class, "libraries.id = librarybooks.libraryid")
+                        .join(BookAuthor.class, "bookauthors.bookid = books.id")
+                        .join(Author.class, "authors.id = bookauthors.authorid")
+                        .join(BookCategory.class, "bookcategories.bookid = books.id")
+                        .join(Category.class, "categories.id = bookcategories.categoryid")
+                        .where("LOWER(libraries.usercf) = LOWER(?) AND books.id != ?")
+                        .groupBy("books.id")
+                        .orderBy("books.title")
+                        .prepare(userCf, book.getId());
+
+                QueryResult result = pq.executeResult();
+                return new MultiResponse(result);
+            } catch (SQLException e) {
+                return new ErrorResponse("Error getting recommendable books: " + e.getMessage());
+            }
+        }, Book.class);
+
+
+        commandRegister.register("SUGGEST_BOOK", (StringRequest request) -> {
+            try {
+                String argument = request.getArgument();
+                String userCf = request.getUserCf();
+
+                // "targetBookId,sourceBookId1,sourceBookId2,..."
+                String[] parts = argument.split(",");
+                if (parts.length < 2) {
+                    return new ErrorResponse("Invalid input format. Expected: targetBookId,sourceBookId1,sourceBookId2,...");
+                }
+
+                int targetBookId = Integer.parseInt(parts[0].trim());
+
+                for (int i = 1; i < parts.length; i++) {
+                    int sourceBookId = Integer.parseInt(parts[i].trim());
+                    BookSuggestion suggestion = new BookSuggestion(targetBookId, sourceBookId, userCf);
+
+                    suggestion.create();
+                }
+
+                int suggestionCount = parts.length - 1;
+                return new SingleResponse("Successfully created " + suggestionCount + " book suggestions");
+
+            } catch (NumberFormatException e) {
+                return new ErrorResponse("Invalid book ID format. All IDs must be numbers.");
+            } catch (IllegalAccessException | SQLException e) {
+                return new ErrorResponse("Error creating book suggestions: " + e.getMessage());
             }
         });
 

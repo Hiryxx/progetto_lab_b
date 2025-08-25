@@ -130,4 +130,11 @@ public class SelectBuilder {
         return this;
     }
 
+    public SelectBuilder leftJoin(Class<?extends Entity> from, String on) {
+        String joinTable = DbUtil.getTableName(from);
+
+        joinClause += " LEFT JOIN " + joinTable + " ON " + on;
+        return this;
+    }
+
 }
