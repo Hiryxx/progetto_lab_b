@@ -405,7 +405,7 @@ public class Server implements AutoCloseable {
                 PrepareQuery pq = Book.selectBy("books.*, " +
                                 "STRING_AGG(DISTINCT authors.name, ', ') as authors, " +
                                 "STRING_AGG(DISTINCT categories.name, ', ') as categories, " +
-                                "COUNT(booksuggestions.id) as suggestion_count")
+                                "COUNT(DISTINCT booksuggestions.usercf) as suggestioncount")
                         .join(BookSuggestion.class, "booksuggestions.targetbookid = books.id")
                         .join(BookAuthor.class, "bookauthors.bookid = books.id")
                         .join(Author.class, "authors.id = bookauthors.authorid")
@@ -413,7 +413,7 @@ public class Server implements AutoCloseable {
                         .join(Category.class, "categories.id = bookcategories.categoryid")
                         .where("booksuggestions.sourcebookid = ?")
                         .groupBy("books.id")
-                        .orderBy("suggestion_count DESC")
+                        .orderBy("suggestioncount DESC")
                         .limit(5)
                         .prepare(book.getId());
 

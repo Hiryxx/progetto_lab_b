@@ -216,7 +216,7 @@ public class BookDetailsPage extends Page {
         } else {
 
             for (BookData book : suggestions) {
-                suggestionsPanel.add(createSuggestedBookItem(book.getTitle(), book.getAuthors(), 2));
+                suggestionsPanel.add(createSuggestedBookItem(book.getTitle(), book.getAuthors(), book.getSuggestionCount()));
                 suggestionsPanel.add(Box.createRigidArea(new Dimension(0, 10)));
             }
         }
@@ -494,6 +494,8 @@ public class BookDetailsPage extends Page {
                         isBookInLibrary = true;
                         libraryPopup.setVisible(false);
 
+                        refresh();
+
 
                         JOptionPane.showMessageDialog(
                                 BookDetailsPage.this,
@@ -548,8 +550,6 @@ public class BookDetailsPage extends Page {
                 libraryPopup.add(createNewItem);
 
                 libraryPopup.show(addLibraryButton, 0, addLibraryButton.getHeight() + 5);
-
-                refresh();
 
             } else {
                 JOptionPane.showMessageDialog(
@@ -769,7 +769,6 @@ public class BookDetailsPage extends Page {
         itemPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                // Navigate to book details (implement based on your navigation)
                 // BooksState.searchBookByTitle(title);
             }
         });
@@ -835,6 +834,7 @@ public class BookDetailsPage extends Page {
 
             BooksState.saveBookRating(ratingData);
             dialog.dispose();
+            refresh();
             JOptionPane.showMessageDialog(this, "Valutazione salvata con successo!");
         });
 
@@ -871,7 +871,6 @@ public class BookDetailsPage extends Page {
         List<BookData> selectedBooks = new ArrayList<>();
 
         for (BookData book : userRecBooks) {
-            // Create a custom panel class for selection
             class SelectableBookPanel extends JPanel {
                 private boolean isSelected = false;
 

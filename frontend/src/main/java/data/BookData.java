@@ -9,6 +9,8 @@ public class BookData {
     private String authors;
     private String categories;
     private boolean isInLibrary;
+
+    private int suggestioncount;
     //...
 
     public BookData(){
@@ -60,5 +62,9 @@ public class BookData {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public int getSuggestionCount() {
+        return suggestioncount;
     }
 }
