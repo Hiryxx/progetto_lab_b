@@ -538,9 +538,6 @@ public class HomePage extends Page {
     }
 
     private void applyFilters() {
-        /*for (FilterData item : BooksState.authors) {
-            System.out.println("aaaa!!! Author: " + item);
-        }*/
         String yearText = yearTextField.getText();
         FilterData selectedAuthor = (FilterData) authorFilter.getEditor().getItem();
         FilterData selectedCategory = (FilterData) categoryFilter.getEditor().getItem();
@@ -726,9 +723,16 @@ public class HomePage extends Page {
 
     private JPanel createFeaturedBooksPanel() {
         return createSectionPanel("🔍 Risultati Ricerca", "Libri trovati con i filtri applicati", () -> {
-
-            JPanel booksPanel = new JPanel(new GridBagLayout());
+            JPanel booksPanel = new JPanel();
             booksPanel.setOpaque(false);
+            booksPanel.setLayout(new GridLayout(0, 1, 15, 15)); // Start with 1 column
+
+            booksPanel.addComponentListener(new java.awt.event.ComponentAdapter() {
+                @Override
+                public void componentResized(java.awt.event.ComponentEvent e) {
+                    updateHomeBooksGridColumns(booksPanel);
+                }
+            });
 
             List<BookData> booksToShow = filteredBooks != null ? filteredBooks : BooksState.books;
 
@@ -738,43 +742,37 @@ public class HomePage extends Page {
                 noResultsLabel.setForeground(textSecondary);
                 booksPanel.add(noResultsLabel);
             } else {
-                GridBagConstraints gbc = new GridBagConstraints();
-                gbc.insets = new Insets(10, 10, 10, 10);
-                gbc.fill = GridBagConstraints.BOTH;
-
-                int cols = 4;
-                int row = 0;
-                int col = 0;
-
                 for (BookData book : booksToShow) {
-                    gbc.gridx = col;
-                    gbc.gridy = row;
-                    gbc.weightx = 1.0 / cols;
-                    gbc.weighty = 1.0;
-
                     JPanel bookWrapper = new BookCard(book, 0f);
-                    booksPanel.add(bookWrapper, gbc);
-
-                    col++;
-                    if (col >= cols) {
-                        col = 0;
-                        row++;
-                    }
-                }
-
-                if (col > 0 && col < cols) {
-                    gbc.gridx = col;
-                    gbc.gridy = row;
-                    gbc.gridwidth = cols - col;
-                    gbc.weightx = (cols - col) * (1.0 / cols);
-                    booksPanel.add(Box.createHorizontalGlue(), gbc);
+                    booksPanel.add(bookWrapper);
                 }
             }
+
+            SwingUtilities.invokeLater(() -> {
+                updateHomeBooksGridColumns(booksPanel);
+                booksPanel.revalidate();
+                booksPanel.repaint();
+            });
 
             return booksPanel;
         });
     }
 
+    private void updateHomeBooksGridColumns(JPanel booksPanel) {
+        int width = booksPanel.getWidth();
+        int columns = 1;
+
+        if (width > 1200) {
+            columns = 4;
+        } else if (width > 900) {
+            columns = 3;
+        } else if (width > 600) {
+            columns = 2;
+        }
+
+        booksPanel.setLayout(new GridLayout(0, columns, 15, 15));
+        booksPanel.revalidate();
+    }
 
     private JPanel createSectionPanel(String title, String subtitle, Supplier<JPanel> contentSupplier) {
         JPanel panel = new JPanel(new BorderLayout(0, 25));

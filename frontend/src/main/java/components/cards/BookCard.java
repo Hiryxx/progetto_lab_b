@@ -105,21 +105,11 @@ public class BookCard extends JPanel {
         genreLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         genreLabel.setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
 
-        JPanel ratingPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        ratingPanel.setOpaque(false);
-        ratingPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        for (int i = 1; i <= 5; i++) {
-            JLabel star = new JLabel(i <= rating ? "⭐" : "☆");
-            star.setFont(new Font("Apple Color Emoji", Font.PLAIN, 12));
-            ratingPanel.add(star);
-        }
 
         infoPanel.add(titleLabel);
         infoPanel.add(authorLabel);
         infoPanel.add(genreLabel);
         infoPanel.add(Box.createRigidArea(new Dimension(0, 5)));
-        infoPanel.add(ratingPanel);
 
         this.add(coverPanel, BorderLayout.CENTER);
         this.add(infoPanel, BorderLayout.SOUTH);

@@ -55,7 +55,7 @@ public class LibraryDetailPage extends Page {
 
         List<String> books = sc.receiveUntilStop();
 
-        for (String bookJson : books){
+        for (String bookJson : books) {
             if (bookJson.startsWith("ERROR:")) {
                 System.err.println("Error fetching libraries: " + bookJson.substring(6));
                 return;
@@ -74,7 +74,7 @@ public class LibraryDetailPage extends Page {
 
         }
 
-       subtitleLabel.setText( libraryBooks.size() + " libri nella libreria");
+        subtitleLabel.setText(libraryBooks.size() + " libri nella libreria");
     }
 
     // TODO PROBABLY I DO NOT NEED TOP NAVBAR
@@ -112,7 +112,7 @@ public class LibraryDetailPage extends Page {
         titleLabel.setText("📚 " + LibraryDetailState.libraryName);
         initializeBooks();
 
-       refreshBooksGrid();
+        refreshBooksGrid();
     }
 
     private JPanel createHeader() {
@@ -159,9 +159,6 @@ public class LibraryDetailPage extends Page {
         leftPanel.add(titleSection);
         header.add(leftPanel, BorderLayout.WEST);
 
-        JPanel statsPanel = createStatsPanel();
-        header.add(statsPanel, BorderLayout.EAST);
-
         return header;
     }
 
@@ -206,20 +203,6 @@ public class LibraryDetailPage extends Page {
         return backButton;
     }
 
-    private JPanel createStatsPanel() {
-        JPanel statsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 30, 0));
-        statsPanel.setOpaque(false);
-
-        ratedStat = new StatItem("", "Valutati");
-        statsPanel.add(ratedStat);
-
-
-        reviewStat = new StatItem("", "Recensiti");
-        statsPanel.add(reviewStat);
-
-        return statsPanel;
-    }
-
 
     private void refreshBooksGrid() {
         booksContainer.removeAll();
@@ -229,32 +212,39 @@ public class LibraryDetailPage extends Page {
         booksContainer.addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
             public void componentResized(java.awt.event.ComponentEvent e) {
-                int width = booksContainer.getWidth();
-                int columns = 1;
-
-                if (width > 1200) {
-                    columns = 4;
-                } else if (width > 900) {
-                    columns = 3;
-                } else if (width > 600) {
-                    columns = 2;
-                }
-
-                booksContainer.setLayout(new GridLayout(0, columns, 15, 15));
-                booksContainer.revalidate();
+                updateGridColumns();
             }
         });
-        if (libraryBooks != null){
 
-        // Add book cards
-        for (BookData book : libraryBooks) {
-            JPanel bookCard = new BookCard(book, 1);
-            booksContainer.add(bookCard);
+        if (libraryBooks != null) {
+            for (BookData book : libraryBooks) {
+                JPanel bookCard = new BookCard(book, 1);
+                booksContainer.add(bookCard);
+            }
         }
 
+        SwingUtilities.invokeLater(() -> {
+            updateGridColumns();
+            booksContainer.revalidate();
+            booksContainer.repaint();
+        });
+    }
+
+    private void updateGridColumns() {
+        int width = booksContainer.getWidth();
+        int columns = 1;
+
+        if (width > 1200) {
+            columns = 4;
+        } else if (width > 900) {
+            columns = 3;
+        } else if (width > 600) {
+            columns = 2;
+        }
+
+        booksContainer.setLayout(new GridLayout(0, columns, 15, 15));
         booksContainer.revalidate();
-        booksContainer.repaint();
-    }}
+    }
 
 
     private JScrollPane createScrollPane(JPanel contentPanel) {
