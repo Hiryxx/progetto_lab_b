@@ -27,11 +27,11 @@ public class MainFrame extends JFrame {
     private static JPanel bottomNavigationPanel;
 
 
-    public static void init(SocketConnection socketConnection) {
+    public static void init(SocketConnection socketConnection, int width, int height) {
         MainFrame.socketConnection = socketConnection;
 
         mainFrame.setTitle("Book Recommender");
-        mainFrame.setSize(1300, 900);
+        mainFrame.setSize(width, height);
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         cardLayout = new CardLayout();
@@ -99,10 +99,8 @@ public class MainFrame extends JFrame {
         System.out.println("LAST PAGE: " + lastPage);
 
         cardLayout.show(contentPanel, name);
-        // todo add better repaint handling with revalidate
         contentPanel.repaint();
-        // System.out.println("Showing page: " + name);
-        System.out.println("TRYING TO SHOW PAGE: " + name);
+        System.out.println("Showing page: " + name);
         updateNavButtonStates();
     }
 
@@ -113,12 +111,26 @@ public class MainFrame extends JFrame {
                 System.out.println("User is logged in, updating auth button to profile");
                 authButton.setActionListener(e -> showPage("profile"));
                 authButton.setTextLabel("Profilo");
-            } else if (authButton.getText().equals("Profilo")) {
+            } else  {
                 authButton.setActionListener(e -> showPage("login"));
                 authButton.setTextLabel("Login");
             }
             authButton.repaint();
         }
+        if (bottomNavigationPanel == null) return;
+
+        bottomNavigationPanel.removeAll();
+
+        NavButton homeButton = navButtons.get("home");
+        bottomNavigationPanel.add(homeButton);
+
+        if (UserState.isLoggedIn) {
+            NavButton libraryButton = navButtons.get("library");
+            bottomNavigationPanel.add(libraryButton);
+        }
+
+        bottomNavigationPanel.add(authButton);
+
         navButtons.forEach((pageName, button) -> {
             boolean isActive = currentPage.equals(pageName);
             JLabel textLabel = button.getTextLabel();
@@ -129,15 +141,11 @@ public class MainFrame extends JFrame {
                 textLabel.setForeground(textSecondary);
                 button.setSelected(false);
             }
-
-            if (UserState.isLoggedIn && pageName.equals("library")){
-                bottomNavigationPanel.add(button);
-            } else if (!UserState.isLoggedIn && pageName.equals("library")){
-                bottomNavigationPanel.remove(button);
-            }
-
             button.repaint();
         });
+
+        bottomNavigationPanel.revalidate();
+        bottomNavigationPanel.repaint();
     }
 
     private static void createBottomNavigationPanel() {
