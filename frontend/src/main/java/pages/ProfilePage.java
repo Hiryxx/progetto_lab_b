@@ -1,6 +1,5 @@
 package pages;
 
-import classes.MainFrame;
 import classes.Page;
 import components.ModernScrollBarUI;
 import components.cards.BookCard;
@@ -12,15 +11,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-import static classes.MainFrame.mainFrame;
 import static classes.styles.Colors.*;
 
 public class ProfilePage extends Page {
-    private JPanel librariesContainer;
     private JLabel nameLabel = new JLabel();
     private JLabel emailLabel = new JLabel();
 

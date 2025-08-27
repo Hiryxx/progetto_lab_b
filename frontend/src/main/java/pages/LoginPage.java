@@ -4,7 +4,6 @@ import classes.MainFrame;
 import classes.Page;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import components.buttons.AuthButton;
-import components.checks.PasswordCheck;
 import components.inputs.FormField;
 import components.inputs.PasswordFormField;
 import components.inputs.TextFormField;
@@ -17,14 +16,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.RoundRectangle2D;
 
 import static classes.styles.Colors.*;
 
 public class LoginPage extends Page {
     private JTextField emailField;
     private JPasswordField passwordField;
-    private JCheckBox showPasswordCheck;
 
     public LoginPage() {
         super();
@@ -51,7 +48,6 @@ public class LoginPage extends Page {
 
     @Override
     public void refresh() {
-
     }
 
     private JPanel createGradientBackground() {
@@ -213,66 +209,6 @@ public class LoginPage extends Page {
 
 
         return form;
-    }
-
-    private JPanel createPasswordField(String label) {
-        JPanel fieldPanel = new JPanel();
-        fieldPanel.setLayout(new BoxLayout(fieldPanel, BoxLayout.Y_AXIS));
-        fieldPanel.setOpaque(false);
-
-        // Label
-        JLabel fieldLabel = new JLabel(label);
-        fieldLabel.setFont(new Font("SF Pro Text", Font.BOLD, 14));
-        fieldLabel.setForeground(textPrimary);
-        fieldLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        // Input field container
-        JPanel inputContainer = new JPanel(new BorderLayout()) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                g2d.setColor(backgroundColor);
-                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
-
-                g2d.setColor(borderColor);
-                g2d.setStroke(new BasicStroke(1.5f));
-                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 12, 12);
-
-                g2d.dispose();
-            }
-        };
-        inputContainer.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
-        inputContainer.setPreferredSize(new Dimension(0, 50));
-
-        // Password field
-        JPasswordField passwordField = new JPasswordField() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                setOpaque(false);
-                super.paintComponent(g);
-            }
-        };
-        passwordField.setBorder(null);
-        passwordField.setFont(new Font("SF Pro Text", Font.PLAIN, 16));
-        passwordField.setForeground(textPrimary);
-        passwordField.setCaretColor(primaryColor);
-
-
-        // Icon
-        JLabel iconLabel = new JLabel("🔒");
-        iconLabel.setFont(new Font("Apple Color Emoji", Font.PLAIN, 16));
-
-        inputContainer.add(iconLabel, BorderLayout.WEST);
-        inputContainer.add(Box.createHorizontalStrut(10));
-        inputContainer.add(passwordField, BorderLayout.CENTER);
-
-        fieldPanel.add(fieldLabel);
-        fieldPanel.add(Box.createRigidArea(new Dimension(0, 8)));
-        fieldPanel.add(inputContainer);
-
-        return fieldPanel;
     }
 
     private JPanel createDivider(String text) {

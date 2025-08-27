@@ -11,7 +11,6 @@ public class BookData {
     private boolean isInLibrary;
 
     private int suggestioncount;
-    //...
 
     public BookData(){
 
