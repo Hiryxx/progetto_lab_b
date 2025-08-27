@@ -139,7 +139,7 @@ public class Server implements AutoCloseable {
                 user.create();
                 return new SingleResponse("User created successfully");
             } catch (IllegalAccessException | SQLException e) {
-                return new ErrorResponse("Error creating user: " + e.getMessage());
+                return new ErrorResponse("Utente già esistente o errore nella creazione");
             }
         }, User.class);
 

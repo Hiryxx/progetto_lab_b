@@ -136,7 +136,6 @@ public class RegisterPage extends Page {
 
         card.setLayout(new BorderLayout(0, 0));
         card.setBorder(BorderFactory.createEmptyBorder(35, 35, 35, 35));
-        card.setPreferredSize(new Dimension(450, 700));
 
         // Header
         JPanel headerPanel = createRegisterHeader();
@@ -196,52 +195,52 @@ public class RegisterPage extends Page {
         FormField namePanel = new TextFormField("Nome", "user");
         nameField = namePanel.getField();
         form.add(namePanel);
-        form.add(Box.createRigidArea(new Dimension(0, 15)));
+        form.add(Box.createRigidArea(new Dimension(0, 12)));
 
         // User field
         FormField userPanel = new TextFormField("Cognome", "lastname");
         lastNameField = userPanel.getField();
         form.add(userPanel);
-        form.add(Box.createRigidArea(new Dimension(0, 15)));
+        form.add(Box.createRigidArea(new Dimension(0, 12)));
 
         // Fiscal Code field
         FormField fiscalCodePanel = new TextFormField("Codice fiscale", "fiscal");
         fiscalCodeField = fiscalCodePanel.getField();
         form.add(fiscalCodePanel);
-        form.add(Box.createRigidArea(new Dimension(0, 15)));
+        form.add(Box.createRigidArea(new Dimension(0, 12)));
 
         // Email field
         FormField emailPanel = new TextFormField("Email", "email");
         emailField = emailPanel.getField();
         form.add(emailPanel);
-        form.add(Box.createRigidArea(new Dimension(0, 15)));
+        form.add(Box.createRigidArea(new Dimension(0, 12)));
 
         // Password field
         FormField passwordPanel = new PasswordFormField("Password");
         passwordField = (JPasswordField) passwordPanel.getField();
         form.add(passwordPanel);
-        form.add(Box.createRigidArea(new Dimension(0, 12)));
+        form.add(Box.createRigidArea(new Dimension(0, 8)));
 
         JPanel optionsPanel = new AuthOptionPanel(passwordField);
         form.add(optionsPanel);
-        form.add(Box.createRigidArea(new Dimension(0, 30)));
+        form.add(Box.createRigidArea(new Dimension(0, 20)));
 
-        // Register button
-        JButton loginButton = new AuthButton("Registrati", primaryColor, Color.WHITE, true);
-        loginButton.addActionListener(e -> handleRegister());
-        loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        form.add(loginButton);
-        form.add(Box.createRigidArea(new Dimension(0, 18)));
+        JButton registerButton = new AuthButton("Registrati", primaryColor, Color.WHITE, true);
+        registerButton.setPreferredSize(new Dimension(380, 50));
+        registerButton.setMaximumSize(new Dimension(380, 50));
+        registerButton.setMinimumSize(new Dimension(380, 50));
+        registerButton.addActionListener(e -> handleRegister());
+        registerButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+        form.add(registerButton);
+        form.add(Box.createRigidArea(new Dimension(0, 15)));
 
         JPanel dividerPanel = createDivider("or");
         form.add(dividerPanel);
-        form.add(Box.createRigidArea(new Dimension(0, 18)));
-
+        form.add(Box.createRigidArea(new Dimension(0, 15)));
 
         return form;
     }
-
 
     private JPanel createDivider(String text) {
         JPanel divider = new JPanel(new BorderLayout());

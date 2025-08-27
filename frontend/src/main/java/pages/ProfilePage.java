@@ -653,7 +653,6 @@ public class ProfilePage extends Page {
             @Override
             public void mouseClicked(MouseEvent e) {
                 changePage("bookDetails");
-                System.out.println("Cliccato sul libro: " + title); // Log di verifica
             }
         });
 

@@ -87,29 +87,16 @@ public class BooksState {
 
         sc.send("GET_CATEGORIES");
 
-        List<String> cats = sc.receiveUntilStop();
+        List<FilterData> categoryList = sc.receiveUntilStop(FilterData.class);
 
-        if (cats == null || cats.isEmpty()) {
+        if (categoryList == null || categoryList.isEmpty()) {
             System.out.println("No categories found.");
             return;
         }
 
-        categories = new FilterData[cats.size() + 1];
+        categoryList.addFirst(new FilterData(-1, "Tutte le categorie"));
 
-        categories[0] = new FilterData(-1, "Tutte le categorie");
-
-        for (int i = 1; i < cats.size(); i++) {
-            String jsonCategory = cats.get(i);
-            FilterData filter;
-            try {
-                FilterData filterData = JsonUtil.fromString(jsonCategory, FilterData.class);
-                filter = filterData;
-            } catch (JsonProcessingException e) {
-                System.out.println("Error parsing category JSON: " + jsonCategory);
-                continue;
-            }
-            categories[i] = filter;
-        }
+        categories = categoryList.toArray(new FilterData[0]);
 
     }
 
@@ -121,30 +108,16 @@ public class BooksState {
 
         sc.send("GET_AUTHORS");
 
-        List<String> aut = sc.receiveUntilStop();
+        List<FilterData> authorsList = sc.receiveUntilStop(FilterData.class);
 
-        if (aut == null || aut.isEmpty()) {
+        if (authorsList == null || authorsList.isEmpty()) {
             System.out.println("No authors found.");
             return;
         }
 
-        authors = new FilterData[aut.size() + 1];
+        authorsList.addFirst(new FilterData(-1, "Tutti gli autori"));
 
-        authors[0] = new FilterData(-1, "Tutti gli autori");
-
-        for (int i = 1; i < aut.size(); i++) {
-            String jsonAuthor = aut.get(i);
-            FilterData filter;
-            try {
-                FilterData filterData = JsonUtil.fromString(jsonAuthor, FilterData.class);
-                filter = filterData;
-            } catch (JsonProcessingException e) {
-                System.out.println("Error parsing category JSON: " + jsonAuthor);
-                continue;
-            }
-            authors[i] = filter;
-        }
-
+        authors = authorsList.toArray(new FilterData[0]);
     }
 
     public static void fetchFilteredBooks(String title, String yearText, int authorId, int categoryid) throws JsonProcessingException {

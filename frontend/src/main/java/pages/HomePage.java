@@ -33,9 +33,6 @@ public class HomePage extends Page {
     public HomePage() {
         super();
 
-        // TODO REMOVE AFTER CORRECT STREAM IMPLEMENTATION
-    /*    Thread.startVirtualThread(BooksState::fetchCategories);
-        Thread.startVirtualThread(BooksState::fetchAuthors);*/
 
         BooksState.fetchCategories();
         BooksState.fetchAuthors();
