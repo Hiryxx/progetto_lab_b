@@ -3,6 +3,9 @@ package pages;
 import classes.MainFrame;
 import classes.Page;
 import components.ModernScrollBarUI;
+import components.cards.BookCard;
+import data.FavouriteCategoryBook;
+import state.BooksState;
 import state.UserState;
 
 import javax.swing.*;
@@ -39,28 +42,144 @@ public class ProfilePage extends Page {
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.setBorder(BorderFactory.createEmptyBorder(0, 30, 30, 30));
 
-        // Spazio aggiuntivo tra intestazione e "Le mie librerie"
         contentPanel.add(Box.createRigidArea(new Dimension(0, 40)));
-
-        contentPanel.add(createMyLibrariesPanel());
-        contentPanel.add(Box.createRigidArea(new Dimension(0, 30)));
-
-        contentPanel.add(createSuggestionsPanel());
-        contentPanel.add(Box.createRigidArea(new Dimension(0, 30)));
 
         contentPanel.add(createFavoriteBooksPanel());
         contentPanel.add(Box.createRigidArea(new Dimension(0, 30)));
-
-        contentPanel.add(createSettingsPanel());
 
         JScrollPane scrollPane = createScrollPane(contentPanel);
         this.add(scrollPane, BorderLayout.CENTER);
 
     }
+
     @Override
     public void refresh() {
         nameLabel.setText(UserState.name + " " + UserState.lastname);
         emailLabel.setText(UserState.email);
+
+        if (UserState.cf != null && !UserState.cf.isEmpty()) {
+            loadFavoriteBooks();
+        }
+    }
+
+    private void loadFavoriteBooks() {
+        SwingUtilities.invokeLater(() -> {
+            try {
+                List<FavouriteCategoryBook> profileBooks = BooksState.fetchProfileBooks();
+
+                updateFavoriteBooksContainer(profileBooks);
+
+            } catch (Exception e) {
+                System.err.println("Error loading favorite books: " + e.getMessage());
+                updateFavoriteBooksContainer(null);
+            }
+        });
+    }
+
+    private void updateFavoriteBooksContainer(List<FavouriteCategoryBook> profileBooks) {
+        Component[] components = ((JPanel) ((JScrollPane) this.getComponent(1)).getViewport().getView()).getComponents();
+
+        for (Component comp : components) {
+            if (comp instanceof JPanel) {
+                JPanel panel = (JPanel) comp;
+                // Look for the panel with the favorite books title
+                if (panel.getLayout() instanceof BorderLayout) {
+                    Component north = ((BorderLayout) panel.getLayout()).getLayoutComponent(BorderLayout.NORTH);
+                    if (north instanceof JPanel) {
+                        Component[] headerComps = ((JPanel) north).getComponents();
+                        if (headerComps.length > 0 && headerComps[0] instanceof JPanel) {
+                            Component[] titleComps = ((JPanel) headerComps[0]).getComponents();
+                            if (titleComps.length > 0 && titleComps[0] instanceof JLabel) {
+                                JLabel titleLabel = (JLabel) titleComps[0];
+                                if ("❤️ La Tua Categoria Preferita".equals(titleLabel.getText())) {
+                                    updateFavoriteBooksContent(panel, profileBooks);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void updateFavoriteBooksContent(JPanel favoriteBooksPanel, List<FavouriteCategoryBook> profileBooks) {
+        Component center = ((BorderLayout) favoriteBooksPanel.getLayout()).getLayoutComponent(BorderLayout.CENTER);
+        if (center != null) {
+            favoriteBooksPanel.remove(center);
+        }
+
+        JPanel container = new JPanel(new BorderLayout());
+        container.setOpaque(false);
+
+        if (profileBooks == null) {
+            JLabel errorLabel = new JLabel("Errore nel caricamento dei libri preferiti");
+            errorLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 16));
+            errorLabel.setForeground(textSecondary);
+            errorLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            container.add(errorLabel, BorderLayout.CENTER);
+        } else if (profileBooks.isEmpty()) {
+            JLabel noBooks = new JLabel("Aggiungi libri alle tue librerie per vedere i tuoi preferiti!");
+            noBooks.setFont(new Font("SF Pro Text", Font.ITALIC, 16));
+            noBooks.setForeground(textSecondary);
+            noBooks.setHorizontalAlignment(SwingConstants.CENTER);
+            container.add(noBooks, BorderLayout.CENTER);
+        } else {
+            FavouriteCategoryBook firstBook = profileBooks.getFirst();
+            String favoriteCategory = firstBook.getFavoriteCategory();
+            int categoryBookCount = firstBook.getCategoryBookCount();
+
+            JLabel categoryLabel = new JLabel(String.format(
+                    "Hai %d libri di %s nelle tue librerie - è la tua categoria preferita!",
+                    categoryBookCount, favoriteCategory));
+            categoryLabel.setFont(new Font("SF Pro Text", Font.ITALIC, 14));
+            categoryLabel.setForeground(primaryColor);
+            categoryLabel.setBorder(BorderFactory.createEmptyBorder(0, 20, 15, 20));
+            container.add(categoryLabel, BorderLayout.NORTH);
+
+            JPanel booksPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 0));
+            booksPanel.setOpaque(false);
+            booksPanel.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
+
+            for (FavouriteCategoryBook book : profileBooks) {
+                JPanel bookWrapper = new BookCard(book);
+                booksPanel.add(bookWrapper);
+            }
+
+            JScrollPane horizontalScrollPane = new JScrollPane(booksPanel) {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    Graphics2D g2d = (Graphics2D) g.create();
+                    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                    g2d.setColor(new Color(0, 0, 0, 8));
+                    g2d.fillRoundRect(3, 3, getWidth() - 3, getHeight() - 3, 16, 16);
+
+                    g2d.setColor(cardColor);
+                    g2d.fillRoundRect(0, 0, getWidth() - 3, getHeight() - 3, 16, 16);
+
+                    g2d.setColor(borderColor);
+                    g2d.setStroke(new BasicStroke(1f));
+                    g2d.drawRoundRect(0, 0, getWidth() - 4, getHeight() - 4, 16, 16);
+
+                    g2d.dispose();
+                    super.paintComponent(g);
+                }
+            };
+
+            horizontalScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            horizontalScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+            horizontalScrollPane.getHorizontalScrollBar().setUI(new ModernScrollBarUI());
+            horizontalScrollPane.setBorder(null);
+            horizontalScrollPane.setOpaque(false);
+            horizontalScrollPane.getViewport().setOpaque(false);
+
+            container.add(horizontalScrollPane, BorderLayout.CENTER);
+        }
+
+        favoriteBooksPanel.add(container, BorderLayout.CENTER);
+        favoriteBooksPanel.revalidate();
+        favoriteBooksPanel.repaint();
     }
 
     private JPanel createProfileHeader() {
@@ -181,357 +300,26 @@ public class ProfilePage extends Page {
         return button;
     }
 
-    private JPanel createMyLibrariesPanel() {
-        JPanel panel = new JPanel(new BorderLayout(0, 25));
-        panel.setOpaque(false);
 
-        JPanel headerPanel = new JPanel(new BorderLayout(0, 5));
-        headerPanel.setOpaque(false);
-
-        JPanel titlePanel = new JPanel();
-        titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
-        titlePanel.setOpaque(false);
-
-        JLabel titleLabel = new JLabel("📚 Le mie Librerie");
-        titleLabel.setFont(new Font("SF Pro Display", Font.BOLD, 28));
-        titleLabel.setForeground(textPrimary);
-        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        JLabel subtitleLabel = new JLabel("Organizza i tuoi libri di interesse");
-        subtitleLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 16));
-        subtitleLabel.setForeground(textSecondary);
-        subtitleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        subtitleLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
-
-        titlePanel.add(titleLabel);
-        titlePanel.add(subtitleLabel);
-        headerPanel.add(titlePanel, BorderLayout.WEST);
-
-
-        panel.add(headerPanel, BorderLayout.NORTH);
-
-        librariesContainer = new JPanel();
-        librariesContainer.setLayout(new BoxLayout(librariesContainer, BoxLayout.Y_AXIS));
-        librariesContainer.setOpaque(false);
-
-        addLibraryCard("Da Leggere", List.of("Il nome del vento", "Fondazione", "Neuromante", "Dune", "Il problema dei tre corpi", "L'anello di Re Salomone"));
-        addLibraryCard("Fantascienza", List.of("Hyperion", "Ubik"));
-
-        panel.add(librariesContainer, BorderLayout.CENTER);
-
-        return panel;
-    }
-
-    private void addLibraryCard(String libraryName, List<String> bookTitles) {
-        librariesContainer.add(createLibraryCard(libraryName, bookTitles));
-        librariesContainer.add(Box.createRigidArea(new Dimension(0, 20)));
-        librariesContainer.revalidate();
-        librariesContainer.repaint();
-    }
-
-    private JPanel createLibraryCard(String libraryName, List<String> bookTitles) {
-        JPanel card = new JPanel(new BorderLayout(0, 15)) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                g2d.setColor(new Color(0, 0, 0, 8));
-                g2d.fillRoundRect(3, 3, getWidth() - 3, getHeight() - 3, 16, 16);
-
-                g2d.setColor(cardColor);
-                g2d.fillRoundRect(0, 0, getWidth() - 3, getHeight() - 3, 16, 16);
-
-                g2d.setColor(borderColor);
-                g2d.setStroke(new BasicStroke(1f));
-                g2d.drawRoundRect(0, 0, getWidth() - 4, getHeight() - 4, 16, 16);
-
-                g2d.dispose();
-            }
-        };
-        card.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-
-        JLabel nameLabel = new JLabel(libraryName + " (" + bookTitles.size() + " libri)");
-        nameLabel.setFont(new Font("SF Pro Display", Font.BOLD, 20));
-        nameLabel.setForeground(textPrimary);
-        card.add(nameLabel, BorderLayout.NORTH);
-
-        JPanel booksPanel = new JPanel();
-        booksPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 20, 20));
-        booksPanel.setOpaque(false);
-
-        for (String title : bookTitles) {
-            JPanel bookCard = createBookCard(title, "Autore di Esempio", "Genere", 4.0f);
-            booksPanel.add(bookCard);
-        }
-
-        card.add(booksPanel, BorderLayout.CENTER);
-
-        return card;
-    }
-
-    private JPanel createSuggestionsPanel() {
-        JPanel booksPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 0));
-        booksPanel.setOpaque(false);
-        booksPanel.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
-
-        for (int i = 1; i <= 4; i++) {
-            JPanel bookWrapper = createBookCard("Libro Consigliato " + i, "Autore Consigliato " + i, "Genere " + i, 4.5f);
-            booksPanel.add(bookWrapper);
-        }
-
-        JScrollPane horizontalScrollPane = new JScrollPane(booksPanel) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                g2d.setColor(new Color(0, 0, 0, 8));
-                g2d.fillRoundRect(3, 3, getWidth() - 3, getHeight() - 3, 16, 16);
-
-                g2d.setColor(cardColor);
-                g2d.fillRoundRect(0, 0, getWidth() - 3, getHeight() - 3, 16, 16);
-
-                g2d.setColor(borderColor);
-                g2d.setStroke(new BasicStroke(1f));
-                g2d.drawRoundRect(0, 0, getWidth() - 4, getHeight() - 4, 16, 16);
-
-                g2d.dispose();
-                super.paintComponent(g);
-            }
-        };
-
-        horizontalScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        horizontalScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-        horizontalScrollPane.getHorizontalScrollBar().setUI(new ModernScrollBarUI());
-        horizontalScrollPane.setBorder(null);
-        horizontalScrollPane.setOpaque(false);
-        horizontalScrollPane.getViewport().setOpaque(false);
-
-        return createSectionPanel("💡 Suggerimenti", "Libri consigliati e correlati alle tue librerie", () -> horizontalScrollPane);
-    }
 
     private JPanel createFavoriteBooksPanel() {
-        JPanel booksPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 0));
-        booksPanel.setOpaque(false);
-        booksPanel.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
+        return createSectionPanel("❤️ La Tua Categoria Preferita",
+                "I libri della categoria che ami di più", () -> {
 
-        for (int i = 1; i <= 4; i++) {
-            JPanel bookWrapper = createBookCard("Libro Preferito " + i, "Autore Preferito " + i, "Genere " + i, 5.0f - (i * 0.2f));
-            booksPanel.add(bookWrapper);
-        }
+                    JPanel container = new JPanel(new BorderLayout());
+                    container.setOpaque(false);
 
-        JScrollPane horizontalScrollPane = new JScrollPane(booksPanel) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    // Show loading message initially
+                    JLabel loadingLabel = new JLabel("Caricamento libri preferiti...");
+                    loadingLabel.setFont(new Font("SF Pro Text", Font.ITALIC, 16));
+                    loadingLabel.setForeground(textSecondary);
+                    loadingLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                    container.add(loadingLabel, BorderLayout.CENTER);
 
-                g2d.setColor(new Color(0, 0, 0, 8));
-                g2d.fillRoundRect(3, 3, getWidth() - 3, getHeight() - 3, 16, 16);
-
-                g2d.setColor(cardColor);
-                g2d.fillRoundRect(0, 0, getWidth() - 3, getHeight() - 3, 16, 16);
-
-                g2d.setColor(borderColor);
-                g2d.setStroke(new BasicStroke(1f));
-                g2d.drawRoundRect(0, 0, getWidth() - 4, getHeight() - 4, 16, 16);
-
-                g2d.dispose();
-                super.paintComponent(g);
-            }
-        };
-
-        horizontalScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        horizontalScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-        horizontalScrollPane.getHorizontalScrollBar().setUI(new ModernScrollBarUI());
-        horizontalScrollPane.setBorder(null);
-        horizontalScrollPane.setOpaque(false);
-        horizontalScrollPane.getViewport().setOpaque(false);
-
-        return createSectionPanel("❤️ I Tuoi Preferiti", "Libri che ami di più", () -> horizontalScrollPane);
+                    return container;
+                });
     }
 
-    private JPanel createSettingsPanel() {
-        return createSectionPanel("⚙️ Impostazioni Account", "Gestisci le tue preferenze", () -> {
-            JPanel settingsPanel = new JPanel();
-            settingsPanel.setLayout(new BoxLayout(settingsPanel, BoxLayout.Y_AXIS));
-            settingsPanel.setOpaque(false);
-
-            settingsPanel.add(createSettingEntry("Notifiche Push", "Ricevi aggiornamenti sui tuoi libri preferiti", true, null));
-            settingsPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-            settingsPanel.add(createSettingEntry("Informazioni personali", "Modifica nome, email e password", false, e -> showPersonalInformationDialog()));
-
-            return settingsPanel;
-        });
-    }
-
-    private JPanel createSettingEntry(String title, String subtitle, boolean isToggle, java.awt.event.ActionListener action) {
-        JPanel entry = new JPanel(new BorderLayout(20, 0));
-        entry.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-        entry.setBackground(cardColor);
-        entry.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
-
-        JPanel textPanel = new JPanel();
-        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
-        textPanel.setOpaque(false);
-
-        JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(new Font("SF Pro Display", Font.BOLD, 16));
-        titleLabel.setForeground(textPrimary);
-        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        JLabel subtitleLabel = new JLabel(subtitle);
-        subtitleLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 13));
-        subtitleLabel.setForeground(textSecondary);
-        subtitleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        textPanel.add(titleLabel);
-        textPanel.add(subtitleLabel);
-
-        entry.add(textPanel, BorderLayout.CENTER);
-
-        if (isToggle) {
-            JToggleButton toggle = new JToggleButton() {
-                @Override
-                protected void paintComponent(Graphics g) {
-                    Graphics2D g2d = (Graphics2D) g.create();
-                    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                    if (isSelected()) {
-                        g2d.setColor(primaryColor);
-                    } else {
-                        g2d.setColor(textSecondary);
-                    }
-                    g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
-
-                    super.paintComponent(g);
-                    g2d.dispose();
-                }
-            };
-
-            toggle.setForeground(Color.WHITE);
-            toggle.setFont(new Font("SF Pro Text", Font.BOLD, 14));
-            toggle.setFocusPainted(false);
-            toggle.setBorderPainted(false);
-            toggle.setContentAreaFilled(false);
-            toggle.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-            toggle.addActionListener(e -> {
-                if (toggle.isSelected()) {
-                    toggle.setText("ON");
-                } else {
-                    toggle.setText("OFF");
-                }
-                toggle.repaint();
-            });
-
-            // Impostazione dello stato iniziale
-            toggle.setSelected(true);
-            toggle.setText("ON");
-            entry.add(toggle, BorderLayout.EAST);
-
-        } else {
-            JButton arrowButton = new JButton(">");
-            arrowButton.setForeground(textSecondary);
-            arrowButton.setBackground(cardColor);
-            arrowButton.setFocusPainted(false);
-            arrowButton.setBorderPainted(false);
-            if (action != null) {
-                arrowButton.addActionListener(action);
-            }
-            entry.add(arrowButton, BorderLayout.EAST);
-        }
-        return entry;
-    }
-
-    private void showPersonalInformationDialog() {
-        JDialog dialog = new JDialog(mainFrame, "Informazioni Personali", true);
-        dialog.setUndecorated(true);
-        dialog.setBackground(new Color(0, 0, 0, 0)); // Rende il JDialog trasparente
-
-        JPanel contentPanel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                g2d.setColor(cardColor);
-                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20); // Bordo arrotondato
-
-                g2d.dispose();
-                super.paintComponent(g); // Disegna i componenti sopra lo sfondo
-            }
-        };
-        contentPanel.setOpaque(false);
-        contentPanel.setLayout(new BorderLayout(20, 20));
-        contentPanel.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
-
-        JPanel infoPanel = new JPanel(new GridLayout(0, 1, 10, 10));
-        infoPanel.setOpaque(false);
-
-        JLabel titleLabel = new JLabel("Il mio account");
-        titleLabel.setFont(new Font("SF Pro Display", Font.BOLD, 24));
-        titleLabel.setForeground(textPrimary);
-
-        infoPanel.add(titleLabel);
-        infoPanel.add(createDialogInfoEntry("Nome:", "Mario Rossi"));
-        infoPanel.add(createDialogInfoEntry("Email:", "mario.rossi@email.com"));
-
-        JButton resetPasswordButton = new JButton("Reimposta Password");
-        resetPasswordButton.setFont(new Font("SF Pro Text", Font.BOLD, 14));
-        resetPasswordButton.setForeground(Color.WHITE);
-        resetPasswordButton.setBackground(primaryColor);
-        resetPasswordButton.setFocusPainted(false);
-        resetPasswordButton.setBorderPainted(false);
-        resetPasswordButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        resetPasswordButton.addActionListener(e -> JOptionPane.showMessageDialog(dialog, "Funzionalità di reimpostazione password in sviluppo."));
-        resetPasswordButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        buttonPanel.setOpaque(false);
-        buttonPanel.add(resetPasswordButton);
-
-        contentPanel.add(infoPanel, BorderLayout.CENTER);
-        contentPanel.add(buttonPanel, BorderLayout.SOUTH);
-
-        // Pulsante di chiusura
-        JButton closeButton = new JButton("✕");
-        closeButton.setFont(new Font("SF Pro Text", Font.BOLD, 16));
-        closeButton.setForeground(textSecondary);
-        closeButton.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        closeButton.setContentAreaFilled(false);
-        closeButton.setFocusPainted(false);
-        closeButton.addActionListener(e -> dialog.dispose());
-
-        JPanel headerDialogPanel = new JPanel(new BorderLayout());
-        headerDialogPanel.setOpaque(false);
-        headerDialogPanel.add(closeButton, BorderLayout.EAST);
-        contentPanel.add(headerDialogPanel, BorderLayout.NORTH);
-
-        dialog.setContentPane(contentPanel);
-        dialog.pack();
-        dialog.setLocationRelativeTo(mainFrame);
-        dialog.setVisible(true);
-    }
-
-    private JPanel createDialogInfoEntry(String label, String value) {
-        JPanel entry = new JPanel(new BorderLayout(10, 0));
-        entry.setOpaque(false);
-
-        JLabel labelComponent = new JLabel(label);
-        labelComponent.setFont(new Font("SF Pro Text", Font.BOLD, 14));
-        labelComponent.setForeground(textPrimary);
-
-        JLabel valueComponent = new JLabel(value);
-        valueComponent.setFont(new Font("SF Pro Text", Font.PLAIN, 14));
-        valueComponent.setForeground(textSecondary);
-
-        entry.add(labelComponent, BorderLayout.WEST);
-        entry.add(valueComponent, BorderLayout.CENTER);
-
-        return entry;
-    }
 
     private JScrollPane createScrollPane(JPanel contentPanel) {
         JScrollPane scrollPane = new JScrollPane(contentPanel);

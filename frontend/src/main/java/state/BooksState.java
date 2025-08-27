@@ -6,6 +6,7 @@ import connection.Response;
 import connection.SocketConnection;
 import data.BookData;
 import data.BookRatingData;
+import data.FavouriteCategoryBook;
 import data.FilterData;
 import json.JsonObject;
 import json.JsonUtil;
@@ -241,5 +242,13 @@ public class BooksState {
         } else {
             System.out.println("Books suggested successfully for book ID: " + id);
         }
+    }
+
+    public static List<FavouriteCategoryBook> fetchProfileBooks() throws Exception {
+        SocketConnection sc = MainFrame.getSocketConnection();
+
+        sc.send("GET_PROFILE_BOOKS; " + " ;" + UserState.cf);
+
+        return sc.receiveUntilStop(FavouriteCategoryBook.class);
     }
 }

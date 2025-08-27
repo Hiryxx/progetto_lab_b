@@ -51,7 +51,7 @@ public class BookCard extends JPanel {
         gradientEnd = gradientPairs[randomIndex][1];
     }
 
-    public BookCard(BookData book,  float rating) {
+    public BookCard(BookData book) {
         generateRandomGradient();
 
         this.book = book;

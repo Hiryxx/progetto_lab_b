@@ -274,37 +274,6 @@ public class LoginPage extends Page {
 
         return fieldPanel;
     }
-    // todo remove later
-    private JPanel createOptionsPanel() {
-        JPanel options = new JPanel(new BorderLayout());
-        options.setOpaque(false);
-
-        // Remember me checkbox
-        JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        leftPanel.setOpaque(false);
-
-        showPasswordCheck = new PasswordCheck("Mostra password");
-
-        showPasswordCheck.addActionListener(e -> {
-            boolean isSelected = showPasswordCheck.isSelected();
-            if (isSelected) {
-                passwordField.setEchoChar((char) 0);
-            } else {
-                passwordField.setEchoChar('•');
-            }
-        });
-
-        leftPanel.add(showPasswordCheck);
-
-        // Forgot password link
-        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-        rightPanel.setOpaque(false);
-
-        options.add(leftPanel, BorderLayout.WEST);
-        options.add(rightPanel, BorderLayout.EAST);
-
-        return options;
-    }
 
     private JPanel createDivider(String text) {
         JPanel divider = new JPanel(new BorderLayout());

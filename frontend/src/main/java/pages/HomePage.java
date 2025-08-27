@@ -740,7 +740,7 @@ public class HomePage extends Page {
                 booksPanel.add(noResultsLabel);
             } else {
                 for (BookData book : booksToShow) {
-                    JPanel bookWrapper = new BookCard(book, 0f);
+                    JPanel bookWrapper = new BookCard(book);
                     booksPanel.add(bookWrapper);
                 }
             }

@@ -574,6 +574,63 @@ public class Server implements AutoCloseable {
             }
         });
 
+        commandRegister.register("GET_PROFILE_BOOKS", (StringRequest request) -> {
+            String userCf = request.getUserCf();
+            try {
+                // find the most popular category across all user's libraries
+                PrepareQuery categoryQuery = Category.selectBy("categories.*, COUNT(*) as book_count")
+                        .join(BookCategory.class, "bookcategories.categoryid = categories.id")
+                        .join(Book.class, "books.id = bookcategories.bookid")
+                        .join(LibraryBook.class, "librarybooks.bookid = books.id")
+                        .join(Library.class, "libraries.id = librarybooks.libraryid")
+                        .where("libraries.usercf = ?")
+                        .groupBy("categories.id, categories.name")
+                        .orderBy("book_count DESC")
+                        .limit(1)
+                        .prepare(userCf);
+
+                QueryResult categoryResult = categoryQuery.executeResult();
+                var categoryIterator = categoryResult.iterator();
+
+                if (!categoryIterator.hasNext()) {
+                    return new ErrorResponse("No books found in user's libraries");
+                }
+
+                ResultSet categoryRs = categoryIterator.next();
+                int favoriteCategoryId = categoryRs.getInt("id");
+                String favoriteCategoryName = categoryRs.getString("name");
+                int bookCount = categoryRs.getInt("book_count");
+
+                categoryResult.close();
+
+                PrepareQuery booksQuery = Book.selectBy("DISTINCT books.*, " +
+                                "STRING_AGG(DISTINCT authors.name, ', ') as authors, " +
+                                "'" + favoriteCategoryName + "' as favorite_category, " +
+                                favoriteCategoryId + " as favorite_category_id, " +
+                                bookCount + " as category_book_count, " +
+                                "STRING_AGG(DISTINCT categories.name, ', ') as categories")
+                        .join(BookCategory.class, "bookcategories.bookid = books.id")
+                        .join(Category.class, "categories.id = bookcategories.categoryid")
+                        .join(BookAuthor.class, "bookauthors.bookid = books.id")
+                        .join(Author.class, "authors.id = bookauthors.authorid")
+                        .where("bookcategories.categoryid = ? AND books.id NOT IN (" +
+                                "SELECT DISTINCT librarybooks.bookid " +
+                                "FROM librarybooks " +
+                                "JOIN libraries ON libraries.id = librarybooks.libraryid " +
+                                "WHERE libraries.usercf = ?)")
+                        .groupBy("books.id")
+                        .orderBy("books.title")
+                        .limit(16)
+                        .prepare(favoriteCategoryId, userCf);
+
+                QueryResult booksResult = booksQuery.executeResult();
+                return new MultiResponse(booksResult);
+
+            } catch (Exception e) {
+                return new ErrorResponse("Error getting profile books: " + e.getMessage());
+            }
+        });
+
 
         commandRegister.setFreeCommand("GET_BOOKS");
         commandRegister.setFreeCommand("GET_FILTERED_BOOKS");

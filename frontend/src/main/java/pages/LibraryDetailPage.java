@@ -218,7 +218,7 @@ public class LibraryDetailPage extends Page {
 
         if (libraryBooks != null) {
             for (BookData book : libraryBooks) {
-                JPanel bookCard = new BookCard(book, 1);
+                JPanel bookCard = new BookCard(book);
                 booksContainer.add(bookCard);
             }
         }
