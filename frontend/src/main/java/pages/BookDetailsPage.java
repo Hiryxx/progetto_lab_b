@@ -508,47 +508,6 @@ public class BookDetailsPage extends Page {
                     libraryPopup.add(libraryItem);
                 }
 
-                libraryPopup.addSeparator();
-
-                JMenuItem createNewItem = new JMenuItem("+ Crea nuova libreria") {
-                    @Override
-                    protected void paintComponent(Graphics g) {
-                        if (getModel().isArmed()) {
-                            Graphics2D g2d = (Graphics2D) g.create();
-                            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                            g2d.setColor(new Color(accentColor.getRed(), accentColor.getGreen(), accentColor.getBlue(), 20));
-                            g2d.fillRect(0, 0, getWidth(), getHeight());
-                            g2d.dispose();
-                        }
-                        super.paintComponent(g);
-                    }
-                };
-
-                createNewItem.setFont(new Font("SF Pro Text", Font.BOLD, 15));
-                createNewItem.setForeground(accentColor);
-                createNewItem.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-                createNewItem.setBackground(cardColor);
-                createNewItem.setOpaque(true);
-
-                createNewItem.addActionListener(evt -> {
-                    String newLibraryName = JOptionPane.showInputDialog(
-                            BookDetailsPage.this,
-                            "Nome della nuova libreria:",
-                            "Crea nuova libreria",
-                            JOptionPane.PLAIN_MESSAGE
-                    );
-
-                    if (newLibraryName != null && !newLibraryName.trim().isEmpty()) {
-                        // TODO: Create library and add book
-                        // LibraryState.createLibraryAndAddBook(newLibraryName, bookData);
-                        addLibraryButton.setText("✓ Aggiunto a " + newLibraryName);
-                        addLibraryButton.setEnabled(false);
-                        libraryPopup.setVisible(false);
-                    }
-                });
-
-                libraryPopup.add(createNewItem);
-
                 libraryPopup.show(addLibraryButton, 0, addLibraryButton.getHeight() + 5);
 
             } else {
@@ -1098,8 +1057,19 @@ public class BookDetailsPage extends Page {
         button.setFocusPainted(false);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // TODO FIX GO BACK
-        button.addActionListener(e -> changePage("home"));
+        // special case
+        button.addActionListener(e -> {
+            String lastPage = classes.MainFrame.lastPage;
+            String targetPage;
+            if ("auth".equals(lastPage)) {
+                targetPage = UserState.isLoggedIn ? "profile" : "login";
+            } else if ("register".equals(lastPage)) {
+                targetPage = "register";
+            } else {
+                targetPage = lastPage;
+            }
+            changePage(targetPage);
+        });
 
         return button;
     }
@@ -1119,3 +1089,4 @@ public class BookDetailsPage extends Page {
         return scrollPane;
     }
 }
+
