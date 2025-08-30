@@ -86,7 +86,7 @@ public class LibraryPage extends Page {
 
         header.setLayout(new BorderLayout(20, 0));
         header.setBorder(BorderFactory.createEmptyBorder(40, 30, 40, 30));
-        header.setPreferredSize(new Dimension(0, 150));
+        header.setPreferredSize(new Dimension(0, 180));
 
         JPanel titleSection = new JPanel();
         titleSection.setLayout(new BoxLayout(titleSection, BoxLayout.Y_AXIS));

@@ -44,12 +44,8 @@ public class SocketConnection implements AutoCloseable {
     }
 
     public Response receive() {
-        String line;
-        try {
-            line = in.readLine();
-            // in.readLine();
-        } catch (IOException e) {
-            System.err.println("Error reading from socket: " + e.getMessage());
+        String line = readLineSafe();
+        if (line == null) {
             return new Response("Error reading from socket", true);
         }
 
@@ -63,22 +59,19 @@ public class SocketConnection implements AutoCloseable {
         String line;
         List<String> messages = new ArrayList<>();
         System.out.println("Receiving messages...");
-        try {
-            while ((line = in.readLine()) != null) {
-                System.out.println("Received: " + line);
-                if (line.equalsIgnoreCase("STOP")) {
-                    break;
-                }
-                if (line.startsWith("ERROR:")) {
-                    System.err.println("Error received from server: " + line);
-                   break;
-                }
-                messages.add(line);
+
+        while ((line = readLineSafe()) != null) {
+            System.out.println("Received: " + line);
+            if (line.equalsIgnoreCase("STOP")) {
+                break;
             }
-        } catch (IOException e) {
-            System.err.println("Error reading from socket: " + e.getMessage());
-            return messages; // Return what we have so far
+            if (line.startsWith("ERROR:")) {
+                System.err.println("Error received from server: " + line);
+                break;
+            }
+            messages.add(line);
         }
+
         return messages;
     }
 
@@ -87,7 +80,7 @@ public class SocketConnection implements AutoCloseable {
         List<T> messages = new ArrayList<>();
         System.out.println("Receiving messages...");
         try {
-            while ((line = in.readLine()) != null) {
+            while ((line = readLineSafe()) != null) {
                 System.out.println("Received: " + line);
                 if (line.equalsIgnoreCase("STOP")) {
                     break;
@@ -104,6 +97,39 @@ public class SocketConnection implements AutoCloseable {
             return messages; // Return what we have so far
         }
         return messages;
+    }
+
+    private String readLineSafe() {
+        try {
+            StringBuilder line = new StringBuilder();
+            int ch;
+
+            while ((ch = in.read()) != -1) {
+                char c = (char) ch;
+
+                if (c == '\\') {
+                    // Check if next character is 'n'
+                    int next = in.read();
+                    if (next == 'n') {
+                        // Found our delimiter \\n
+                        break;
+                    } else {
+                        // Not our delimiter, add both characters
+                        line.append(c);
+                        if (next != -1) {
+                            line.append((char) next);
+                        }
+                    }
+                } else {
+                    line.append(c);
+                }
+            }
+
+            return line.toString();
+        } catch (IOException e) {
+            System.err.println("Error reading from socket: " + e.getMessage());
+            return null;
+        }
     }
 
     public Socket getSocket() {

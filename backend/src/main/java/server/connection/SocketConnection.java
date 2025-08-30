@@ -36,41 +36,34 @@ public class SocketConnection {
     public void send(Sendable response) throws IOException {
         switch (response){
             case SingleResponse singleResponse -> {
-                out.println(singleResponse.object());
+                out.write(singleResponse.object()  + "\\n");
                 out.flush();
             }
             case JsonResponse jsonResponse -> {
-                out.println(jsonResponse.getJson());
+                out.write(jsonResponse.getJson()  + "\\n");
                 out.flush();
             }
             case MultiResponse multiResponse -> {
                 var stream = multiResponse.getQueryResult().stream();
                 stream.forEach(item -> {
                     try {
-                        out.println(JSONUtil.resultSetToJson(item));
+                        out.write(JSONUtil.resultSetToJson(item).toString() + "\\n");
                         out.flush();
                     } catch (SQLException e) {
                         System.err.println("Error converting ResultSet to JSON: " + e.getMessage());
-                        out.println("ERROR: " + e.getMessage());
+                        out.write("ERROR: " + e.getMessage() + "\\n");
                         out.flush();
                     }
                 });
-                out.println("STOP");
+                out.write("STOP" + "\\n");
                 out.flush();
             }
             case ErrorResponse errorResponse -> {
-                out.println("ERROR: " + errorResponse.getErrorMessage());
+                out.write("ERROR: " + errorResponse.getErrorMessage() + "\\n");
                 out.flush();
             }
         }
-
     }
-
-    public void sendStopMessage() throws IOException {
-        out.println("STOP");
-        out.flush();
-    }
-
 
     public InetAddress getInetAddress() {
         return socket.getInetAddress();

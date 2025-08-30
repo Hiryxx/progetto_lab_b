@@ -235,7 +235,7 @@ public class RegisterPage extends Page {
         form.add(registerButton);
         form.add(Box.createRigidArea(new Dimension(0, 15)));
 
-        JPanel dividerPanel = createDivider("or");
+        JPanel dividerPanel = createDivider("o");
         form.add(dividerPanel);
         form.add(Box.createRigidArea(new Dimension(0, 15)));
 
@@ -365,9 +365,9 @@ public class RegisterPage extends Page {
 
         System.out.println("Registering user: " + name + ", " + lastName + ", " + fiscalCode + ", " + email);
 
-        if (name.isEmpty() || lastName.isEmpty() || fiscalCode.isEmpty() || email.isEmpty() || password.isEmpty()) {
+        if (name.isEmpty() || lastName.isEmpty() || fiscalCode.isEmpty() || email.isEmpty() || password.isEmpty() || name.contains(";") || lastName.contains(";") || fiscalCode.contains(";") || email.contains(";") || password.contains(";")) {
             JOptionPane.showMessageDialog(this,
-                    "Per favore inserisci tutti i campi",
+                    "Per favore inserisci tutti i campi correttamente.",
                     "Errore di registrazione",
                     JOptionPane.ERROR_MESSAGE);
             return;
@@ -413,7 +413,6 @@ public class RegisterPage extends Page {
     }
 
     private void handleSignIn() {
-        // Navigate to sign in page
         changePage("login");
     }
 

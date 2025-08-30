@@ -5,12 +5,15 @@ import components.ModernScrollBarUI;
 import components.cards.BookCard;
 import data.FavouriteCategoryBook;
 import state.BooksState;
+import state.LibraryDetailState;
+import state.LibraryState;
 import state.UserState;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -126,7 +129,7 @@ public class ProfilePage extends Page {
             int categoryBookCount = firstBook.getCategoryBookCount();
 
             JLabel categoryLabel = new JLabel(String.format(
-                    "Hai %d libri di %s nelle tue librerie - è la tua categoria preferita!",
+                    "Hai %d libro/i di %s nelle tue librerie - è la tua categoria preferita!",
                     categoryBookCount, favoriteCategory));
             categoryLabel.setFont(new Font("SF Pro Text", Font.ITALIC, 14));
             categoryLabel.setForeground(primaryColor);
@@ -195,7 +198,7 @@ public class ProfilePage extends Page {
 
         header.setLayout(new BorderLayout(20, 0));
         header.setBorder(BorderFactory.createEmptyBorder(40, 30, 40, 30));
-        header.setPreferredSize(new Dimension(0, 200));
+        header.setPreferredSize(new Dimension(0, 180));
 
         JPanel userInfoPanel = new JPanel(new BorderLayout(20, 0));
         userInfoPanel.setOpaque(false);
@@ -266,6 +269,10 @@ public class ProfilePage extends Page {
 
         logoutButton.addActionListener(e -> {
             UserState.logout();
+            LibraryState.libraries = new ArrayList<>();
+            LibraryDetailState.libraryId = -1;
+            LibraryDetailState.libraryName = null;
+
             changePage("home");
         });
 

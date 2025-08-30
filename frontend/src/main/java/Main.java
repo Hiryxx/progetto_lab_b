@@ -46,7 +46,7 @@ public class Main {
         }
 
         SwingUtilities.invokeLater(() -> {
-            MainFrame.init(socket, 1300, 900);
+            MainFrame.init(socket, 1500, 900);
             MainFrame.mainFrame.setLocationRelativeTo(null);
 
             MainFrame.mainFrame.setVisible(true);

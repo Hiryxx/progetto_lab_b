@@ -203,7 +203,7 @@ public class LoginPage extends Page {
         form.add(Box.createRigidArea(new Dimension(0, 20)));
 
         // Or divider
-        JPanel dividerPanel = createDivider("or");
+        JPanel dividerPanel = createDivider("o");
         form.add(dividerPanel);
         form.add(Box.createRigidArea(new Dimension(0, 20)));
 
@@ -331,11 +331,10 @@ public class LoginPage extends Page {
         String email = emailField.getText();
         String password = new String(passwordField.getPassword());
 
-        // Basic validation
-        if (email.isEmpty() || password.isEmpty()) {
+        if (email.isEmpty() || password.isEmpty() || email.contains(";") || password.contains(";")) {
             JOptionPane.showMessageDialog(this,
-                    "Please fill in all fields",
-                    "Login Error",
+                    "Per favore, compila tutti i campi correttamente.",
+                    "Errore di login",
                     JOptionPane.ERROR_MESSAGE);
             return;
         }

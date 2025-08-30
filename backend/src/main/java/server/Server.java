@@ -681,7 +681,7 @@ public class Server implements AutoCloseable {
                 System.out.println("Received from " + connection.getInetAddress() + ": " + inputLine);
 
                 try {
-                    // parts are command;?json;?userId
+                    // parts are command;json;userId
                     String[] parts = inputLine.split(";", 3);
                     Request request;
                     try{

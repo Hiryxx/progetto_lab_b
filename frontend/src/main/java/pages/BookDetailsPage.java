@@ -88,8 +88,6 @@ public class BookDetailsPage extends Page {
 
         isBookInLibrary = LibraryDetailState.isBookInLibrary(bookData.getId());
 
-
-        System.out.println("BOOK DETAILS REFRESHED: " + bookData);
         titleLabel.setText(bookData.getTitle());
         authorLabel.setText("di " + bookData.getAuthors());
         categoryLabel.setText(bookData.getCategories().toUpperCase());
@@ -364,6 +362,7 @@ public class BookDetailsPage extends Page {
         gbc.insets = new Insets(0, 0, 8, 0);
         titleLabel.setFont(new Font("SF Pro Display", Font.BOLD, 32));
         titleLabel.setForeground(textPrimary);
+        titleLabel.setVerticalAlignment(SwingConstants.TOP);
         infoPanel.add(titleLabel, gbc);
 
         gbc.gridy = 2;
