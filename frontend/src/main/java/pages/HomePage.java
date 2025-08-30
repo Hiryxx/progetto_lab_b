@@ -531,6 +531,8 @@ public class HomePage extends Page {
             categoryFilter.setSelectedIndex(0);
         }
 
+        searchField.setText("Cerca libri...");
+
         applyFilters();
     }
 
@@ -635,7 +637,6 @@ public class HomePage extends Page {
         searchField.setForeground(textSecondary);
 
         searchField.addActionListener(e -> {
-
             if (searchField.getText().isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Per favore inserisci un termine di ricerca valido.",
                         "Errore di ricerca", JOptionPane.ERROR_MESSAGE);
@@ -661,6 +662,15 @@ public class HomePage extends Page {
         });
 
         JButton searchButton = createIconButton("🔍");
+
+        searchButton.addActionListener(e -> {
+            if (searchField.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Per favore inserisci un termine di ricerca valido.",
+                        "Errore di ricerca", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            applyFilters();
+        });
 
         searchContainer.add(searchField, BorderLayout.CENTER);
         searchContainer.add(searchButton, BorderLayout.EAST);

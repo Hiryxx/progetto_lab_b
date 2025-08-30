@@ -790,6 +790,8 @@ public class BookDetailsPage extends Page {
             ratingData.edizione = sliders[4].getValue();
             ratingData.recensione = commentArea.getText().length() > 256 ? commentArea.getText().substring(0, 256) : commentArea.getText();
 
+            ratingData.recensione =  ratingData.recensione.replace("\n", " ");
+
             BooksState.saveBookRating(ratingData);
             dialog.dispose();
             refresh();

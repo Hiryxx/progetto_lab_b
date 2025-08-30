@@ -677,7 +677,7 @@ public class Server implements AutoCloseable {
         try {
             String inputLine;
             BufferedReader in = connection.getIn();
-            while ((inputLine = in.readLine()) != null) {
+            while ((inputLine = readLineSafe(in)) != null) {
                 System.out.println("Received from " + connection.getInetAddress() + ": " + inputLine);
 
                 try {
@@ -731,6 +731,36 @@ public class Server implements AutoCloseable {
             System.out.println("Server stopped");
         } catch (IOException e) {
             System.err.println("Error stopping server: " + e.getMessage());
+        }
+    }
+
+    private static String readLineSafe(BufferedReader in) {
+        try {
+            StringBuilder line = new StringBuilder();
+            int ch;
+
+            while ((ch = in.read()) != -1) {
+                char c = (char) ch;
+
+                if (c == '\\') {
+                    int next = in.read();
+                    if (next == 'n') {
+                        break;
+                    } else {
+                        line.append(c);
+                        if (next != -1) {
+                            line.append((char) next);
+                        }
+                    }
+                } else {
+                    line.append(c);
+                }
+            }
+
+            return line.toString();
+        } catch (IOException e) {
+            System.err.println("Error reading from socket: " + e.getMessage());
+            return null;
         }
     }
 }

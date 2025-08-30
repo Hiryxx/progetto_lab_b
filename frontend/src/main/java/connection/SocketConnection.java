@@ -26,21 +26,24 @@ public class SocketConnection implements AutoCloseable {
     }
 
     public void send(String command) {
-        out.println(command);
+        out.write(command + "\\n");
+        out.flush();
     }
 
     public void send(String command, JsonObject jsonObject) {
         // Format is: <command>;?<json>;?<userId>
         String jsonString = jsonObject.toString();
         String formattedCommand = String.format("%s;%s", command, jsonString);
-        out.println(formattedCommand);
+        out.write(formattedCommand + "\\n");
+        out.flush();
     }
 
     public void send(String command, JsonObject jsonObject, String userCf) {
         // Format is: <command>;?<json>;?<userId>
         String jsonString = jsonObject.toString();
         String formattedCommand = String.format("%s;%s;%s", command, jsonString, userCf);
-        out.println(formattedCommand);
+        out.write(formattedCommand + "\\n");
+        out.flush();
     }
 
     public Response receive() {
@@ -108,13 +111,10 @@ public class SocketConnection implements AutoCloseable {
                 char c = (char) ch;
 
                 if (c == '\\') {
-                    // Check if next character is 'n'
                     int next = in.read();
                     if (next == 'n') {
-                        // Found our delimiter \\n
                         break;
                     } else {
-                        // Not our delimiter, add both characters
                         line.append(c);
                         if (next != -1) {
                             line.append((char) next);
@@ -130,18 +130,6 @@ public class SocketConnection implements AutoCloseable {
             System.err.println("Error reading from socket: " + e.getMessage());
             return null;
         }
-    }
-
-    public Socket getSocket() {
-        return socket;
-    }
-
-    public PrintWriter getOut() {
-        return out;
-    }
-
-    public BufferedReader getIn() {
-        return in;
     }
 
     @Override
