@@ -2,4 +2,7 @@
 
 ### UML
 
-![UML Diagram](backend_uml.png)
+![UML Diagram](./doc/backend_uml.png)
+
+### ER Diagram
+![UML Diagram](./doc/book_recommender_er.png)
