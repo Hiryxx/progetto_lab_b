@@ -604,7 +604,6 @@ public class BookDetailsPage extends Page {
             suggestBooksButton.setAlignmentX(Component.LEFT_ALIGNMENT);
             suggestBooksButton.setMaximumSize(new Dimension(200, 35));
 
-            // Check visibility based on current state
             suggestBooksButton.setVisible(canRateAndSuggest);
 
             suggestBooksButton.addActionListener(e -> showSuggestBooksDialog());
@@ -809,7 +808,7 @@ public class BookDetailsPage extends Page {
     private void showSuggestBooksDialog() {
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Suggerisci Libri", true);
         dialog.setLayout(new BorderLayout());
-        dialog.setSize(800, 600);
+        dialog.setSize(950, 650);
         dialog.setLocationRelativeTo(this);
 
         JPanel contentPanel = new JPanel();
@@ -831,6 +830,9 @@ public class BookDetailsPage extends Page {
         List<BookData> selectedBooks = new ArrayList<>();
 
         for (BookData book : userRecBooks) {
+            if (book.getId() == BooksState.bookDetail.getId()) {
+                continue; // Skip the current book
+            }
             class SelectableBookPanel extends JPanel {
                 private boolean isSelected = false;
 
@@ -870,19 +872,16 @@ public class BookDetailsPage extends Page {
                 }
             }
 
-            // Create the selectable panel
             SelectableBookPanel bookItem = new SelectableBookPanel();
             bookItem.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
             bookItem.setCursor(new Cursor(Cursor.HAND_CURSOR));
             bookItem.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
-            bookItem.setOpaque(false); // Make it transparent so our custom painting shows
+            bookItem.setOpaque(false);
 
-            // Book icon
             JLabel iconLabel = new JLabel("📚");
             iconLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 24));
             iconLabel.setPreferredSize(new Dimension(40, 40));
 
-            // Book info
             JPanel infoPanel = new JPanel();
             infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
             infoPanel.setOpaque(false);

@@ -421,7 +421,6 @@ public class Server implements AutoCloseable {
             }
         }, Book.class);
 
-        // todo improve
         commandRegister.register("GET_BOOK_RATINGS", (EntityRequest<BookRating> request) -> {
             BookRating book = request.getEntity();
             try {
@@ -497,7 +496,7 @@ public class Server implements AutoCloseable {
                 String userCf = request.getUserCf();
 
                 PrepareQuery pq = BookSuggestion.selectBy("1")
-                        .where("targetbookid = ? AND usercf = ?")
+                        .where("sourcebookid = ? AND usercf = ?")
                         .prepare(bookId, userCf);
 
                 try (QueryResult result = pq.executeResult()) {

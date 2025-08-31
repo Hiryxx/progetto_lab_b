@@ -34,9 +34,6 @@ public class LibraryDetailPage extends Page {
     private StatItem ratedStat;
     private StatItem reviewStat;
 
-    // Data class for books
-
-
     public LibraryDetailPage() {
         super();
         this.render();
@@ -50,7 +47,6 @@ public class LibraryDetailPage extends Page {
         subtitleLabel.setText(libraryBooks.size() + " libri nella libreria");
     }
 
-    // TODO PROBABLY I DO NOT NEED TOP NAVBAR
     @Override
     public void render() {
         this.setBackground(backgroundColor);

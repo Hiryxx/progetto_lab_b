@@ -88,7 +88,6 @@ public class MainFrame extends JFrame {
             lastPage = currentPage;
         }
 
-        //todo maybe found a better way
         if (name.equals("profile") || name.equals("login")){
             currentPage = "auth";
         } else

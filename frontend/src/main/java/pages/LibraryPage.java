@@ -197,30 +197,19 @@ public class LibraryPage extends Page {
     }
 
 
-
     private void refreshLibrariesGrid() {
         librariesContainer.removeAll();
 
-        librariesContainer.setLayout(new GridLayout(0, 1, 15, 15)); // Single column by default
+        librariesContainer.setLayout(new GridLayout(0, 1, 15, 15));
 
         librariesContainer.addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
             public void componentResized(java.awt.event.ComponentEvent e) {
-                int width = librariesContainer.getWidth();
-                int columns = 1;
-
-                if (width > 1100) {
-                    columns = 3;
-                } else if (width > 750) {
-                    columns = 2;
-                }
-
-                librariesContainer.setLayout(new GridLayout(0, columns, 15, 15));
-                librariesContainer.revalidate();
+               indentCards();
             }
         });
 
-        if (LibraryState.libraries.isEmpty()){
+        if (LibraryState.libraries.isEmpty()) {
             JLabel noLibrariesLabel = new JLabel("Nessuna libreria trovata.");
             noLibrariesLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 16));
             noLibrariesLabel.setForeground(textPrimary);
@@ -233,9 +222,24 @@ public class LibraryPage extends Page {
                 librariesContainer.add(libraryCard);
             }
         }
-            librariesContainer.revalidate();
-            librariesContainer.repaint();
+        SwingUtilities.invokeLater(this::indentCards);
+        librariesContainer.revalidate();
+        librariesContainer.repaint();
 
+    }
+
+    private void indentCards(){
+        int width = librariesContainer.getWidth();
+        int columns = 1;
+
+        if (width > 1100) {
+            columns = 3;
+        } else if (width > 750) {
+            columns = 2;
+        }
+
+        librariesContainer.setLayout(new GridLayout(0, columns, 15, 15));
+        librariesContainer.revalidate();
     }
 
     private JPanel createLibraryCard(LibraryData library) {
@@ -273,20 +277,11 @@ public class LibraryPage extends Page {
 
         };
         card.addMouseWheelListener(e -> {
-            // Don't consume the event, just pass it up
             if (card.getParent() == null) {
-                return; // No parent to dispatch to
+                return;
             }
-/*
-            System.out.println("Dispatching mouse wheel event from card to parent");
-*/
 
             this.dispatchEvent(SwingUtilities.convertMouseEvent(card, e, card.getParent()));
-            /*if (card.getParent() != null) {
-                card.getParent().dispatchEvent(
-                        SwingUtilities.convertMouseEvent(card, e, card.getParent())
-                );
-            }*/
         });
 
         card.setLayout(new BorderLayout(0, 15));
@@ -294,34 +289,6 @@ public class LibraryPage extends Page {
         card.setPreferredSize(new Dimension(300, 200));
         card.setMinimumSize(new Dimension(250, 180));
         card.setMaximumSize(new Dimension(400, 220));
-
-        /*card.addMouseWheelListener(e -> {
-            // Get the main scroll pane (the outermost one)
-            Container parent = card.getParent();
-            while (parent != null) {
-                if (parent.getParent() instanceof JScrollPane) {
-                    JScrollPane scrollPane = (JScrollPane) parent.getParent();
-                    JScrollBar vertical = scrollPane.getVerticalScrollBar();
-
-                    // Manually scroll the scrollbar
-                    int direction = e.getWheelRotation();
-                    int increment = vertical.getUnitIncrement() * 3; // Adjust scroll speed
-                    int oldValue = vertical.getValue();
-                    int newValue = oldValue + (increment * direction);
-
-                    // Ensure the new value is within bounds
-                    newValue = Math.max(vertical.getMinimum(),
-                            Math.min(newValue, vertical.getMaximum() - vertical.getVisibleAmount()));
-
-                    vertical.setValue(newValue);
-
-                    // Consume the event so it doesn't propagate
-                    e.consume();
-                    break;
-                }
-                parent = parent.getParent();
-            }
-        });*/
 
         JPanel topSection = new JPanel(new BorderLayout(15, 0));
         topSection.setOpaque(false);
@@ -350,30 +317,6 @@ public class LibraryPage extends Page {
         booksPreview.setPreferredSize(new Dimension(0, 60)); // Fixed height
 
 
-        /*int maxPreview = Math.min(3, library.bookTitles.size());
-        for (int i = 0; i < maxPreview; i++) {
-            String bookTitle = library.bookTitles.get(i);
-            if (bookTitle.length() > 15) {
-                bookTitle = bookTitle.substring(0, 12) + "...";
-            }
-
-            JLabel bookLabel = new JLabel(bookTitle);
-            bookLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 11));
-            bookLabel.setForeground(textSecondary);
-            bookLabel.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(borderColor, 1),
-                    BorderFactory.createEmptyBorder(2, 6, 2, 6)
-            ));
-            booksPreview.add(bookLabel);
-        }
-
-        if (library.bookTitles.size() > 3) {
-            JLabel moreLabel = new JLabel("+" + (library.bookTitles.size() - 3));
-            moreLabel.setFont(new Font("SF Pro Text", Font.BOLD, 11));
-            moreLabel.setForeground(primaryColor);
-            booksPreview.add(moreLabel);
-        }*/
-
         JPanel bottomSection = new JPanel(new BorderLayout());
         bottomSection.setOpaque(false);
 
@@ -399,7 +342,6 @@ public class LibraryPage extends Page {
         bottomSection.add(createdAtLabel, BorderLayout.WEST);
         bottomSection.add(viewButton, BorderLayout.EAST);
 
-        // Add sections to card
         card.add(topSection, BorderLayout.NORTH);
         card.add(booksPreview, BorderLayout.CENTER);
         card.add(bottomSection, BorderLayout.SOUTH);
@@ -408,17 +350,15 @@ public class LibraryPage extends Page {
             @Override
             public void mouseEntered(MouseEvent e) {
                 card.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                //card.setHovered(true);
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                //((JPanel)card).setHovered(false);
+                card.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             }
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                // Navigate to library detail page
                 openLibraryDetail(library);
             }
         });
