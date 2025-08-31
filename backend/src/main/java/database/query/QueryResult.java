@@ -92,7 +92,6 @@ public class QueryResult implements Iterable<ResultSet>, AutoCloseable {
     @Override
     public void close() throws Exception {
         if (!closed) {
-            System.out.println("Closing QueryResult");
             try {
                 if (resultSet != null) resultSet.close();
             } finally {

@@ -18,7 +18,6 @@ public abstract class Entity {
      */
     public void create() throws IllegalAccessException, SQLException {
         PrepareQuery insertQuery = DbUtil.insertQuery(this);
-        System.out.println("Insert query: " + insertQuery);
 
         // Inserts the entity into the database
         DbConnection.executeUpdate(insertQuery);
@@ -29,7 +28,7 @@ public abstract class Entity {
      */
     public void update() throws IllegalAccessException, SQLException {
         PrepareQuery updateQuery = DbUtil.updateQuery(this);
-        System.out.println("Update query: " + updateQuery);
+
         // Updates the entity in the database
         DbConnection.executeUpdate(updateQuery);
     }
@@ -39,7 +38,7 @@ public abstract class Entity {
      */
     public void delete() throws IllegalAccessException, SQLException {
         PrepareQuery deleteQuery = DbUtil.deleteQuery(this);
-        System.out.println("Delete query: " + deleteQuery);
+
         // Deletes the entity from the database
         DbConnection.executeUpdate(deleteQuery);
     }

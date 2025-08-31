@@ -27,6 +27,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.*;
 
 /**
  * The Server class handles incoming client connections and processes commands.
@@ -36,8 +37,16 @@ public class Server implements AutoCloseable {
     private ServerSocket serverSocket;
     private final CommandRegister commandRegister;
     private volatile boolean running = true;
+    private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
 
     public Server() {
+        LOGGER.setUseParentHandlers(false);
+        LOGGER.setLevel(Level.INFO);
+
+        ConsoleHandler console = new ConsoleHandler();
+        console.setLevel(Level.INFO);
+        console.setFormatter(new SimpleFormatter());
+        LOGGER.addHandler(console);
         commandRegister = new CommandRegister();
     }
 
@@ -77,7 +86,7 @@ public class Server implements AutoCloseable {
 
     /**
      * Creates initial entities in the database by executing SQL scripts.
-     * The scripts are defined in a manifest file located in the resources directory.
+     * The scripts are defined in a manifest file located in the resources' directory.
      * If any of the scripts fail to execute, an exception is thrown and the server is stopped.
      */
     private void createInitialEntities() {
@@ -99,7 +108,7 @@ public class Server implements AutoCloseable {
         }
 
         for (String scriptFileName : scriptFiles) {
-            System.out.println("Executing SQL script: " + scriptFileName);
+            LOGGER.log(Level.INFO,"Executing SQL script: " + scriptFileName);
             String resourcePath = "/sql_inserts/" + scriptFileName;
             try (InputStream scriptStream = Server.class.getResourceAsStream(resourcePath)) {
                 if (scriptStream == null) {
@@ -112,17 +121,17 @@ public class Server implements AutoCloseable {
                 QueryResult result = prepareCheck.executeResult();
 
                 if (result.iterator().hasNext()) {
-                    System.out.println("Table " + tableName + " already exists, skipping creation.");
+                    LOGGER.log(Level.INFO,"Table " + tableName + " already exists, skipping creation.");
                     result.close();
                     continue;
                 }
                 DbUtil.executeSqlFromStream(scriptStream);
-                System.out.println("Executed SQL file: " + scriptFileName);
+                LOGGER.log(Level.INFO,"Executed SQL file: " + scriptFileName);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
-        System.out.println("All SQL files executed successfully.");
+        LOGGER.log(Level.INFO,"All SQL files executed successfully.");
     }
 
     /**
@@ -347,18 +356,6 @@ public class Server implements AutoCloseable {
                 return new ErrorResponse("Error creating book: " + e.getMessage());
             }
         }, LibraryBook.class);
-
-
-        commandRegister.register("REMOVE_BOOK", (EntityRequest<LibraryBook> request) -> {
-            LibraryBook libraryBook = request.getEntity();
-            try {
-                libraryBook.delete();
-                return new SingleResponse("Book removed successfully");
-            } catch (IllegalAccessException | SQLException e) {
-                return new ErrorResponse("Error removing book: " + e.getMessage());
-            }
-        }, LibraryBook.class);
-
 
         commandRegister.register("BOOK_INFO", (EntityRequest<Book> request) -> {
             Book book = request.getEntity();
@@ -651,13 +648,13 @@ public class Server implements AutoCloseable {
      */
     public void start(int port) throws IOException {
         serverSocket = new ServerSocket(port);
-        System.out.println("Server started on port " + port);
+        LOGGER.log(Level.INFO,"Server started on port " + port);
 
         while (running) {
             try {
                 Socket socket = serverSocket.accept();
                 SocketConnection clientSocket = new SocketConnection(socket);
-                System.out.println("New client connected: " + clientSocket.getInetAddress());
+                LOGGER.log(Level.INFO,"New client connected: " + clientSocket.getInetAddress());
 
                 Thread.startVirtualThread(() -> handleClient(clientSocket));
             } catch (IOException e) {
@@ -678,23 +675,21 @@ public class Server implements AutoCloseable {
             String inputLine;
             BufferedReader in = connection.getIn();
             while ((inputLine = readLineSafe(in)) != null) {
-                System.out.println("Received from " + connection.getInetAddress() + ": " + inputLine);
+                LOGGER.log(Level.INFO, "Received from " + connection.getInetAddress() + ": " + inputLine);
 
                 try {
                     // parts are command;json;userId
                     String[] parts = inputLine.split(";", 3);
                     Request request;
-                    try{
+                    try {
                         request = commandRegister.parseRequest(parts);
                     } catch (Exception e) {
-                        System.err.println("Error parsing request: " + e.getMessage());
+                        LOGGER.log(Level.INFO, "Error parsing request: " + e.getMessage());
                         Sendable errorResponse = new ErrorResponse("Error parsing request: " + e.getMessage());
                         connection.send(errorResponse);
                         continue;
                     }
-
                     Sendable result = commandRegister.execute(request);
-                    System.out.println("SENDING DATA");
                     connection.send(result);
                 } catch (Exception e) {
                     System.err.println("Error processing command: " + e.getMessage());
@@ -704,16 +699,16 @@ public class Server implements AutoCloseable {
             }
         } catch (IOException e) {
             if (connection.getSocket().isClosed()) {
-                System.out.println("Connection closed by client: " + connection.getInetAddress());
+                LOGGER.log(Level.INFO,"Connection closed by client: " + connection.getInetAddress());
             } else {
-                System.err.println("Client connection error (" + connection.getInetAddress() + "): " + e.getMessage());
+                LOGGER.log(Level.INFO,"Client connection error (" + connection.getInetAddress() + "): " + e.getMessage());
             }
         } finally {
             try {
                 connection.close();
-                System.out.println("Client disconnected: " + connection.getInetAddress());
+                LOGGER.log(Level.INFO,"Client disconnected: " + connection.getInetAddress());
             } catch (IOException e) {
-                System.err.println("Error closing client socket: " + e.getMessage());
+                LOGGER.log(Level.INFO,"Error closing client socket: " + e.getMessage());
             }
         }
     }
@@ -728,7 +723,7 @@ public class Server implements AutoCloseable {
             if (serverSocket != null && !serverSocket.isClosed()) {
                 serverSocket.close();
             }
-            System.out.println("Server stopped");
+            LOGGER.log(Level.INFO,"Server stopped");
         } catch (IOException e) {
             System.err.println("Error stopping server: " + e.getMessage());
         }

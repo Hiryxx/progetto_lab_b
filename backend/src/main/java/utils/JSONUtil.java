@@ -82,8 +82,6 @@ public class JSONUtil {
 
             if (value != null)
                 json.putPOJO(columnName, value);
-            else // should never happen
-                System.out.println("Null value for column: " + columnName);
         }
 
         return json;

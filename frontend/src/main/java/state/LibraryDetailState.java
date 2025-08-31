@@ -6,6 +6,7 @@ import connection.SocketConnection;
 import data.BookData;
 import json.JsonObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -13,7 +14,7 @@ public class LibraryDetailState {
     public static int libraryId = -1;
     public static String libraryName = null;
 
-    public static List<BookData> libraryBooks;
+    public static List<BookData> libraryBooks = new ArrayList<>();
 
     public static void fetchLibraryBooks(int libraryId) {
         SocketConnection sc = MainFrame.getSocketConnection();
