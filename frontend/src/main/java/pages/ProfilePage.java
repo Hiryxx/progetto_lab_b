@@ -269,9 +269,10 @@ public class ProfilePage extends Page {
 
         logoutButton.addActionListener(e -> {
             UserState.logout();
-            LibraryState.libraries = new ArrayList<>();
+            LibraryState.libraries.clear();
             LibraryDetailState.libraryId = -1;
             LibraryDetailState.libraryName = null;
+            LibraryDetailState.libraryBooks.clear();
 
             changePage("home");
         });

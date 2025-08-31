@@ -44,35 +44,8 @@ public class LibraryDetailPage extends Page {
 
 
     private void initializeBooks() {
-        libraryBooks = new ArrayList<>();
-
-        SocketConnection sc = MainFrame.getSocketConnection();
-        JsonObject libraryDetail = new JsonObject();
-        libraryDetail.put("id", LibraryDetailState.libraryId);
-
-        System.out.println("Requesting library books with id " + LibraryDetailState.libraryId);
-        sc.send("GET_LIBRARY_BOOKS", libraryDetail, UserState.cf);
-
-        List<String> books = sc.receiveUntilStop();
-
-        for (String bookJson : books) {
-            if (bookJson.startsWith("ERROR:")) {
-                System.err.println("Error fetching libraries: " + bookJson.substring(6));
-                return;
-            }
-
-            BookData book;
-
-            try {
-                book = JsonUtil.fromString(bookJson, BookData.class);
-                System.out.println("Parsed book: " + book.getTitle());
-
-                libraryBooks.add(book);
-            } catch (JsonProcessingException e) {
-                System.out.println("Error parsing library JSON: " + e.getMessage());
-            }
-
-        }
+        LibraryDetailState.fetchLibraryBooks(LibraryDetailState.libraryId);
+        libraryBooks = LibraryDetailState.libraryBooks;
 
         subtitleLabel.setText(libraryBooks.size() + " libri nella libreria");
     }
