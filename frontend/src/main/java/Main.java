@@ -12,6 +12,9 @@ public class Main {
     public static void main(String[] args) {
         Socket clientSocket = new Socket();
 
+        System.setProperty("file.encoding", "UTF-8");
+        System.setProperty("sun.jnu.encoding", "UTF-8");
+
         try {
             clientSocket.connect(new java.net.InetSocketAddress("localhost", PORT));
         } catch (Exception e) {

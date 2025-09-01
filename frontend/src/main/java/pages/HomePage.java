@@ -153,7 +153,7 @@ public class HomePage extends Page {
         gbc.gridy = 0;
 
         JLabel filterLabel = new JLabel("Filtri:");
-        filterLabel.setFont(new Font("SF Pro Display", Font.BOLD, 16));
+        filterLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
         filterLabel.setForeground(textPrimary);
         gbc.gridx = 0;
         gbc.weightx = 0;
@@ -593,7 +593,7 @@ public class HomePage extends Page {
         titlePanel.add(Box.createHorizontalStrut(15));
 
         JLabel titleLabel = new JLabel("BookHub");
-        titleLabel.setFont(new Font("SF Pro Display", Font.BOLD, 32));
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 32));
         titleLabel.setForeground(Color.WHITE);
         titlePanel.add(titleLabel);
 
@@ -705,12 +705,12 @@ public class HomePage extends Page {
         textPanel.setOpaque(false);
 
         JLabel welcomeLabel = new JLabel("Scopri il tuo prossimo");
-        welcomeLabel.setFont(new Font("SF Pro Display", Font.BOLD, 36));
+        welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 36));
         welcomeLabel.setForeground(textPrimary);
         welcomeLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JLabel favoriteLabel = new JLabel("Libro Preferito");
-        favoriteLabel.setFont(new Font("SF Pro Display", Font.BOLD, 36));
+        favoriteLabel.setFont(new Font("Segoe UI", Font.BOLD, 36));
         favoriteLabel.setForeground(primaryColor);
         favoriteLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -793,7 +793,7 @@ public class HomePage extends Page {
         titlePanel.setOpaque(false);
 
         JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(new Font("SF Pro Display", Font.BOLD, 28));
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 28));
         titleLabel.setForeground(textPrimary);
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 

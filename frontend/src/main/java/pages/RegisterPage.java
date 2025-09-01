@@ -162,7 +162,7 @@ public class RegisterPage extends Page {
 
         // Welcome text
         JLabel welcomeLabel = new JLabel("Unisciti a BookHub!");
-        welcomeLabel.setFont(new Font("SF Pro Display", Font.BOLD, 28));
+        welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 28));
         welcomeLabel.setForeground(textPrimary);
         welcomeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         welcomeLabel.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));

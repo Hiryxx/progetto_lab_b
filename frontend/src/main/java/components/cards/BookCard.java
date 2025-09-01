@@ -89,12 +89,12 @@ public class BookCard extends JPanel {
         infoPanel.setOpaque(false);
 
         JLabel titleLabel = new JLabel(book.getTitle());
-        titleLabel.setFont(new Font("SF Pro Display", Font.BOLD, 14));
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
         titleLabel.setForeground(textPrimary);
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JLabel authorLabel = new JLabel("di " + book.getAuthors());
-        authorLabel.setFont(new Font("SF Pro Text", Font.PLAIN, 12));
+        authorLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         authorLabel.setForeground(textSecondary);
         authorLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         authorLabel.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));

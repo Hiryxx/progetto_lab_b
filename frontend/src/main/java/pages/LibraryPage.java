@@ -92,8 +92,8 @@ public class LibraryPage extends Page {
         titleSection.setLayout(new BoxLayout(titleSection, BoxLayout.Y_AXIS));
         titleSection.setOpaque(false);
 
-        JLabel titleLabel = new JLabel("📚 Le Mie Librerie");
-        titleLabel.setFont(new Font("SF Pro Display", Font.BOLD, 36));
+        JLabel titleLabel = new JLabel("Le Mie Librerie");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 36));
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -135,7 +135,7 @@ public class LibraryPage extends Page {
         stat.setOpaque(false);
 
         JLabel valueLabel = new JLabel(value);
-        valueLabel.setFont(new Font("SF Pro Display", Font.BOLD, 24));
+        valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
         valueLabel.setForeground(Color.WHITE);
         valueLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -302,7 +302,7 @@ public class LibraryPage extends Page {
         titlePanel.setOpaque(false);
 
         JLabel nameLabel = new JLabel(library.getName());
-        nameLabel.setFont(new Font("SF Pro Display", Font.BOLD, 20));
+        nameLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
         nameLabel.setForeground(textPrimary);
         nameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 

@@ -152,7 +152,7 @@ public class LoginPage extends Page {
         logoPanel.add(logoLabel);
 
         JLabel welcomeLabel = new JLabel("Bentornato!");
-        welcomeLabel.setFont(new Font("SF Pro Display", Font.BOLD, 32));
+        welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 32));
         welcomeLabel.setForeground(textPrimary);
         welcomeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         welcomeLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));

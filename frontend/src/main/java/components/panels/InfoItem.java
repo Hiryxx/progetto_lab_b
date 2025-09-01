@@ -31,7 +31,7 @@ public class InfoItem extends JPanel {
         headerPanel.add(labelText);
 
         valueLabel = new JLabel(value);
-        valueLabel.setFont(new Font("SF Pro Display", Font.BOLD, 14));
+        valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
         valueLabel.setForeground(textPrimary);
         valueLabel.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
         valueLabel.setAlignmentX(Component.LEFT_ALIGNMENT);

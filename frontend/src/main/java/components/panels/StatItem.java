@@ -12,7 +12,7 @@ public class StatItem extends JPanel {
         this.setOpaque(false);
 
         valueLabel = new JLabel(value);
-        valueLabel.setFont(new Font("SF Pro Display", Font.BOLD, 24));
+        valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
         valueLabel.setForeground(Color.WHITE);
         valueLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 

@@ -153,7 +153,7 @@ public class BookDetailsPage extends Page {
 
         // Title
         JLabel ratingsTitle = new JLabel("Valutazioni Utenti");
-        ratingsTitle.setFont(new Font("SF Pro Display", Font.BOLD, 18));
+        ratingsTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
         ratingsTitle.setForeground(textPrimary);
         ratingsTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
         ratingsPanel.add(ratingsTitle);
@@ -197,7 +197,7 @@ public class BookDetailsPage extends Page {
 
         // Title
         JLabel suggestionsTitle = new JLabel("Libri Consigliati dagli Utenti");
-        suggestionsTitle.setFont(new Font("SF Pro Display", Font.BOLD, 18));
+        suggestionsTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
         suggestionsTitle.setForeground(textPrimary);
         suggestionsTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
         suggestionsPanel.add(suggestionsTitle);
@@ -253,7 +253,7 @@ public class BookDetailsPage extends Page {
         centerPanel.setOpaque(false);
 
         JLabel pageTitle = new JLabel("Dettagli Libro", SwingConstants.CENTER);
-        pageTitle.setFont(new Font("SF Pro Display", Font.BOLD, 24));
+        pageTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
         pageTitle.setForeground(Color.WHITE);
         centerPanel.add(pageTitle, BorderLayout.CENTER);
 
@@ -360,7 +360,7 @@ public class BookDetailsPage extends Page {
 
         gbc.gridy = 1;
         gbc.insets = new Insets(0, 0, 8, 0);
-        titleLabel.setFont(new Font("SF Pro Display", Font.BOLD, 32));
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 32));
         titleLabel.setForeground(textPrimary);
         titleLabel.setVerticalAlignment(SwingConstants.TOP);
         infoPanel.add(titleLabel, gbc);
@@ -621,7 +621,7 @@ public class BookDetailsPage extends Page {
 
         // Title
         JLabel ratingsTitle = new JLabel("Valutazioni Utenti");
-        ratingsTitle.setFont(new Font("SF Pro Display", Font.BOLD, 18));
+        ratingsTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
         ratingsTitle.setForeground(textPrimary);
         ratingsTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
         panel.add(ratingsTitle);
@@ -680,7 +680,7 @@ public class BookDetailsPage extends Page {
         panel.setOpaque(false);
 
         JLabel suggestionsTitle = new JLabel("Libri Consigliati dagli Utenti");
-        suggestionsTitle.setFont(new Font("SF Pro Display", Font.BOLD, 18));
+        suggestionsTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
         suggestionsTitle.setForeground(textPrimary);
         suggestionsTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
         panel.add(suggestionsTitle);
@@ -1020,7 +1020,7 @@ public class BookDetailsPage extends Page {
 
         // Titolo sezione
         JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(new Font("SF Pro Display", Font.BOLD, 22));
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
         titleLabel.setForeground(textPrimary);
 
         card.add(titleLabel, BorderLayout.NORTH);
