@@ -5,6 +5,9 @@ import server.connection.response.Sendable;
 
 import java.util.Optional;
 
+/**
+ * Executable is an interface that defines methods for executing commands and parsing requests.
+ */
 public interface Executable {
     /**
      * Executes the command with the given arguments.

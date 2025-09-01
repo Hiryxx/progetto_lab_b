@@ -1,5 +1,8 @@
 package server.router;
 
+/**
+ * Exception thrown when a requested router is not found.
+ */
 public class RouterNotFoundException extends Exception{
     public RouterNotFoundException(String message) {
         super(message);
