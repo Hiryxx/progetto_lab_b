@@ -8,7 +8,6 @@ import java.sql.SQLException;
 /**
  * DbConnectionPool is a singleton class that manages a connection pool to a PostgresSQL database.
  * It uses the C3P0 library for connection pooling.
- * The database connection parameters are loaded from a .env file.
  */
 public class DbConnectionPool {
     private static ComboPooledDataSource dataSource;
@@ -17,9 +16,6 @@ public class DbConnectionPool {
         String url = "jdbc:postgresql://" + host + ":" + port + "/" + dbName;
         String driverName = "org.postgresql.Driver";
 
-        // System.out.println(url);
-
-        //System.out.println("Connecting to database: " + host + ":" + port + "/" + dbName);
         try {
             dataSource = new ComboPooledDataSource();
             dataSource.setDriverClass(driverName);

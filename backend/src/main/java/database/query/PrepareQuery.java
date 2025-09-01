@@ -6,8 +6,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
-import java.sql.JDBCType;
 
+/**
+ * PrepareQuery is a class that represents a parameterized SQL query.
+ * It allows setting values for the query parameters and executing the query.
+ */
 public class PrepareQuery {
     private final Query query;
 
@@ -71,18 +74,6 @@ public class PrepareQuery {
 
     public PreparedStatement getStatement() {
         return stmt;
-    }
-
-    private JDBCType getJDBCType(Object data) {
-        return switch (data.getClass().getSimpleName()) {
-            case "String" -> JDBCType.VARCHAR;
-            case "Integer", "int" -> JDBCType.INTEGER;
-            case "Long", "long" -> JDBCType.BIGINT;
-            case "Double", "double" -> JDBCType.DOUBLE;
-            case "Float", "float" -> JDBCType.FLOAT;
-            case "Boolean", "boolean" -> JDBCType.BOOLEAN;
-            default -> throw new IllegalArgumentException("Unsupported data type: " + data.getClass().getSimpleName());
-        };
     }
 
     // Hides the query values when printing

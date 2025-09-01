@@ -5,6 +5,10 @@ import database.query.QueryResult;
 
 import java.sql.*;
 
+/***
+ * DbConnection is a utility class for executing SQL queries using a connection pool.
+ * It provides methods to execute queries that return results and those that do not.
+ */
 public class DbConnection {
 
     /***

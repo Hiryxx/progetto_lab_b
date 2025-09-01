@@ -33,16 +33,6 @@ public abstract class Entity {
         DbConnection.executeUpdate(updateQuery);
     }
 
-    /**
-     * Deletes an entity from the database
-     */
-    public void delete() throws IllegalAccessException, SQLException {
-        PrepareQuery deleteQuery = DbUtil.deleteQuery(this);
-
-        // Deletes the entity from the database
-        DbConnection.executeUpdate(deleteQuery);
-    }
-
     public String asJson() throws JsonProcessingException {
         return JSONUtil.entityToJson(this);
     }

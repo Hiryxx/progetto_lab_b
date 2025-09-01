@@ -1,5 +1,8 @@
 package server.connection.request;
 
+/**
+ * Abstract class representing a generic request with a command and user identifier.
+ */
 public abstract class Request {
     private String command;
     private String userCf;
