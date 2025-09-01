@@ -153,7 +153,6 @@ public class Server implements AutoCloseable {
         }, User.class);
 
         commandRegister.register("LOGIN", (EntityRequest<User> request) -> {
-
             User user = request.getEntity();
 
             String hashedPassword = HashUtils.hash(user.getPassword());
@@ -174,7 +173,6 @@ public class Server implements AutoCloseable {
             } catch (Exception e) {
                 return new ErrorResponse("Error executing login query: " + e.getMessage());
             }
-
 
         }, User.class);
 
