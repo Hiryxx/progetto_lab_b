@@ -1,17 +1,43 @@
-import database.models.User;
-import database.query.PrepareQuery;
-import database.query.QueryResult;
-import server.router.CommandRegister;
+import database.connection.DbConnectionPool;
 import server.Server;
-import utils.DbUtil;
 
-import java.sql.SQLException;
-import java.util.Optional;
 import java.util.Scanner;
 
 
 public class Main {
     public static void main(String[] args) throws Exception {
+        String HOST = "localhost";
+        int PORT = 5432;
+        String DB_NAME = "database";
+        String DB_USER = "postgres";
+        String DB_PASSWORD = "postgres";
+
+        Scanner in = new Scanner(System.in);
+        System.out.println("Per favore inserire le credenziali del database.");
+        System.out.printf("Host (%s): ", HOST);
+        String input = in.nextLine();
+
+        if (!input.isBlank()) HOST = input;
+        System.out.printf("Port (%d): ", PORT);
+        input = in.nextLine();
+
+        if (!input.isBlank()) PORT = Integer.parseInt(input);
+        System.out.printf("Database name (%s): ", DB_NAME);
+        input = in.nextLine();
+
+        if (!input.isBlank()) DB_NAME = input;
+        System.out.printf("User (%s): ", DB_USER);
+        input = in.nextLine();
+
+        if (!input.isBlank()) DB_USER = input;
+        System.out.printf("Password (%s): ", DB_PASSWORD);
+        input = in.nextLine();
+
+        if (!input.isBlank()) DB_PASSWORD = input;
+
+        DbConnectionPool.connect(HOST, String.valueOf(PORT), DB_NAME, DB_USER, DB_PASSWORD);
+
+
         startServer();
     }
 

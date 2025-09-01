@@ -33,16 +33,12 @@ public class LoginPage extends Page {
         this.setBackground(backgroundColor);
         this.setLayout(new BorderLayout());
 
-        // Background with gradient
         JPanel backgroundPanel = createGradientBackground();
 
-        // Main content
         JPanel contentPanel = createMainContent();
         backgroundPanel.add(contentPanel, BorderLayout.CENTER);
 
         this.add(backgroundPanel, BorderLayout.CENTER);
-        this.emailField.setText("franco@gmail.com");
-        this.passwordField.setText("franco");
 
     }
 

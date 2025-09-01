@@ -5,8 +5,6 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import io.github.cdimascio.dotenv.Dotenv;
-
 /**
  * DbConnectionPool is a singleton class that manages a connection pool to a PostgresSQL database.
  * It uses the C3P0 library for connection pooling.
@@ -15,28 +13,9 @@ import io.github.cdimascio.dotenv.Dotenv;
 public class DbConnectionPool {
     private static ComboPooledDataSource dataSource;
 
-    static {
-        String driverName = "org.postgresql.Driver";
-
-        String currentDir = System.getProperty("user.dir");
-
-        // todo make an example .env file so it is a fallback
-        Dotenv dotenv = Dotenv.configure()
-                .directory(currentDir + "/backend/")
-                .filename(".env")
-                .load();
-
-        String host = dotenv.get("HOST");
-        String port = dotenv.get("PORT");
-        String dbName = dotenv.get("DB_NAME");
-
-        String dbUser = dotenv.get("DB_USER");
-        String dbPassword = dotenv.get("DB_PASSWORD");
-        if (host == null || port == null || dbName == null) {
-            throw new RuntimeException("Database connection parameters are not set");
-        }
-
+    public static void connect(String host, String port, String dbName, String dbUser, String dbPassword) {
         String url = "jdbc:postgresql://" + host + ":" + port + "/" + dbName;
+        String driverName = "org.postgresql.Driver";
 
         // System.out.println(url);
 

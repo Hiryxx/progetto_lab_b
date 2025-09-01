@@ -32,6 +32,8 @@ public class RegisterPage extends Page {
     // Regex per la validazione del Codice Fiscale
     private static final String FISCAL_CODE_REGEX = "^[A-Z]{6}\\d{2}[A-Z]\\d{2}[A-Z]\\d{3}[A-Z]$";
 
+    // codice fiscale: RSSFNC80A01F205E
+
     public RegisterPage() {
         super();
         this.render();
@@ -42,20 +44,12 @@ public class RegisterPage extends Page {
         this.setBackground(backgroundColor);
         this.setLayout(new BorderLayout());
 
-        // Background with gradient
         JPanel backgroundPanel = createGradientBackground();
 
-        // Main content
         JPanel contentPanel = createMainContent();
         backgroundPanel.add(contentPanel, BorderLayout.CENTER);
 
         this.add(backgroundPanel, BorderLayout.CENTER);
-        nameField.setText("Franco");
-        lastNameField.setText("Rossi");
-        fiscalCodeField.setText("RSSFNC80A01F205E");
-        emailField.setText("franco@gmail.com");
-        passwordField.setText("franco");
-
     }
     @Override
     public void refresh() {
