@@ -674,6 +674,9 @@ public class Server implements AutoCloseable {
             String inputLine;
             BufferedReader in = connection.getIn();
             while ((inputLine = readLineSafe(in)) != null) {
+                if (inputLine.isEmpty()) {
+                    break; // Client disconnected
+                }
                 LOGGER.log(Level.INFO, "Received from " + connection.getInetAddress() + ": " + inputLine);
 
                 try {
