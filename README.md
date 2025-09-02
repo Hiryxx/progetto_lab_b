@@ -7,6 +7,18 @@
 ### ER Diagram
 ![UML Diagram](./doc/book_recommender_er.png)
 
+
+### Prerequisites:
+- Java 21
+- Postgres 16
+
+### Setup:
+1. Create a database in Postgres or execute the docker container:
+```bash
+cd backend
+docker compose up
+```
+
 ### Execution:
 
 Go to bin:
